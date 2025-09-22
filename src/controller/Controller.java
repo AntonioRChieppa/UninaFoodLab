@@ -11,11 +11,11 @@ import exception.ChefAlreadyExistsException;
 import java.util.*;
 import java.sql.SQLException;
 
-public class ChefController {
+public class Controller {
 
 		private ChefDAO chefDAO;
 		
-		public ChefController() {
+		public Controller() {
 			this.chefDAO = new ChefDAO();
 		}
 		

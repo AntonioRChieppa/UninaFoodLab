@@ -1,4 +1,4 @@
-import controller.ChefController;
+import controller.Controller;
 import dto.ChefDTO;
 import exception.ChefOperationException;
 import exception.ChefNotFoundException;
@@ -8,7 +8,7 @@ import java.util.*;
 public class start_test {
 
 	public static void main(String[] args) {
-		ChefController controller = new ChefController();
+		Controller controller = new Controller();
 
         try {
         	
