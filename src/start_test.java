@@ -12,7 +12,6 @@ public class start_test {
 		Controller controller = new Controller();
 
         try {
-        	
         	controller.registrazioneChef("Mario", "De Maio", "mdm@email.com", "Password@123");
         	controller.loginChef("mdm@email.com", "Password@123");
         	System.out.println("Login effettuato con successo!");
