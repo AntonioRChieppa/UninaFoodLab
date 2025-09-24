@@ -118,7 +118,6 @@ public class Controller {
 				return chef;
 			}
 			catch(SQLException ex) {
-				ex.printStackTrace();
 				throw new ChefOperationException("Errore durante il login");
 			}
 		}
