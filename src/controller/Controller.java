@@ -157,7 +157,8 @@ public class Controller {
 				
 		}
 		
-		// METODO PER VISUALIZZARE LO CHEF CORRENTE
+		
+		// METODO PER VISUALIZZARE LO 
 		public ChefDTO visualizzaChef() throws ChefNotFoundException, ChefOperationException {
 			try {
 				int id = SessionChef.getChefId();
