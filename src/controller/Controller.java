@@ -128,7 +128,6 @@ public class Controller {
 		        chefDAO.updateChef(updateChef);
 			}
 			catch(SQLException ex) {
-				ex.printStackTrace();
 				throw new ChefOperationException("Errore durante l'aggiornamento dello chef");
 			}
 			
