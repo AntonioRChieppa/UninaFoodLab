@@ -163,4 +163,33 @@ public class ChefDAO {
 		
 	}
 	
+	//READ (SELECT) Chef by name and surname
+	public List<ChefDTO> getChefByNameAndSurname(String nome, String cognome) throws SQLException{
+		String sql = "SELECT * FROM chef WHERE nomechef = ? AND cognomechef = ?";
+		List<ChefDTO> chefListEqualName = new ArrayList<>();
+		
+		try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
+			ps.setString(1, nome);
+			ps.setString(2, cognome);
+			ResultSet rs = ps.executeQuery();
+			
+			if(rs.next() == false) {
+				return null;
+			}
+			else {
+				while(rs.next()) {
+					ChefDTO chef = new ChefDTO();
+					chef.setId(rs.getInt("idchef"));
+					chef.setNome(rs.getString("nomechef"));
+					chef.setCognome(rs.getString("cognomechef"));
+					chef.setEmail(rs.getString("email"));
+		            chef.setPassword(rs.getString("password"));
+	
+		            chefListEqualName.add(chef);
+		        }
+		        return chefListEqualName;
+			}
+		}
+	}
+	
 }

@@ -10,6 +10,7 @@ public class CorsoDTO {
 		private String argomento;
 		private LocalDate dataInizio;
 		private LocalDate dataFine;
+		private String frequenzaSessioni;
 		private int anno;
 		private ChefDTO chefCorso;
 		
@@ -69,6 +70,14 @@ public class CorsoDTO {
 
 		public void setDataFine(LocalDate dataFine) {
 			this.dataFine = dataFine;
+		}
+		
+		public String getFrequenzaSessioni() {
+			return frequenzaSessioni;
+		}
+		
+		public void setFrequenzaSessioni(String frequenzaSessioni) {
+			this.frequenzaSessioni = frequenzaSessioni;
 		}
 		
 		public int getAnno() {
