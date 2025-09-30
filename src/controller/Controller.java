@@ -100,15 +100,15 @@ public class Controller {
 		// METODO PER AGGIORNARE I DATI DI UNO CHEF
 		public void aggiornaChef(String newNome, String newCognome, String newEmail) throws ChefNotFoundException, ChefOperationException{
 			try {
-				int id = SessionChef.getChefId();
-				ChefDTO chef = chefDAO.getChefById(id);
+				int idChefLoggato = SessionChef.getChefId();
+				ChefDTO chef = chefDAO.getChefById(idChefLoggato);
 				
 				if(chef==null) {
-					throw new ChefNotFoundException("Impossibile trovare lo chef con id: " + id);
+					throw new ChefNotFoundException("Impossibile trovare lo chef con id: " + idChefLoggato);
 				}
 				
 				ChefDTO updateChef = new ChefDTO();
-				updateChef.setId(id);
+				updateChef.setId(idChefLoggato);
 				updateChef.setNome(newNome);
 				updateChef.setCognome(newCognome);
 				updateChef.setEmail(newEmail);
@@ -136,11 +136,11 @@ public class Controller {
 		// METODO PER AGGIORNARE PASSWORD CHEF
 		public void aggiornaChefPassword(String newPassword) throws ChefNotFoundException, ChefOperationException{
 			try {
-				int id = SessionChef.getChefId();
-				ChefDTO chef = chefDAO.getChefById(id);
+				int idChefLoggato = SessionChef.getChefId();
+				ChefDTO chef = chefDAO.getChefById(idChefLoggato);
 				
 				if(chef==null) {
-					throw new ChefNotFoundException("Impossibile trovare lo chef con id: " + id);
+					throw new ChefNotFoundException("Impossibile trovare lo chef con id: " + idChefLoggato);
 				}
 						
 				if(newPassword!=null && newPassword.equals(chef.getPassword())==false) {
@@ -160,11 +160,11 @@ public class Controller {
 		// METODO PER VISUALIZZARE LO CHEF CORRENTE
 		public ChefDTO visualizzaChef() throws ChefNotFoundException, ChefOperationException {
 			try {
-				int id = SessionChef.getChefId();
-				ChefDTO chef = chefDAO.getChefById(id);
+				int idChefLoggato = SessionChef.getChefId();
+				ChefDTO chef = chefDAO.getChefById(idChefLoggato);
 		        
 		        if (chef == null) {
-		            throw new ChefNotFoundException("Impossibile trovare lo chef con id: " + id);
+		            throw new ChefNotFoundException("Impossibile trovare lo chef con id: " + idChefLoggato);
 		        }
 		        
 		        return chef;
@@ -201,11 +201,11 @@ public class Controller {
 		// METODO PER ELIMINARE LO CHEF CORRENTE
 		public void eliminaChef() throws ChefNotFoundException, ChefOperationException {
 		    try {
-		    	int id = SessionChef.getChefId();
-		        ChefDTO chef = chefDAO.getChefById(id);
+		    	int idChefLoggato = SessionChef.getChefId();
+		        ChefDTO chef = chefDAO.getChefById(idChefLoggato);
 		        
 		        if (chef == null) {
-		            throw new ChefNotFoundException("Impossibile trovare lo chef con id: " + id);
+		            throw new ChefNotFoundException("Impossibile trovare lo chef con id: " + idChefLoggato);
 		        }
 		        
 		        chefDAO.deleteChef(chef);
@@ -247,8 +247,8 @@ public class Controller {
 				corso.setDataFine(newDataFine);
 				corso.setAnno(newAnno);
 				corso.setFrequenzaSessioni(newFrequenzaSessioni);
-				int id = SessionChef.getChefId();
-		        ChefDTO chef = chefDAO.getChefById(id);
+				int idChefLoggato = SessionChef.getChefId();
+		        ChefDTO chef = chefDAO.getChefById(idChefLoggato);
 		        corso.setChefCorso(chef);
 
 		        chef.addCorso(corso); // aggiunta del corso alla lista dei torni tenuti da chef
@@ -273,9 +273,9 @@ public class Controller {
 				}
 				
 				// RECUPERO DELLO CHEF CORRENTE
-				int id = SessionChef.getChefId();
+				int idChefLoggato = SessionChef.getChefId();
 				
-				if(id==corso.getChefCorso().getId()) { // VERIFICA SE GLI ID CORRISPONDONO
+				if(idChefLoggato==corso.getChefCorso().getId()) { // VERIFICA SE GLI ID CORRISPONDONO
 					CorsoDTO updateCorso = new CorsoDTO();
 					updateCorso.setId(corso.getId());
 					updateCorso.setNomeCorso(newNomeCorso);
@@ -313,7 +313,7 @@ public class Controller {
 					corsoDAO.updateCorso(updateCorso);
 				}
 				else {
-					throw new UnauthorizedOperationException("Non puoi modificare un corso che non ti appartiene!");
+					throw new UnauthorizedOperationException("Impossibile modificare corsi degli altri chef!");
 				}
 				
 			}
@@ -334,10 +334,10 @@ public class Controller {
 		// METODO PER VISUALIZZARE TUTTI I CORSI TENUTI DA UNO CHEF
 		public List<CorsoDTO> visualizzaCorsiPerChef() throws CorsoNotFoundException, CorsoOperationException{
 			try {
-				int id = SessionChef.getChefId();
-				ChefDTO chefCorso = chefDAO.getChefById(id);
+				int idChefLoggato = SessionChef.getChefId();
+				ChefDTO chefCorso = chefDAO.getChefById(idChefLoggato);
 				
-				List<CorsoDTO> elencoCorsiChef = corsoDAO.getCorsoByChefId(id);
+				List<CorsoDTO> elencoCorsiChef = corsoDAO.getCorsoByChefId(idChefLoggato);
 				
 				// VERIFICA SE SONO PRESENTI DEI CORSI
 				if(elencoCorsiChef==null) {
@@ -368,12 +368,30 @@ public class Controller {
 		}
 		
 		// METODO PER ELIMINARE UN CORSO
-		public void eliminaCorso() throws CorsoOperationException{
-			
+		public void eliminaCorso(int idCorso) throws CorsoNotFoundException, UnauthorizedOperationException, CorsoOperationException{
+			try {
+				CorsoDTO corso = corsoDAO.getCorsoById(idCorso);
+				
+				if(corso==null) {
+					throw new CorsoNotFoundException("Impossibile trovare il corso!");
+				}
+				
+				int idChefLoggato = SessionChef.getChefId();
+				if(idChefLoggato == corso.getChefCorso().getId()) {
+					corsoDAO.deleteCorso(corso);
+				}
+				else {
+					throw new UnauthorizedOperationException("Impossibile eliminare i corsi degli altri chef!");
+				}
+			}catch(SQLException ex) {
+				throw new CorsoOperationException("Impossibile eliminare il corso selezionato!");
+			}
 		}
 		
 		//---------- FINE METODI CORSO ----------
 		
 		//-------------------------------------------------------------------------------------------------------------
+		
+		//---------- INIZIO METODI SESSIONE ----------
 		
 }

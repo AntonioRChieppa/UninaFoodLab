@@ -67,6 +67,38 @@ public class CorsoDAO {
 			}
 		}
 		
+		// READ (SELECT) Corso by Id
+		public CorsoDTO getCorsoById(int idCorso) throws SQLException{
+			String sql = "SELECT * FROM corso WHERE idCorso = ?";
+			
+			try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
+				ps.setInt(1, idCorso);
+				ResultSet rs = ps.executeQuery();
+				
+				if(rs.next()) {
+					CorsoDTO corso = new CorsoDTO();
+					corso.setId(rs.getInt("idCorso"));
+					corso.setNomeCorso(rs.getString("nomecorso"));
+					corso.setArgomento(rs.getString("argomento"));
+					java.sql.Date sqlDataInizio = rs.getDate("datainizio");
+					if(sqlDataInizio!=null)
+						corso.setDataInizio(sqlDataInizio.toLocalDate()); // conversione in tipo localDate
+					java.sql.Date sqlDataFine = rs.getDate("datafine");
+					if(sqlDataFine!=null)
+						corso.setDataFine(sqlDataInizio.toLocalDate());
+					corso.setAnno(rs.getInt("anno"));
+					ChefDAO chefCorsoDAO = new ChefDAO();
+					ChefDTO chefCorso = chefCorsoDAO.getChefById(rs.getInt("fkchef"));
+					corso.setChefCorso(chefCorso);
+					corso.setFrequenzaSessioni(rs.getString("frequenzasessioni"));
+					return corso;
+				}
+				else {
+					return null;
+				}
+			}
+		}
+		
 		// READ (SELECT) Corso by nomeCorso 
 		public CorsoDTO getCorsoByName(String nomeCorso) throws SQLException{
 			String sql = "SELECT * FROM corso WHERE nomecorso = ?";
