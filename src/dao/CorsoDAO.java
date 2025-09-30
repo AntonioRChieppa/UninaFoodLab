@@ -39,11 +39,30 @@ public class CorsoDAO {
 			try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
 				ps.setString(1, newCorso.getNomeCorso());
 				ps.setString(2, newCorso.getArgomento());
-				ps.setDate(3, java.sql.Date.valueOf(newCorso.getDataInizio()));
-				ps.setDate(4, java.sql.Date.valueOf(newCorso.getDataFine()));
-				ps.setInt(5, newCorso.getAnno());
-				ps.setString(7, newCorso.getFrequenzaSessioni());
-				ps.setInt(8, newCorso.getId());
+				
+				//gestione null SQL per evitare errori a runtime
+				if(newCorso.getDataInizio()==null) {
+					ps.setNull(3, java.sql.Types.DATE);
+				}
+				else {
+					ps.setDate(3, java.sql.Date.valueOf(newCorso.getDataInizio()));
+				}
+				
+				if(newCorso.getDataFine()==null) {
+					ps.setNull(4, java.sql.Types.DATE);
+				}
+				else {
+					ps.setDate(4, java.sql.Date.valueOf(newCorso.getDataFine()));
+				}
+				if(newCorso.getAnno()==null) {
+					ps.setNull(5, java.sql.Types.INTEGER);
+				}
+				else {
+					ps.setInt(5, newCorso.getAnno());
+				}
+				
+				ps.setString(6, newCorso.getFrequenzaSessioni());
+				ps.setInt(7, newCorso.getId());
 				ps.executeUpdate();
 			}
 		}

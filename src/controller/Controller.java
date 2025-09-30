@@ -157,8 +157,7 @@ public class Controller {
 				
 		}
 		
-		
-		// METODO PER VISUALIZZARE LO 
+		// METODO PER VISUALIZZARE LO CHEF CORRENTE
 		public ChefDTO visualizzaChef() throws ChefNotFoundException, ChefOperationException {
 			try {
 				int id = SessionChef.getChefId();
@@ -260,10 +259,105 @@ public class Controller {
 			}
 		}
 
-		
-		/*// METODO PER AGGIORNARE I DATI RELATIVI AD UN CORSO
-		public void aggiornaCorso(String newNomeCorso, String newArgomento, LocalDate newDataInizio, LocalDate newDataFine, int newAnno, String newFrequenzaSessioni) {
+		// METODO PER AGGIORNARE I DATI RELATIVI AD UN CORSO
+		public void aggiornaCorso(String newNomeCorso, String newArgomento, LocalDate newDataInizio, LocalDate newDataFine, int newAnno, String newFrequenzaSessioni) throws UnauthorizedOperationException, CorsoNotFoundException, InvalidDateRangeException, CorsoOperationException{
 			try {
+				CorsoDTO corso = corsoDAO.getCorsoByName(newNomeCorso);
+				
+				if(corso==null) {
+					throw new CorsoNotFoundException("Impossibile trovare il corso: "+newNomeCorso);
+				}
+				
+				if (newDataInizio.isAfter(newDataFine)) {
+				    throw new InvalidDateRangeException("La data di inizio non può essere successiva alla data di fine!");
+				}
+				
+				// RECUPERO DELLO CHEF CORRENTE
+				int id = SessionChef.getChefId();
+				
+				if(id==corso.getChefCorso().getId()) { // VERIFICA SE GLI ID CORRISPONDONO
+					CorsoDTO updateCorso = new CorsoDTO();
+					updateCorso.setId(corso.getId());
+					updateCorso.setNomeCorso(newNomeCorso);
+					updateCorso.setArgomento(newArgomento);
+					updateCorso.setDataInizio(newDataInizio);
+					updateCorso.setDataFine(newDataFine);
+					updateCorso.setAnno(newAnno);
+					updateCorso.setFrequenzaSessioni(newFrequenzaSessioni);
+					
+					// VERIFICA DEL VALORE IDENTICO AL PRECEDENTE -> LO IMPOSTA A NULL (COALESCE)
+					if(updateCorso.getNomeCorso()!=null && updateCorso.getNomeCorso().equals(corso.getNomeCorso())) {
+						updateCorso.setNomeCorso(null);
+					}
+					
+					if(updateCorso.getArgomento()!=null && updateCorso.getArgomento().equals(corso.getArgomento())) {
+						updateCorso.setArgomento(null);
+					}
+					
+					if(updateCorso.getDataInizio()!=null && updateCorso.getDataInizio().equals(corso.getDataInizio())) {
+						updateCorso.setDataInizio(null);
+					}
+					
+					if(updateCorso.getDataFine()!=null && updateCorso.getDataFine().equals(corso.getDataFine())) {
+						updateCorso.setDataFine(null);
+					}
+					
+					if(updateCorso.getAnno()!=null && updateCorso.getAnno().equals(corso.getAnno())) {
+						updateCorso.setAnno(null);
+					}
+					
+					if(updateCorso.getFrequenzaSessioni()!=null && updateCorso.getFrequenzaSessioni().equals(updateCorso.getFrequenzaSessioni())) {
+						updateCorso.setFrequenzaSessioni(null);
+					}
+					
+					corsoDAO.updateCorso(updateCorso);
+				}
+				else {
+					throw new UnauthorizedOperationException("Non puoi modificare un corso che non ti appartiene!");
+				}
+				
 			}
-		} */
+			catch(SQLException ex) {
+				throw new CorsoOperationException("Errore durante l'aggiornamento dello chef");
+			}
+		}
+		
+		// METODO PER VISUALIZZARE TUTTI I CORSI
+		public List<CorsoDTO> visualizzaTuttiCorsi() throws CorsoOperationException{
+			try {
+				return corsoDAO.getAllCorsi();
+			} catch (SQLException e) {
+		        throw new CorsoOperationException("Errore durante il recupero di tutti i corsi");
+		    }
+		}
+		
+		// METODO PER VISUALIZZARE TUTTI I CORSI TENUTI DA UNO CHEF
+		public List<CorsoDTO> visualizzaCorsiPerChef() throws CorsoNotFoundException, CorsoOperationException{
+			try {
+				int id = SessionChef.getChefId();
+				ChefDTO chefCorso = chefDAO.getChefById(id);
+				
+				List<CorsoDTO> elencoCorsiChef = corsoDAO.getCorsoByChefId(id);
+				
+				// VERIFICA SE SONO PRESENTI DEI CORSI
+				if(elencoCorsiChef==null) {
+					throw new CorsoNotFoundException("Impossibile trovare i corsi dello chef "+chefCorso.getNome()+" "+chefCorso.getCognome());
+				}
+				else {
+					return elencoCorsiChef;
+				}
+				
+			}catch(SQLException ex) {
+				throw new CorsoOperationException("Errore durante il recupero dei corsi");
+			}
+		}
+		
+		// METODO PER CERCARE UN CORSO DAL NOME
+		
+		// METODO PER ELIMINARE UN CORSO
+		
+		//---------- FINE METODI CORSO ----------
+		
+		//-------------------------------------------------------------------------------------------------------------
+		
 }

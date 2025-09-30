@@ -11,7 +11,7 @@ public class CorsoDTO {
 		private LocalDate dataInizio;
 		private LocalDate dataFine;
 		private String frequenzaSessioni;
-		private int anno;
+		private Integer anno; //USIAMO LA CLASSE WRAPPER COSì DA POTER GESTIRE ANNO = NULL
 		private ChefDTO chefCorso;
 		
 		
@@ -80,11 +80,11 @@ public class CorsoDTO {
 			this.frequenzaSessioni = frequenzaSessioni;
 		}
 		
-		public int getAnno() {
+		public Integer getAnno() {
 			return anno;
 		}
 		
-		public void setAnno(int anno) {
+		public void setAnno(Integer anno) {
 			this.anno = anno;
 		}
 		
