@@ -353,8 +353,24 @@ public class Controller {
 		}
 		
 		// METODO PER CERCARE UN CORSO DAL NOME
+		public CorsoDTO cercaCorsoPerNome(String newNomeCorso) throws CorsoNotFoundException, CorsoOperationException{
+			try {
+				CorsoDTO corso = corsoDAO.getCorsoByName(newNomeCorso);
+				
+				if(corso==null) {
+					throw new CorsoNotFoundException("Il corso "+newNomeCorso+" non è presente. Registralo!");
+				}
+				
+				return corso;
+			}catch(SQLException ex) {
+				throw new CorsoOperationException("Errore durante la ricerca del corso");
+			}
+		}
 		
 		// METODO PER ELIMINARE UN CORSO
+		public void eliminaCorso() throws CorsoOperationException{
+			
+		}
 		
 		//---------- FINE METODI CORSO ----------
 		
