@@ -37,6 +37,27 @@ public class RicettaDAO {
 			ps.executeUpdate();
 		}
 	}
+	
+	//DELETE Ricetta
+	public void deleteRicetta(RicettaDTO ricetta) throws SQLException {
+		String deleteSql = "DELETE FROM ricetta WHERE idRicetta? ?";
+		String countSql = "SELECT COUNT(*) FROM ricetta";
+		String resetSqlId = "ALTER SEQUENCE ricetta_idricetta_seq RESTART WITH 1";
+		
+		Connection conn = db_connection.getConnection(); PreparedStatement deleteStatement = conn.prepareStatement(deleteSql);
+		Statement checkStatement = conn.createStatement();
+		
+		deleteStatement.setInt(1,ricetta.getId());
+		deleteStatement.executeUpdate();
+		
+		ResultSet rs = checkStatement.executeQuery(countSql);
+		if(rs.next() && rs.getInt(1)==0) {
+			checkStatement.executeUpdate(resetSqlId);
+		}
+		
+		
+	}
+	
 	//READ (SELECT) Ricetta by nome
 	
 	public RicettaDTO getRicettaByName(String nomeRicetta) throws SQLException {

@@ -31,7 +31,7 @@ public class RicettaDTO {
 	
 	//GETTER E SETTER
 	
-	public int getID() {
+	public int getId() {
 		return id;
 	}
 	
