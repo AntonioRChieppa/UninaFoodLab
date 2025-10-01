@@ -251,7 +251,7 @@ public class Controller {
 		        ChefDTO chef = chefDAO.getChefById(idChefLoggato);
 		        corso.setChefCorso(chef);
 
-		        chef.addCorso(corso); // aggiunta del corso alla lista dei torni tenuti da chef
+		        
 	            corsoDAO.insertCorso(corso);
 			}
 			catch(SQLException ex) {

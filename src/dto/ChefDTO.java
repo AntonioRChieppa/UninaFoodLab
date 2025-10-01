@@ -1,7 +1,5 @@
 package dto;
 
-import java.util.*;
-
 public class ChefDTO {
 	
 	// ATTRIBUTI
@@ -10,11 +8,10 @@ public class ChefDTO {
 	private String cognome;
 	private String email;
 	private String password;
-	private List<CorsoDTO> elencoCorsi;
 	
 	// COSTRUTTORE DI DEFAULT
 		public ChefDTO() {
-			this.elencoCorsi = new ArrayList<>();
+			
 		}
 	
 	// COSTRUTTORE SPECIFICO
@@ -24,7 +21,6 @@ public class ChefDTO {
 		this.cognome = cognome;
 		this.email = email;
 		this.password = password;
-		this.elencoCorsi = new ArrayList<>();
 	}
 	
 	// GETTER E SETTER
@@ -68,17 +64,5 @@ public class ChefDTO {
 		this.password = password;
 	}
 	
-	public List<CorsoDTO> getCorsi(){
-		return elencoCorsi;
-	}
-	
-	// METODI DI GESTIONE
-	public void addCorso(CorsoDTO newCorso) {
-		elencoCorsi.add(newCorso);
-	}
-	
-	public void removeCorso(CorsoDTO newCorso) {
-		elencoCorsi.add(newCorso);
-	}
 
 }
