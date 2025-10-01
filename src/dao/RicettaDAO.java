@@ -58,7 +58,7 @@ public class RicettaDAO {
 		
 	}
 	
-	//READ (SELECT) Ricetta by nome
+	//READ (SELECT) Ricetta by name
 	
 	public RicettaDTO getRicettaByName(String nomeRicetta) throws SQLException {
 		String sql = "SELECT * FROM ricetta WHERE nomeRicetta = ?";
@@ -82,4 +82,30 @@ public class RicettaDAO {
 				}
 			}
 		}
+	
+	//READ (SELECT) all recipe
+	public List<RicettaDTO> getAllRecipes() throws SQLException{
+		String sql = "SELECT * FROM ricetta";
+		List <RicettaDTO> listaricette = new ArrayList();
+		
+		try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
+		ResultSet rs = ps.executeQuery();
+		
+		while(rs.next()) {
+			RicettaDTO ricetta = new RicettaDTO();
+			ricetta.setId(rs.getInt ("idRicetta"));
+			ricetta.setNomeRicetta(rs.getString ("nomeRicetta"));
+			ricetta.setTempoPreparazione(rs.getInt("tempoPreparazione"));
+			ricetta.setPorzioni(rs.getInt("porzioni"));
+			ricetta.setDifficolta(rs.getString("difficolta"));
+			
+			listaricette.add(ricetta);
+		}
+		
+		}
+	return listaricette;
+	}
+	
+	
+	
 	}
