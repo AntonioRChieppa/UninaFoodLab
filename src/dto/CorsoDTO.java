@@ -15,12 +15,12 @@ public class CorsoDTO {
 		private ChefDTO chefCorso;
 		
 		
-		// COSTRUTTORE DI DEFAULT
+		// DEFAULT CONSTRUCTOR
 		public CorsoDTO() {
 			// TODO Auto-generated constructor stub
 		}
 		
-		// COSTRUTTORE
+		// SPECIFIC CONSTRUCTOR
 		public CorsoDTO(int id, String nomeCorso, String argomento, LocalDate dataInizio, LocalDate dataFine, int anno, ChefDTO chefCorso) {
 			this.id = id;
 			this.nomeCorso = nomeCorso;

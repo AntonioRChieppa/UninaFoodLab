@@ -20,6 +20,7 @@ public class Controller {
 		
 		public Controller() {
 			this.chefDAO = new ChefDAO();
+			this.corsoDAO = new CorsoDAO();
 		}
 		
 		// METODO PER CONTROLLARE I REQUISITI DI SICUREZZA DI UNA PASSWORD
@@ -92,7 +93,6 @@ public class Controller {
 				return chef;
 			}
 			catch(SQLException ex) {
-				ex.printStackTrace();
 				throw new ChefOperationException("Errore durante il login");
 			}
 		}
