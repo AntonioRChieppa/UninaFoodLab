@@ -4,6 +4,8 @@ import dao.ChefDAO;
 import dto.ChefDTO;
 import dao.CorsoDAO;
 import dto.CorsoDTO;
+import dto.RicettaDTO;
+import dao.RicettaDAO;
 
 import java.time.LocalDate;
 import session.SessionChef;
@@ -17,11 +19,21 @@ public class Controller {
 
 		private ChefDAO chefDAO;
 		private CorsoDAO corsoDAO;
+		private RicettaDAO ricettaDAO;
 		
 		public Controller() {
 			this.chefDAO = new ChefDAO();
 			this.corsoDAO = new CorsoDAO();
+			this.ricettaDAO = new RicettaDAO();
 		}
+		
+		//METODO PER NORMALIZZARE UNA STRINGA
+		public static String normalizzaNomeInserito(String nome) {
+			if(nome == null) {
+				return null;
+			}
+			return nome.trim().toLowerCase().replaceAll("\\s", "");
+			}
 		
 		// METODO PER CONTROLLARE I REQUISITI DI SICUREZZA DI UNA PASSWORD
 		public boolean checkPasswordRequirements(String password) {
@@ -419,6 +431,47 @@ public class Controller {
 		//------------INIZIO METODI RICETTA ----------
 		
 		
+		public void inserisciRicetta(String newNomeRicetta,int newTempoPreparazione, int newPorzioni,String newDifficolta)throws RicettaAlreadyExistsException, RicettaOperationException {
+			try {
+				String nomeNormalizzato = normalizzaNomeInserito(newNomeRicetta);  
+				RicettaDTO ricettaEsistente = ricettaDAO.getRicettaByName(nomeNormalizzato);
+				
+				if(ricettaEsistente !=null) {
+					throw new RicettaAlreadyExistsException("Ricetta già registrata! Aggiungere una nuova ricetta");
+				}
+				
+				RicettaDTO ricetta = new RicettaDTO();
+				ricetta.setNomeRicetta (newNomeRicetta);
+				ricetta.setTempoPreparazione (newTempoPreparazione);
+				ricetta.setPorzioni (newPorzioni);
+				ricetta.setDifficolta (newDifficolta);
+				ricettaDAO.insertRicetta(ricetta);
+			}
+			catch(SQLException ex){
+				throw new RicettaOperationException ("Errore durante l'inserimento dei dati");
+			}
+		}
+
+		public void aggiornaRicetta(String newNomeRicetta, int newTempoPreparazione, int newPorzioni, String newDifficolta )throws RicettaNotFoundException, RicettaOperationException {
+			try {
+				String nomeNormalizzato = normalizzaNomeInserito(newNomeRicetta);
+				RicettaDTO ricettaCercata = ricettaDAO.getRicettaByName(nomeNormalizzato);
+				
+				if(ricettaCercata==null) {
+					throw new RicettaNotFoundException("Ricetta cercata non trovata");
+				}
+				
+				RicettaDTO updateRicetta = new RicettaDTO();
+				updateRicetta.setNomeRicetta(newNomeRicetta);
+				updateRicetta.setTempoPreparazione(newTempoPreparazione);
+				updateRicetta.setPorzioni(newPorzioni);
+				updateRicetta.setDifficolta(newDifficolta);
+				
+				ricettaDAO.updateRicetta(updateRicetta);
+			}
+			catch(SQLException ex) {
+				throw new RicettaOperationException ("Errore nell'inserimento dei dati");
+			}
+		}
 		//------------FINE METODI RICETTA-------------
-		
-}
+}		
