@@ -1,6 +1,7 @@
 package dao;
 
 import dto.RicettaDTO;
+import dto.SessioneDTO;
 import db_connection.db_connection;
 
 import java.sql.*;
@@ -10,13 +11,14 @@ public class RicettaDAO {
 	
 	//Insert newRicetta
 	public void insertRicetta(RicettaDTO newRicetta) throws SQLException{
-		String sql = "INSERT INTO ricetta (nomericetta, tempopreparazione, porzioni, difficolta VALUES (?,?,?,?)" ;
+		String sql = "INSERT INTO ricetta (nomericetta, tempopreparazione, porzioni, difficolta,fkSessione VALUES (?,?,?,?,?)" ;
 		
 		try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
 			ps.setString (1, newRicetta.getNomeRicetta());
 			ps.setInt (2, newRicetta.getTempoPreparazione());
 			ps.setInt (3, newRicetta.getPorzioni());
 			ps.setString (4, newRicetta.getDifficolta());
+			ps.setInt(5,newRicetta.getSessioneRicetta().getIdSessione());
 			ps.executeUpdate();
 		}
 	}
@@ -27,7 +29,8 @@ public class RicettaDAO {
 				+"nomericetta = COALESCE(?,nomericetta)," 
 				+"tempoPreparazione = COALESCE(?,tempoPreparazione),"
 				+"porzioni =  COALESCE(?,porzioni),"
-				+"difficolta = COALESCE(?,difficolta)"
+				+"difficolta = COALESCE(?,difficolta),"
+				+"tipoSessione = COALESCE (?,sessioneRicetta)"
 				+"WHERE idricetta = ?";
 		try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
 			ps.setString (1, newRicetta.getNomeRicetta());
