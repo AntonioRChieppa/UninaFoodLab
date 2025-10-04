@@ -15,10 +15,9 @@ public class CorsoDAO {
 			
 			try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
 				ps.setString(1, newCorso.getNomeCorso());
-				ps.setString(2, newCorso.getArgomento());
+				ps.setString(2, newCorso.getCategoria());
 				ps.setDate(3, java.sql.Date.valueOf(newCorso.getDataInizio()));
-				ps.setDate(4, java.sql.Date.valueOf(newCorso.getDataFine()));
-				ps.setInt(5, newCorso.getAnno());
+				ps.setInt(5, newCorso.getNumeroSessioni());
 				ps.setInt(6, newCorso.getChefCorso().getId());
 				ps.setString(7, newCorso.getFrequenzaSessioni());
 				ps.executeUpdate();
@@ -29,36 +28,27 @@ public class CorsoDAO {
 		public void updateCorso(CorsoDTO newCorso) throws SQLException{
 			String sql = "UPDATE corso SET "
 		               + "nomecorso = COALESCE(?, nomecorso), "
-		               + "argomento = COALESCE(?, argomento), "
+		               + "categoria = COALESCE(?, categoria), "
 		               + "datainizio = COALESCE(?, datainizio) "
-		               + "datafine = COALESCE(?, datafine) "
-		               + "anno = COALESCE(?, anno) "
+		               + "numeroSessioni = COALESCE(?, numeroSessioni) "
 		               + "frequenzasessioni = COALESCE(?, frequenzasessioni) "
 		               + "WHERE idcorso = ?";
 			
 			try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
 				ps.setString(1, newCorso.getNomeCorso());
-				ps.setString(2, newCorso.getArgomento());
+				ps.setString(2, newCorso.getCategoria());
 				
 				//gestione null SQL per evitare errori a runtime
 				if(newCorso.getDataInizio()==null) {
 					ps.setNull(3, java.sql.Types.DATE);
-				}
-				else {
+				} else {
 					ps.setDate(3, java.sql.Date.valueOf(newCorso.getDataInizio()));
 				}
 				
-				if(newCorso.getDataFine()==null) {
-					ps.setNull(4, java.sql.Types.DATE);
-				}
-				else {
-					ps.setDate(4, java.sql.Date.valueOf(newCorso.getDataFine()));
-				}
-				if(newCorso.getAnno()==null) {
+				if(newCorso.getNumeroSessioni()==null) {
 					ps.setNull(5, java.sql.Types.INTEGER);
-				}
-				else {
-					ps.setInt(5, newCorso.getAnno());
+				} else {
+					ps.setInt(5, newCorso.getNumeroSessioni());
 				}
 				
 				ps.setString(6, newCorso.getFrequenzaSessioni());
@@ -79,14 +69,11 @@ public class CorsoDAO {
 					CorsoDTO corso = new CorsoDTO();
 					corso.setId(rs.getInt("idCorso"));
 					corso.setNomeCorso(rs.getString("nomecorso"));
-					corso.setArgomento(rs.getString("argomento"));
+					corso.setCategoria(rs.getString("categoria"));
 					java.sql.Date sqlDataInizio = rs.getDate("datainizio");
 					if(sqlDataInizio!=null)
 						corso.setDataInizio(sqlDataInizio.toLocalDate()); // conversione in tipo localDate
-					java.sql.Date sqlDataFine = rs.getDate("datafine");
-					if(sqlDataFine!=null)
-						corso.setDataFine(sqlDataInizio.toLocalDate());
-					corso.setAnno(rs.getInt("anno"));
+					corso.setNumeroSessioni(rs.getInt("numerosessioni"));
 					ChefDAO chefCorsoDAO = new ChefDAO();
 					ChefDTO chefCorso = chefCorsoDAO.getChefById(rs.getInt("fkchef"));
 					corso.setChefCorso(chefCorso);
@@ -111,14 +98,11 @@ public class CorsoDAO {
 					CorsoDTO corso = new CorsoDTO();
 					corso.setId(rs.getInt("idCorso"));
 					corso.setNomeCorso(rs.getString("nomecorso"));
-					corso.setArgomento(rs.getString("argomento"));
+					corso.setCategoria(rs.getString("categoria"));
 					java.sql.Date sqlDataInizio = rs.getDate("datainizio");
 					if(sqlDataInizio!=null)
 						corso.setDataInizio(sqlDataInizio.toLocalDate()); // conversione in tipo localDate
-					java.sql.Date sqlDataFine = rs.getDate("datafine");
-					if(sqlDataFine!=null)
-						corso.setDataFine(sqlDataInizio.toLocalDate());
-					corso.setAnno(rs.getInt("anno"));
+					corso.setNumeroSessioni(rs.getInt("numerosessioni"));
 					ChefDAO chefCorsoDAO = new ChefDAO();
 					ChefDTO chefCorso = chefCorsoDAO.getChefById(rs.getInt("fkchef"));
 					corso.setChefCorso(chefCorso);
@@ -141,16 +125,13 @@ public class CorsoDAO {
 				
 				while(rs.next()) { 
 					CorsoDTO corso = new CorsoDTO();
-		            corso.setId(rs.getInt("idCorso"));
-		            corso.setNomeCorso(rs.getString("nomecorso"));
-		            corso.setArgomento(rs.getString("argomento"));
+					corso.setId(rs.getInt("idCorso"));
+					corso.setNomeCorso(rs.getString("nomecorso"));
+					corso.setCategoria(rs.getString("categoria"));
 					java.sql.Date sqlDataInizio = rs.getDate("datainizio");
 					if(sqlDataInizio!=null)
 						corso.setDataInizio(sqlDataInizio.toLocalDate()); // conversione in tipo localDate
-					java.sql.Date sqlDataFine = rs.getDate("datafine");
-					if(sqlDataFine!=null)
-						corso.setDataFine(sqlDataInizio.toLocalDate());
-					corso.setAnno(rs.getInt("anno"));
+					corso.setNumeroSessioni(rs.getInt("numerosessioni"));
 					ChefDAO chefCorsoDAO = new ChefDAO();
 					ChefDTO chefCorso = chefCorsoDAO.getChefById(rs.getInt("fkchef"));
 					corso.setChefCorso(chefCorso);
@@ -172,18 +153,15 @@ public class CorsoDAO {
 				
 				while(rs.next()) { 
 					CorsoDTO corso = new CorsoDTO();
-		            corso.setId(rs.getInt("idCorso"));
-		            corso.setNomeCorso(rs.getString("nomeCorso"));
-		            corso.setArgomento(rs.getString("argomento"));
-					java.sql.Date sqlDataInizio = rs.getDate("dataInizio");
+					corso.setId(rs.getInt("idCorso"));
+					corso.setNomeCorso(rs.getString("nomecorso"));
+					corso.setCategoria(rs.getString("categoria"));
+					java.sql.Date sqlDataInizio = rs.getDate("datainizio");
 					if(sqlDataInizio!=null)
 						corso.setDataInizio(sqlDataInizio.toLocalDate()); // conversione in tipo localDate
-					java.sql.Date sqlDataFine = rs.getDate("dataFine");
-					if(sqlDataFine!=null)
-						corso.setDataFine(sqlDataInizio.toLocalDate());
-					corso.setAnno(rs.getInt("anno"));
+					corso.setNumeroSessioni(rs.getInt("numerosessioni"));
 					ChefDAO chefCorsoDAO = new ChefDAO();
-					ChefDTO chefCorso = chefCorsoDAO.getChefById(rs.getInt("fkChef"));
+					ChefDTO chefCorso = chefCorsoDAO.getChefById(rs.getInt("fkchef"));
 					corso.setChefCorso(chefCorso);
 					corso.setFrequenzaSessioni(rs.getString("frequenzasessioni"));
 					
@@ -192,6 +170,8 @@ public class CorsoDAO {
 				return elencoCorsi;
 			}
 		}
+		
+		// READ (SELECT) Corsi by argomento 
 		
 		//DELETE Corso
 		public void deleteCorso(CorsoDTO corso) throws SQLException{

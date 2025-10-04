@@ -35,9 +35,9 @@ public class start_test {
         }catch(ChefAlreadyExistsException e) {
         	System.err.println("Errore: "+e.getMessage());
         }catch(InvalidCredentialsException e) {
-        	System.err.println("Errore: "+e.getMessage());
-        }catch(ChefNotFoundException e) {
-        	System.err.println("Errore: "+e.getMessage());
+    	System.err.println("Errore: "+e.getMessage());
+    	}catch(ChefNotFoundException e) {
+    	System.err.println("Errore: "+e.getMessage());
         }catch (ChefOperationException e) {
             System.err.println("Errore di operazione: " + e.getMessage());
         }

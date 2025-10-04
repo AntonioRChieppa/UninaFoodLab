@@ -7,11 +7,10 @@ public class CorsoDTO {
 		// ATTRIBUTI
 		private int id;
 		private String nomeCorso;
-		private String argomento;
+		private String categoria;
 		private LocalDate dataInizio;
-		private LocalDate dataFine;
 		private String frequenzaSessioni;
-		private Integer anno; //USIAMO LA CLASSE WRAPPER COSì DA POTER GESTIRE ANNO = NULL
+		private Integer numeroSessioni; //USIAMO LA CLASSE WRAPPER COSì DA POTER GESTIRE numeroSessioni = NULL
 		private ChefDTO chefCorso;
 		
 		
@@ -24,10 +23,9 @@ public class CorsoDTO {
 		public CorsoDTO(int id, String nomeCorso, String argomento, LocalDate dataInizio, LocalDate dataFine, int anno, ChefDTO chefCorso) {
 			this.id = id;
 			this.nomeCorso = nomeCorso;
-			this.argomento = argomento;
+			this.categoria = argomento;
 			this.dataInizio = dataInizio;
-			this.dataFine = dataFine;
-			this.anno = anno;
+			this.numeroSessioni = anno;
 			this.chefCorso = chefCorso;
 		}
 		
@@ -48,12 +46,12 @@ public class CorsoDTO {
 			this.nomeCorso = nomeCorso;
 		}
 		
-		public String getArgomento() {
-			return argomento;
+		public String getCategoria() {
+			return categoria;
 		}
 		
-		public void setArgomento(String argomento) {
-			this.argomento = argomento;
+		public void setCategoria(String categoria) {
+			this.categoria = categoria;
 		}
 		
 		public LocalDate getDataInizio() {
@@ -62,14 +60,6 @@ public class CorsoDTO {
 
 		public void setDataInizio(LocalDate dataInizio) {
 			this.dataInizio = dataInizio;
-		}
-
-		public LocalDate getDataFine() {
-			return dataFine;
-		}
-
-		public void setDataFine(LocalDate dataFine) {
-			this.dataFine = dataFine;
 		}
 		
 		public String getFrequenzaSessioni() {
@@ -80,12 +70,12 @@ public class CorsoDTO {
 			this.frequenzaSessioni = frequenzaSessioni;
 		}
 		
-		public Integer getAnno() {
-			return anno;
+		public Integer getNumeroSessioni() {
+			return numeroSessioni;
 		}
 		
-		public void setAnno(Integer anno) {
-			this.anno = anno;
+		public void setNumeroSessioni(Integer numeroSessioni) {
+			this.numeroSessioni = numeroSessioni;
 		}
 		
 		public ChefDTO getChefCorso() {

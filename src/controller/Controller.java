@@ -240,7 +240,7 @@ public class Controller {
 		//---------- INIZIO METODI CORSO ----------
 		
 		// METODO PER INSERIRE UN NUOVO CORSO
-		public void inserimentoCorso(String newNomeCorso, String newArgomento, LocalDate newDataInizio, LocalDate newDataFine, int newAnno, String newFrequenzaSessioni, int newFkChef) throws CorsoOperationException, CorsoAlreadyExistsException, InvalidDateRangeException {
+		public void inserimentoCorso(String newNomeCorso, String newCategoria, LocalDate newDataInizio, Integer newNumeroSessioni, String newFrequenzaSessioni, int newFkChef) throws CorsoOperationException, CorsoAlreadyExistsException {
 			try {
 				CorsoDTO corsoEsistente = corsoDAO.getCorsoByName(newNomeCorso);
 				
@@ -248,16 +248,11 @@ public class Controller {
 					throw new CorsoAlreadyExistsException("Corso già registrato!");
 				}
 				
-				if (newDataInizio.isAfter(newDataFine)) {
-				    throw new InvalidDateRangeException("La data di inizio non può essere successiva alla data di fine!");
-				}
-				
 				CorsoDTO corso = new CorsoDTO();
 				corso.setNomeCorso(newNomeCorso);
-				corso.setArgomento(newArgomento);
+				corso.setCategoria(newCategoria);
 				corso.setDataInizio(newDataInizio);
-				corso.setDataFine(newDataFine);
-				corso.setAnno(newAnno);
+				corso.setNumeroSessioni(newNumeroSessioni);
 				corso.setFrequenzaSessioni(newFrequenzaSessioni);
 				int idChefLoggato = SessionChef.getChefId();
 		        ChefDTO chef = chefDAO.getChefById(idChefLoggato);
@@ -272,16 +267,12 @@ public class Controller {
 		}
 
 		// METODO PER AGGIORNARE I DATI RELATIVI AD UN CORSO
-		public void aggiornaCorso(String newNomeCorso, String newArgomento, LocalDate newDataInizio, LocalDate newDataFine, int newAnno, String newFrequenzaSessioni) throws UnauthorizedOperationException, CorsoNotFoundException, InvalidDateRangeException, CorsoOperationException{
+		public void aggiornaCorso(String newNomeCorso, String newCategoria, LocalDate newDataInizio, Integer newNumeroSessioni, String newFrequenzaSessioni) throws UnauthorizedOperationException, CorsoNotFoundException, CorsoOperationException{
 			try {
 				CorsoDTO corso = corsoDAO.getCorsoByName(newNomeCorso);
 				
 				if(corso==null) {
 					throw new CorsoNotFoundException("Impossibile trovare il corso: "+newNomeCorso);
-				}
-				
-				if (newDataInizio.isAfter(newDataFine)) {
-				    throw new InvalidDateRangeException("La data di inizio non può essere successiva alla data di fine!");
 				}
 				
 				// RECUPERO DELLO CHEF CORRENTE
@@ -291,10 +282,9 @@ public class Controller {
 					CorsoDTO updateCorso = new CorsoDTO();
 					updateCorso.setId(corso.getId());
 					updateCorso.setNomeCorso(newNomeCorso);
-					updateCorso.setArgomento(newArgomento);
+					updateCorso.setCategoria(newCategoria);
 					updateCorso.setDataInizio(newDataInizio);
-					updateCorso.setDataFine(newDataFine);
-					updateCorso.setAnno(newAnno);
+					updateCorso.setNumeroSessioni(newNumeroSessioni);
 					updateCorso.setFrequenzaSessioni(newFrequenzaSessioni);
 					
 					// VERIFICA DEL VALORE IDENTICO AL PRECEDENTE -> LO IMPOSTA A NULL (COALESCE)
@@ -302,20 +292,16 @@ public class Controller {
 						updateCorso.setNomeCorso(null);
 					}
 					
-					if(updateCorso.getArgomento()!=null && updateCorso.getArgomento().equals(corso.getArgomento())) {
-						updateCorso.setArgomento(null);
+					if(updateCorso.getCategoria()!=null && updateCorso.getCategoria().equals(corso.getCategoria())) {
+						updateCorso.setCategoria(null);
 					}
 					
 					if(updateCorso.getDataInizio()!=null && updateCorso.getDataInizio().equals(corso.getDataInizio())) {
 						updateCorso.setDataInizio(null);
 					}
 					
-					if(updateCorso.getDataFine()!=null && updateCorso.getDataFine().equals(corso.getDataFine())) {
-						updateCorso.setDataFine(null);
-					}
-					
-					if(updateCorso.getAnno()!=null && updateCorso.getAnno().equals(corso.getAnno())) {
-						updateCorso.setAnno(null);
+					if(updateCorso.getNumeroSessioni()!=null && updateCorso.getNumeroSessioni().equals(corso.getNumeroSessioni())) {
+						updateCorso.setNumeroSessioni(null);
 					}
 					
 					if(updateCorso.getFrequenzaSessioni()!=null && updateCorso.getFrequenzaSessioni().equals(updateCorso.getFrequenzaSessioni())) {

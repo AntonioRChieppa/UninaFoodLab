@@ -6,7 +6,7 @@ public abstract class SessioneDTO {
 
 		// ATTRIBUTI
 		private int idSessione;
-		private int durataSessione;
+		private Integer durataSessione;
 		private LocalTime oraInizio;
 		private LocalDate dataSessione;
 		private CorsoDTO corsoSessione;
@@ -34,11 +34,11 @@ public abstract class SessioneDTO {
 			this.idSessione = idSessione;
 		}
 
-		public int getDurataSessione() {
+		public Integer getDurataSessione() {
 			return durataSessione;
 		}
 
-		public void setDurataSessione(int durataSessione) {
+		public void setDurataSessione(Integer durataSessione) {
 			this.durataSessione = durataSessione;
 		}
 
