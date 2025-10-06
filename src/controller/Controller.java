@@ -1,13 +1,9 @@
 package controller;
 
-import dao.ChefDAO;
-import dto.ChefDTO;
-import dao.CorsoDAO;
-import dto.CorsoDTO;
-import dto.RicettaDTO;
-import dao.RicettaDAO;
+import dao.*;
+import dto.*;
 
-import java.time.LocalDate;
+import java.time.*;
 import session.SessionChef;
 
 import exception.*;
@@ -20,6 +16,7 @@ public class Controller {
 		private ChefDAO chefDAO;
 		private CorsoDAO corsoDAO;
 		private RicettaDAO ricettaDAO;
+		private SessioneInPresenzaDAO sessioneIpDAO;
 		
 		public Controller() {
 			this.chefDAO = new ChefDAO();
@@ -37,31 +34,31 @@ public class Controller {
 		
 		// METODO PER CONTROLLARE I REQUISITI DI SICUREZZA DI UNA PASSWORD
 		public boolean checkPasswordRequirements(String password) {
-		    if (password == null || password.length() <= 6) {
-		        return false; // lunghezza minima > 6
-		    }
+			if (password == null || password.length() <= 6) {
+				return false; // lunghezza minima > 6
+			}
 
-		    boolean hasUppercase = false;
-		    boolean hasSpecialChar = false;
+			boolean hasUppercase = false;
+			boolean hasSpecialChar = false;
 
-		    // Caratteri speciali consentiti
-		    String specialChars = "!@#$%^&*_";
+			// Caratteri speciali consentiti
+			String specialChars = "!@#$%^&*_";
 
-		    int i = 0;
-		    while (i < password.length() && !(hasUppercase && hasSpecialChar)) {
-		        char c = password.charAt(i); // prendo il carattere alla posizione i
+			int i = 0;
+			while (i < password.length() && !(hasUppercase && hasSpecialChar)) {
+				char c = password.charAt(i); // prendo il carattere alla posizione i
 
-		        if (Character.isUpperCase(c)) {
-		            hasUppercase = true;
-		        }
-		        if (specialChars.indexOf(c) >= 0) {
-		            hasSpecialChar = true;
-		        }
+				if (Character.isUpperCase(c)) {
+					hasUppercase = true;
+				}
+				if (specialChars.indexOf(c) >= 0) {
+					hasSpecialChar = true;
+				}
 
-		        i++; 
-		    }
+				i++; 
+			}
 
-		    return hasUppercase && hasSpecialChar;
+			return hasUppercase && hasSpecialChar;
 		}
 		
 		//----------- METODI CLASSE CHEF ----------
@@ -70,37 +67,37 @@ public class Controller {
 		public void registrazioneChef(String newNome, String newCognome, String newEmail, String newPassword) throws ChefAlreadyExistsException, ChefOperationException {
 			try {
 				ChefDTO chefEsistente = chefDAO.getChefByEmail(newEmail);
-				
+								
 				if(chefEsistente!=null) {
 					throw new ChefAlreadyExistsException("Email già registrata! Effettua l'accesso!");
 				}
-				
+								
 				if(!checkPasswordRequirements(newPassword)) {
 					throw new ChefOperationException("La password deve contenere almeno un carattere speciale, una lettera maiuscola e lunghezza > 6");
 				}
-				
+								
 				ChefDTO chef = new ChefDTO();
 				chef.setNome(newNome);
 				chef.setCognome(newCognome);
-	            chef.setEmail(newEmail);
-	            chef.setPassword(newPassword);
+			    chef.setEmail(newEmail);
+			    chef.setPassword(newPassword);
 
-	            chefDAO.insertChef(chef);
-			}
+			    chefDAO.insertChef(chef);
+			} 
 			catch(SQLException ex) {
 				throw new ChefOperationException("Errore in fase di registrazione");
 			}
 		}
-		
+				
 		// METODO DI AUTENTICAZIONE CHEF (LOGIN)
 		public ChefDTO loginChef(String newEmail, String newPassword) throws InvalidCredentialsException, ChefOperationException{
 			try {
 				ChefDTO chef = chefDAO.getChefByEmailAndPassword(newEmail, newPassword);
-				
+								
 				if(chef==null) {
 					throw new InvalidCredentialsException("Email o password non valide! Riprova o iscriviti!");
 				}
-				
+								
 				SessionChef.setChefId(chef.getId());
 				return chef;
 			}
@@ -390,26 +387,149 @@ public class Controller {
 		
 		//-------------------------------------------------------------------------------------------------------------
 		
-		//---------- INIZIO METODI SESSIONE ----------
+		//---------- INIZIO METODI SESSIONE IN PRESENZA ----------
 		
+		// METODO PER INSERIRE UNA NUOVA SESSIONE IN PRESENZA
+		public void inserimentoSessioneIP(String newArgomento, LocalTime newOraInizio, LocalDate newDataSessione, int newFkCorso, String newSede, String newEdificio, String newAula) throws SessioneInPresenzaOperationException, SessioneInPresenzaAlreadyExistsException {
+			try {
+				SessioneInPresenzaDTO sessioneIpEsistente = sessioneIpDAO.getSessioneIpByArgumentAndDate(newArgomento, newDataSessione);
+				
+				if(sessioneIpEsistente!=null) {
+					throw new SessioneInPresenzaAlreadyExistsException("Sessione in presenza già inserita!");
+				}
+				
+				SessioneInPresenzaDTO sessioneIp = new SessioneInPresenzaDTO();
+				sessioneIp.setArgomento(newArgomento);
+				sessioneIp.setOraInizio(newOraInizio);
+				sessioneIp.setDataSessione(newDataSessione);
+				CorsoDTO corsoSessione = corsoDAO.getCorsoById(newFkCorso);
+				sessioneIp.setCorsoSessione(corsoSessione);
+				sessioneIp.setSede(newSede);
+				sessioneIp.setEdificio(newEdificio);
+				sessioneIp.setAula(newAula);
+				
+				sessioneIpDAO.insertSessioneInPresenza(sessioneIp);
+			}
+			catch(SQLException ex) {
+				throw new SessioneInPresenzaOperationException("Errore in fase di inserimento della sessione!");
+			}
+		}
 		
+		// METODO PER AGGIORNARE I DATI RELATIVI AD UNA SESSIONE IN PRESENZA
+		public void aggiornaSessioneInPresenza(String newArgomento, LocalTime newOraInizio, LocalDate newDataSessione, int newFkCorso, String newSede, String newEdificio, String newAula) throws UnauthorizedOperationException, SessioneInPresenzaNotFoundException, SessioneInPresenzaOperationException{
+			try {
+				SessioneInPresenzaDTO sessioneIp = sessioneIpDAO.getSessioneIpByArgumentAndDate(newArgomento, newDataSessione);
+				
+				if(sessioneIp == null) {
+					throw new SessioneInPresenzaNotFoundException("Impossibile trovare la sessione cercata!");
+				}
+				
+				//RECUPERO ID CHEF CORRENTE
+				int idChefLoggato = SessionChef.getChefId();
+				
+				if(idChefLoggato==sessioneIp.getCorsoSessione().getChefCorso().getId()) {
+					SessioneInPresenzaDTO updateSessioneIp = new SessioneInPresenzaDTO();
+					updateSessioneIp.setIdSessione(sessioneIp.getIdSessione());
+					updateSessioneIp.setArgomento(newArgomento);
+					updateSessioneIp.setOraInizio(newOraInizio);
+					updateSessioneIp.setDataSessione(newDataSessione);
+					CorsoDTO updateCorsoSessione = corsoDAO.getCorsoById(newFkCorso);
+					updateSessioneIp.setCorsoSessione(updateCorsoSessione);
+					updateSessioneIp.setSede(newSede);
+					updateSessioneIp.setEdificio(newEdificio);
+					updateSessioneIp.setAula(newAula);
+					
+					// VERIFICA DEL VALORE IDENTICO AL PRECEDENTE -> LO IMPOSTA A NULL (COALESCE)
+					if(updateSessioneIp.getArgomento()!=null && updateSessioneIp.getArgomento().equals(sessioneIp.getArgomento())) {
+						updateSessioneIp.setArgomento(null);
+					}
+					
+					if(updateSessioneIp.getOraInizio()!=null && updateSessioneIp.getOraInizio().equals(sessioneIp.getOraInizio())) {
+						updateSessioneIp.setOraInizio(null);
+					}
+					
+					if(updateSessioneIp.getDataSessione()!=null && updateSessioneIp.getDataSessione().equals(sessioneIp.getDataSessione())) {
+						updateSessioneIp.setDataSessione(null);
+					}
+					
+					if(updateSessioneIp.getCorsoSessione()!=null && updateSessioneIp.getCorsoSessione().equals(sessioneIp.getCorsoSessione())) {
+						updateSessioneIp.setCorsoSessione(null);
+					}
+					
+					if(updateSessioneIp.getSede()!=null && updateSessioneIp.getSede().equals(sessioneIp.getSede())) {
+						updateSessioneIp.setSede(null);
+					}
+					
+					if(updateSessioneIp.getEdificio()!=null && updateSessioneIp.getEdificio().equals(sessioneIp.getEdificio())) {
+						updateSessioneIp.setEdificio(null);
+					}
+					
+					if(updateSessioneIp.getAula()!=null && updateSessioneIp.getAula().equals(sessioneIp.getAula())) {
+						updateSessioneIp.setAula(null);
+					}
+					
+					sessioneIpDAO.updateSessioneInPresenza(updateSessioneIp);
+				}
+				else {
+					throw new UnauthorizedOperationException("Non è possibile modificare sessioni di corsi di altri chef!");
+				}
+			}
+			catch(SQLException ex) {
+				throw new SessioneInPresenzaOperationException("Errore durante l'aggiornamento della sessione");
+			}
+			
+		}
 		
+		// METODO PER VISUALIZZARE TUTTE LE SESSIONI IN PRESENZA
+		public List<SessioneInPresenzaDTO> visualizzaTutteSessioniIp() throws SessioneInPresenzaOperationException{
+			try {
+				return sessioneIpDAO.getAllSessioniIP();
+			}
+			catch(SQLException ex) {
+				throw new SessioneInPresenzaOperationException("Impossibile visualizzare le sessioni in presenza");
+			}
+		}
 		
+		// METODO PER VISUALIZZARE TUTTE LE SESSIONI IN PRESENZA DI UN CORSO
+		public List<SessioneInPresenzaDTO> visualizzaSessioniIPerCorso(int newIdCorso) throws SessioneInPresenzaNotFoundException, SessioneInPresenzaOperationException{
+			try {
+				List<SessioneInPresenzaDTO> elencoSessioniIpCorso = sessioneIpDAO.getSessioniIpByCorso(newIdCorso);
+				
+				if(elencoSessioniIpCorso==null) {
+					throw new SessioneInPresenzaNotFoundException("Non sono presenti sessioni in presenza del corso selezionato");
+				}
+				else {
+					return elencoSessioniIpCorso;
+				}
+			}
+			catch(SQLException ex) {
+				throw new SessioneInPresenzaOperationException("Errore durante la visualizzazione delle sessioni in presenza del corso");
+			}
+		}
 		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		//-----------FINE METODI SESSIONE
+		// METODO PER ELIMINARE UNA SESSIONE IN PRESENZA DI UN CORSO
+		public void eliminaSessioneIp(int idSessioneInPresenza) throws SessioneInPresenzaNotFoundException, UnauthorizedOperationException, SessioneInPresenzaOperationException{
+			try {
+				SessioneInPresenzaDTO sessioneIp = sessioneIpDAO.getSessioneIpById(idSessioneInPresenza);
+				
+				if(sessioneIp==null) {
+					throw new SessioneInPresenzaNotFoundException("Impossibile trovare la sessione in presenza richiesta!");
+				}
+				
+				int idChefLoggato = SessionChef.getChefId();
+				if(idChefLoggato==sessioneIp.getCorsoSessione().getChefCorso().getId()) {
+					sessioneIpDAO.deleteSessioneInPresenza(sessioneIp);
+				}
+				else {
+					throw new UnauthorizedOperationException("Impossibile eliminare una sessione in presenza di un corso di un altro chef!");
+				}
+
+			}
+			catch(SQLException ex) {
+				throw new SessioneInPresenzaOperationException("Errore durante l'eliminazione della sessione in presenza");
+			}
+		}
+		//----------- FINE METODI SESSIONE IN PRESENZA ----------
 		
 		//----------------------------------------------------------------------------------------------------------------------------
 		
@@ -417,7 +537,7 @@ public class Controller {
 		//------------INIZIO METODI RICETTA ----------
 		
 		
-		public void inserisciRicetta(String newNomeRicetta,int newTempoPreparazione, int newPorzioni,String newDifficolta)throws RicettaAlreadyExistsException, RicettaOperationException {
+		public void inserisciRicetta(String newNomeRicetta, int newTempoPreparazione, int newPorzioni, String newDifficolta)throws RicettaAlreadyExistsException, RicettaOperationException {
 			try {
 				String nomeNormalizzato = normalizzaNomeInserito(newNomeRicetta);  
 				RicettaDTO ricettaEsistente = ricettaDAO.getRicettaByName(nomeNormalizzato);

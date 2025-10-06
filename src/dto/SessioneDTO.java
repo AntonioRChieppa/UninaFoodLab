@@ -6,7 +6,7 @@ public abstract class SessioneDTO {
 
 		// ATTRIBUTI
 		private int idSessione;
-		private Integer durataSessione;
+		private String argomento;
 		private LocalTime oraInizio;
 		private LocalDate dataSessione;
 		private CorsoDTO corsoSessione;
@@ -17,9 +17,9 @@ public abstract class SessioneDTO {
 		}
 		
 		// SPECIFIC CONSTRUCTOR
-		public SessioneDTO(int idSessione, int durataSessione, LocalTime oraInizio, LocalDate dataSessione, CorsoDTO corsoSessione) {
+		public SessioneDTO(int idSessione, String argomento, LocalTime oraInizio, LocalDate dataSessione, CorsoDTO corsoSessione) {
 			this.idSessione = idSessione;
-			this.durataSessione = durataSessione;
+			this.argomento = argomento;
 			this.oraInizio = oraInizio;
 			this.dataSessione = dataSessione;
 			this.corsoSessione = corsoSessione;
@@ -34,12 +34,12 @@ public abstract class SessioneDTO {
 			this.idSessione = idSessione;
 		}
 
-		public Integer getDurataSessione() {
-			return durataSessione;
+		public String getArgomento() {
+			return argomento;
 		}
 
-		public void setDurataSessione(Integer durataSessione) {
-			this.durataSessione = durataSessione;
+		public void setArgomento(String argomento) {
+			this.argomento = argomento;
 		}
 
 		public LocalTime getOraInizio() {

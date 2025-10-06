@@ -14,8 +14,8 @@ public class SessioneOnlineDTO extends SessioneDTO{
 	}
 	
 	// SPECIFIC CONSTRUCTOR
-	public SessioneOnlineDTO(int idSessione, int durataSessione, LocalTime oraInizio, LocalDate dataSessione, CorsoDTO corsoSessione, String linkConferenza) {
-		super(idSessione, durataSessione, oraInizio, dataSessione, corsoSessione);
+	public SessioneOnlineDTO(int idSessione, String argomento, LocalTime oraInizio, LocalDate dataSessione, CorsoDTO corsoSessione, String linkConferenza) {
+		super(idSessione, argomento, oraInizio, dataSessione, corsoSessione);
 		this.linkConferenza = linkConferenza;
 	}
 	

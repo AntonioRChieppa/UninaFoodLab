@@ -15,8 +15,8 @@ public class SessioneInPresenzaDTO extends SessioneDTO{
 		}
 		
 		// SPECIFIC CONSTRUCTOR
-		public SessioneInPresenzaDTO(int idSessione, int durataSessione, LocalTime oraInizio, LocalDate dataSessione, CorsoDTO corsoSessione, String sede, String edificio, String aula) {
-			super(idSessione, durataSessione, oraInizio, dataSessione, corsoSessione);
+		public SessioneInPresenzaDTO(int idSessione, String argomento, LocalTime oraInizio, LocalDate dataSessione, CorsoDTO corsoSessione, String sede, String edificio, String aula) {
+			super(idSessione, argomento, oraInizio, dataSessione, corsoSessione);
 			this.sede = sede;
 			this.edificio = edificio;
 			this.aula = aula;

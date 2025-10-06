@@ -11,15 +11,15 @@ public class CorsoDAO {
 
 		// INSERT newCorso
 		public void insertCorso(CorsoDTO newCorso) throws SQLException{
-			String sql = "INSERT INTO corso (nomecorso, argomento, datainizio, datafine, anno, fkchef, frequenzasessioni) VALUES (?, ?, ?, ?, ?, ?, ?)";
+			String sql = "INSERT INTO corso (nomecorso, categoria, datainizio, numerosessioni, fkchef, frequenzasessioni) VALUES (?, ?, ?, ?, ?, ?)";
 			
 			try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
 				ps.setString(1, newCorso.getNomeCorso());
 				ps.setString(2, newCorso.getCategoria());
 				ps.setDate(3, java.sql.Date.valueOf(newCorso.getDataInizio()));
-				ps.setInt(5, newCorso.getNumeroSessioni());
-				ps.setInt(6, newCorso.getChefCorso().getId());
-				ps.setString(7, newCorso.getFrequenzaSessioni());
+				ps.setInt(4, newCorso.getNumeroSessioni());
+				ps.setInt(5, newCorso.getChefCorso().getId());
+				ps.setString(6, newCorso.getFrequenzaSessioni());
 				ps.executeUpdate();
 			}
 		}
