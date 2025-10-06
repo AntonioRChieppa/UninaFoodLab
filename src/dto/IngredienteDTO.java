@@ -32,7 +32,7 @@ public class IngredienteDTO {
 		return nomeIngrediente;
 	}
 	
-	public void setNomeIngrediente() {
+	public void setNomeIngrediente(String nomeIngrediente) {
 		this.nomeIngrediente = nomeIngrediente;
 	}
 	
@@ -40,7 +40,7 @@ public class IngredienteDTO {
 		return tipologia;
 	}
 	
-	public void setTipologia() {
+	public void setTipologia(String tipologia) {
 		this.tipologia = tipologia;
 	}
 	

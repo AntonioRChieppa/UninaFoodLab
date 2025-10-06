@@ -1,9 +1,9 @@
 import controller.Controller;
 import dto.ChefDTO;
-import exception.ChefOperationException;
-import exception.ChefNotFoundException;
+import exception.SQLOperationException;
+import exception.NotFoundException;
 import exception.InvalidCredentialsException;
-import exception.ChefAlreadyExistsException;
+import exception.AlreadyExistsException;
 import java.util.*;
 
 public class start_test {
@@ -32,13 +32,13 @@ public class start_test {
         	controller.eliminaChef();
         
         	
-        }catch(ChefAlreadyExistsException e) {
+        }catch(AlreadyExistsException e) {
         	System.err.println("Errore: "+e.getMessage());
         }catch(InvalidCredentialsException e) {
     	System.err.println("Errore: "+e.getMessage());
-    	}catch(ChefNotFoundException e) {
+    	}catch(NotFoundException e) {
     	System.err.println("Errore: "+e.getMessage());
-        }catch (ChefOperationException e) {
+        }catch (SQLOperationException e) {
             System.err.println("Errore di operazione: " + e.getMessage());
         }
 

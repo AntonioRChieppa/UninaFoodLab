@@ -64,16 +64,16 @@ public class Controller {
 		//----------- METODI CLASSE CHEF ----------
 		
 		// METODO PER REGISTRARE UNO CHEF (insert)
-		public void registrazioneChef(String newNome, String newCognome, String newEmail, String newPassword) throws ChefAlreadyExistsException, ChefOperationException {
+		public void registrazioneChef(String newNome, String newCognome, String newEmail, String newPassword) throws AlreadyExistsException, SQLOperationException {
 			try {
 				ChefDTO chefEsistente = chefDAO.getChefByEmail(newEmail);
 								
 				if(chefEsistente!=null) {
-					throw new ChefAlreadyExistsException("Email già registrata! Effettua l'accesso!");
+					throw new AlreadyExistsException("Email già registrata! Effettua l'accesso!");
 				}
 								
 				if(!checkPasswordRequirements(newPassword)) {
-					throw new ChefOperationException("La password deve contenere almeno un carattere speciale, una lettera maiuscola e lunghezza > 6");
+					throw new SQLOperationException("La password deve contenere almeno un carattere speciale, una lettera maiuscola e lunghezza > 6");
 				}
 								
 				ChefDTO chef = new ChefDTO();
@@ -85,12 +85,12 @@ public class Controller {
 			    chefDAO.insertChef(chef);
 			} 
 			catch(SQLException ex) {
-				throw new ChefOperationException("Errore in fase di registrazione");
+				throw new SQLOperationException("Errore in fase di registrazione");
 			}
 		}
 				
 		// METODO DI AUTENTICAZIONE CHEF (LOGIN)
-		public ChefDTO loginChef(String newEmail, String newPassword) throws InvalidCredentialsException, ChefOperationException{
+		public ChefDTO loginChef(String newEmail, String newPassword) throws InvalidCredentialsException, SQLOperationException{
 			try {
 				ChefDTO chef = chefDAO.getChefByEmailAndPassword(newEmail, newPassword);
 								
@@ -102,18 +102,18 @@ public class Controller {
 				return chef;
 			}
 			catch(SQLException ex) {
-				throw new ChefOperationException("Errore durante il login");
+				throw new SQLOperationException("Errore durante il login");
 			}
 		}
 		
 		// METODO PER AGGIORNARE I DATI DI UNO CHEF
-		public void aggiornaChef(String newNome, String newCognome, String newEmail) throws ChefNotFoundException, ChefOperationException{
+		public void aggiornaChef(String newNome, String newCognome, String newEmail) throws NotFoundException, SQLOperationException{
 			try {
 				int idChefLoggato = SessionChef.getChefId();
 				ChefDTO chef = chefDAO.getChefById(idChefLoggato);
 				
 				if(chef==null) {
-					throw new ChefNotFoundException("Impossibile trovare lo chef con id: " + idChefLoggato);
+					throw new NotFoundException("Impossibile trovare lo chef con id: " + idChefLoggato);
 				}
 				
 				ChefDTO updateChef = new ChefDTO();
@@ -137,90 +137,90 @@ public class Controller {
 		        chefDAO.updateChef(updateChef);
 			}
 			catch(SQLException ex) {
-				throw new ChefOperationException("Errore durante l'aggiornamento dello chef");
+				throw new SQLOperationException("Errore durante l'aggiornamento dello chef");
 			}
 			
 		}
 		
 		// METODO PER AGGIORNARE PASSWORD CHEF
-		public void aggiornaChefPassword(String newPassword) throws ChefNotFoundException, ChefOperationException{
+		public void aggiornaChefPassword(String newPassword) throws NotFoundException, SQLOperationException{
 			try {
 				int idChefLoggato = SessionChef.getChefId();
 				ChefDTO chef = chefDAO.getChefById(idChefLoggato);
 				
 				if(chef==null) {
-					throw new ChefNotFoundException("Impossibile trovare lo chef con id: " + idChefLoggato);
+					throw new NotFoundException("Impossibile trovare lo chef con id: " + idChefLoggato);
 				}
 						
 				if(newPassword!=null && newPassword.equals(chef.getPassword())==false) {
 					if(!checkPasswordRequirements(newPassword)) {
-						throw new ChefOperationException("La password deve contenere almeno un carattere speciale, una lettera maiuscola e lunghezza > 6");
+						throw new SQLOperationException("La password deve contenere almeno un carattere speciale, una lettera maiuscola e lunghezza > 6");
 					}
 					chef.setPassword(newPassword);
 					chefDAO.updateChefPassword(chef);
 				}
 			}
 			catch(SQLException ex) {
-				throw new ChefOperationException("Errore nell'inserimento della nuova password!");
+				throw new SQLOperationException("Errore nell'inserimento della nuova password!");
 			}
 				
 		}
 		
 		// METODO PER VISUALIZZARE LO CHEF CORRENTE
-		public ChefDTO visualizzaChef() throws ChefNotFoundException, ChefOperationException {
+		public ChefDTO visualizzaChef() throws NotFoundException, SQLOperationException {
 			try {
 				int idChefLoggato = SessionChef.getChefId();
 				ChefDTO chef = chefDAO.getChefById(idChefLoggato);
 		        
 		        if (chef == null) {
-		            throw new ChefNotFoundException("Impossibile trovare lo chef con id: " + idChefLoggato);
+		            throw new NotFoundException("Impossibile trovare lo chef con id: " + idChefLoggato);
 		        }
 		        
 		        return chef;
 		    } catch (SQLException e) {
-		        throw new ChefOperationException("Errore durante il recupero dello chef");
+		        throw new SQLOperationException("Errore durante il recupero dello chef");
 		    }
 		}
 		
 		// METODO PER VISUALIZZARE TUTTI GLI CHEF PRESENTI
-		public List<ChefDTO> visualizzaTuttiChef() throws ChefOperationException {
+		public List<ChefDTO> visualizzaTuttiChef() throws SQLOperationException {
 		    try {
 		        return chefDAO.getAllChefs();
 		    } catch (SQLException e) {
-		        throw new ChefOperationException("Errore durante il recupero di tutti gli chef");
+		        throw new SQLOperationException("Errore durante il recupero di tutti gli chef");
 		    }
 		}
 		
 		// METODO PER RICERCARE LO/GLI CHEF PER NOME E COGNOME
-		public List<ChefDTO> cercaChefPerNome(String newNome, String newCognome) throws ChefOperationException, ChefNotFoundException{
+		public List<ChefDTO> cercaChefPerNome(String newNome, String newCognome) throws SQLOperationException, NotFoundException{
 			try {
 				List<ChefDTO> listaChefStessoNome = chefDAO.getChefByNameAndSurname(newNome, newCognome);
 								
 				if(listaChefStessoNome == null) {
-					throw new ChefNotFoundException("Impossibile trovare chef con nome: "+newNome+" e cognome: "+newCognome);
+					throw new NotFoundException("Impossibile trovare chef con nome: "+newNome+" e cognome: "+newCognome);
 				}
 								
 				return listaChefStessoNome;
 			}
 			catch(SQLException e) {
-				throw new ChefOperationException("Errore durante la visualizzazione dello chef");
+				throw new SQLOperationException("Errore durante la visualizzazione dello chef");
 			}
 		}
 
 		// METODO PER ELIMINARE LO CHEF CORRENTE
-		public void eliminaChef() throws ChefNotFoundException, ChefOperationException {
+		public void eliminaChef() throws NotFoundException, SQLOperationException {
 		    try {
 		    	int idChefLoggato = SessionChef.getChefId();
 		        ChefDTO chef = chefDAO.getChefById(idChefLoggato);
 		        
 		        if (chef == null) {
-		            throw new ChefNotFoundException("Impossibile trovare lo chef con id: " + idChefLoggato);
+		            throw new NotFoundException("Impossibile trovare lo chef con id: " + idChefLoggato);
 		        }
 		        
 		        chefDAO.deleteChef(chef);
 		        logoutChef();
 		    } catch (SQLException e) {
-		        throw new ChefOperationException("Errore durante l'eliminazione dello chef");
+		        throw new SQLOperationException("Errore durante l'eliminazione dello chef");
 		    }
 		}		
 		
@@ -237,12 +237,12 @@ public class Controller {
 		//---------- INIZIO METODI CORSO ----------
 		
 		// METODO PER INSERIRE UN NUOVO CORSO
-		public void inserimentoCorso(String newNomeCorso, String newCategoria, LocalDate newDataInizio, Integer newNumeroSessioni, String newFrequenzaSessioni, int newFkChef) throws CorsoOperationException, CorsoAlreadyExistsException {
+		public void inserimentoCorso(String newNomeCorso, String newCategoria, LocalDate newDataInizio, Integer newNumeroSessioni, String newFrequenzaSessioni, int newFkChef) throws SQLOperationException, AlreadyExistsException {
 			try {
 				CorsoDTO corsoEsistente = corsoDAO.getCorsoByName(newNomeCorso);
 				
 				if(corsoEsistente!=null) {
-					throw new CorsoAlreadyExistsException("Corso già registrato!");
+					throw new AlreadyExistsException("Corso già registrato!");
 				}
 				
 				CorsoDTO corso = new CorsoDTO();
@@ -259,17 +259,17 @@ public class Controller {
 	            corsoDAO.insertCorso(corso);
 			}
 			catch(SQLException ex) {
-				throw new CorsoOperationException("Errore in fase di inserimento del nuovo corso!");
+				throw new SQLOperationException("Errore in fase di inserimento del nuovo corso!");
 			}
 		}
 
 		// METODO PER AGGIORNARE I DATI RELATIVI AD UN CORSO
-		public void aggiornaCorso(String newNomeCorso, String newCategoria, LocalDate newDataInizio, Integer newNumeroSessioni, String newFrequenzaSessioni) throws UnauthorizedOperationException, CorsoNotFoundException, CorsoOperationException{
+		public void aggiornaCorso(String newNomeCorso, String newCategoria, LocalDate newDataInizio, Integer newNumeroSessioni, String newFrequenzaSessioni) throws UnauthorizedOperationException, NotFoundException, SQLOperationException{
 			try {
 				CorsoDTO corso = corsoDAO.getCorsoByName(newNomeCorso);
 				
 				if(corso==null) {
-					throw new CorsoNotFoundException("Impossibile trovare il corso: "+newNomeCorso);
+					throw new NotFoundException("Impossibile trovare il corso: "+newNomeCorso);
 				}
 				
 				// RECUPERO DELLO CHEF CORRENTE
@@ -313,21 +313,21 @@ public class Controller {
 				
 			}
 			catch(SQLException ex) {
-				throw new CorsoOperationException("Errore durante l'aggiornamento dello chef");
+				throw new SQLOperationException("Errore durante l'aggiornamento dello chef");
 			}
 		}
 		
 		// METODO PER VISUALIZZARE TUTTI I CORSI
-		public List<CorsoDTO> visualizzaTuttiCorsi() throws CorsoOperationException{
+		public List<CorsoDTO> visualizzaTuttiCorsi() throws SQLOperationException{
 			try {
 				return corsoDAO.getAllCorsi();
 			} catch (SQLException e) {
-		        throw new CorsoOperationException("Errore durante il recupero di tutti i corsi");
+		        throw new SQLOperationException("Errore durante il recupero di tutti i corsi");
 		    }
 		}
 		
 		// METODO PER VISUALIZZARE TUTTI I CORSI TENUTI DA UNO CHEF
-		public List<CorsoDTO> visualizzaCorsiPerChef() throws CorsoNotFoundException, CorsoOperationException{
+		public List<CorsoDTO> visualizzaCorsiPerChef() throws NotFoundException, SQLOperationException{
 			try {
 				int idChefLoggato = SessionChef.getChefId();
 				ChefDTO chefCorso = chefDAO.getChefById(idChefLoggato);
@@ -336,39 +336,39 @@ public class Controller {
 				
 				// VERIFICA SE SONO PRESENTI DEI CORSI
 				if(elencoCorsiChef==null) {
-					throw new CorsoNotFoundException("Impossibile trovare i corsi dello chef "+chefCorso.getNome()+" "+chefCorso.getCognome());
+					throw new NotFoundException("Impossibile trovare i corsi dello chef "+chefCorso.getNome()+" "+chefCorso.getCognome());
 				}
 				else {
 					return elencoCorsiChef;
 				}
 				
 			}catch(SQLException ex) {
-				throw new CorsoOperationException("Errore durante il recupero dei corsi");
+				throw new SQLOperationException("Errore durante il recupero dei corsi");
 			}
 		}
 		
 		// METODO PER CERCARE UN CORSO DAL NOME
-		public CorsoDTO cercaCorsoPerNome(String newNomeCorso) throws CorsoNotFoundException, CorsoOperationException{
+		public CorsoDTO cercaCorsoPerNome(String newNomeCorso) throws NotFoundException, SQLOperationException{
 			try {
 				CorsoDTO corso = corsoDAO.getCorsoByName(newNomeCorso);
 				
 				if(corso==null) {
-					throw new CorsoNotFoundException("Il corso "+newNomeCorso+" non è presente. Registralo!");
+					throw new NotFoundException("Il corso "+newNomeCorso+" non è presente. Registralo!");
 				}
 				
 				return corso;
 			}catch(SQLException ex) {
-				throw new CorsoOperationException("Errore durante la ricerca del corso");
+				throw new SQLOperationException("Errore durante la ricerca del corso");
 			}
 		}
 		
 		// METODO PER ELIMINARE UN CORSO
-		public void eliminaCorso(int idCorso) throws CorsoNotFoundException, UnauthorizedOperationException, CorsoOperationException{
+		public void eliminaCorso(int idCorso) throws NotFoundException, UnauthorizedOperationException, SQLOperationException{
 			try {
 				CorsoDTO corso = corsoDAO.getCorsoById(idCorso);
 				
 				if(corso==null) {
-					throw new CorsoNotFoundException("Impossibile trovare il corso!");
+					throw new NotFoundException("Impossibile trovare il corso!");
 				}
 				
 				int idChefLoggato = SessionChef.getChefId();
@@ -379,7 +379,7 @@ public class Controller {
 					throw new UnauthorizedOperationException("Impossibile eliminare i corsi degli altri chef!");
 				}
 			}catch(SQLException ex) {
-				throw new CorsoOperationException("Impossibile eliminare il corso selezionato!");
+				throw new SQLOperationException("Impossibile eliminare il corso selezionato!");
 			}
 		}
 		
@@ -390,12 +390,12 @@ public class Controller {
 		//---------- INIZIO METODI SESSIONE IN PRESENZA ----------
 		
 		// METODO PER INSERIRE UNA NUOVA SESSIONE IN PRESENZA
-		public void inserimentoSessioneIP(String newArgomento, LocalTime newOraInizio, LocalDate newDataSessione, int newFkCorso, String newSede, String newEdificio, String newAula) throws SessioneInPresenzaOperationException, SessioneInPresenzaAlreadyExistsException {
+		public void inserimentoSessioneIP(String newArgomento, LocalTime newOraInizio, LocalDate newDataSessione, int newFkCorso, String newSede, String newEdificio, String newAula) throws SQLOperationException, AlreadyExistsException {
 			try {
 				SessioneInPresenzaDTO sessioneIpEsistente = sessioneIpDAO.getSessioneIpByArgumentAndDate(newArgomento, newDataSessione);
 				
 				if(sessioneIpEsistente!=null) {
-					throw new SessioneInPresenzaAlreadyExistsException("Sessione in presenza già inserita!");
+					throw new AlreadyExistsException("Sessione in presenza già inserita!");
 				}
 				
 				SessioneInPresenzaDTO sessioneIp = new SessioneInPresenzaDTO();
@@ -411,17 +411,17 @@ public class Controller {
 				sessioneIpDAO.insertSessioneInPresenza(sessioneIp);
 			}
 			catch(SQLException ex) {
-				throw new SessioneInPresenzaOperationException("Errore in fase di inserimento della sessione!");
+				throw new SQLOperationException("Errore in fase di inserimento della sessione!");
 			}
 		}
 		
 		// METODO PER AGGIORNARE I DATI RELATIVI AD UNA SESSIONE IN PRESENZA
-		public void aggiornaSessioneInPresenza(String newArgomento, LocalTime newOraInizio, LocalDate newDataSessione, int newFkCorso, String newSede, String newEdificio, String newAula) throws UnauthorizedOperationException, SessioneInPresenzaNotFoundException, SessioneInPresenzaOperationException{
+		public void aggiornaSessioneInPresenza(String newArgomento, LocalTime newOraInizio, LocalDate newDataSessione, int newFkCorso, String newSede, String newEdificio, String newAula) throws UnauthorizedOperationException, NotFoundException, SQLOperationException{
 			try {
 				SessioneInPresenzaDTO sessioneIp = sessioneIpDAO.getSessioneIpByArgumentAndDate(newArgomento, newDataSessione);
 				
 				if(sessioneIp == null) {
-					throw new SessioneInPresenzaNotFoundException("Impossibile trovare la sessione cercata!");
+					throw new NotFoundException("Impossibile trovare la sessione cercata!");
 				}
 				
 				//RECUPERO ID CHEF CORRENTE
@@ -475,45 +475,45 @@ public class Controller {
 				}
 			}
 			catch(SQLException ex) {
-				throw new SessioneInPresenzaOperationException("Errore durante l'aggiornamento della sessione");
+				throw new SQLOperationException("Errore durante l'aggiornamento della sessione");
 			}
 			
 		}
 		
 		// METODO PER VISUALIZZARE TUTTE LE SESSIONI IN PRESENZA
-		public List<SessioneInPresenzaDTO> visualizzaTutteSessioniIp() throws SessioneInPresenzaOperationException{
+		public List<SessioneInPresenzaDTO> visualizzaTutteSessioniIp() throws SQLOperationException{
 			try {
 				return sessioneIpDAO.getAllSessioniIP();
 			}
 			catch(SQLException ex) {
-				throw new SessioneInPresenzaOperationException("Impossibile visualizzare le sessioni in presenza");
+				throw new SQLOperationException("Impossibile visualizzare le sessioni in presenza");
 			}
 		}
 		
 		// METODO PER VISUALIZZARE TUTTE LE SESSIONI IN PRESENZA DI UN CORSO
-		public List<SessioneInPresenzaDTO> visualizzaSessioniIPerCorso(int newIdCorso) throws SessioneInPresenzaNotFoundException, SessioneInPresenzaOperationException{
+		public List<SessioneInPresenzaDTO> visualizzaSessioniIPerCorso(int newIdCorso) throws NotFoundException, SQLOperationException{
 			try {
 				List<SessioneInPresenzaDTO> elencoSessioniIpCorso = sessioneIpDAO.getSessioniIpByCorso(newIdCorso);
 				
 				if(elencoSessioniIpCorso==null) {
-					throw new SessioneInPresenzaNotFoundException("Non sono presenti sessioni in presenza del corso selezionato");
+					throw new NotFoundException("Non sono presenti sessioni in presenza del corso selezionato");
 				}
 				else {
 					return elencoSessioniIpCorso;
 				}
 			}
 			catch(SQLException ex) {
-				throw new SessioneInPresenzaOperationException("Errore durante la visualizzazione delle sessioni in presenza del corso");
+				throw new SQLOperationException("Errore durante la visualizzazione delle sessioni in presenza del corso");
 			}
 		}
 		
 		// METODO PER ELIMINARE UNA SESSIONE IN PRESENZA DI UN CORSO
-		public void eliminaSessioneIp(int idSessioneInPresenza) throws SessioneInPresenzaNotFoundException, UnauthorizedOperationException, SessioneInPresenzaOperationException{
+		public void eliminaSessioneIp(int idSessioneInPresenza) throws NotFoundException, UnauthorizedOperationException, SQLOperationException{
 			try {
 				SessioneInPresenzaDTO sessioneIp = sessioneIpDAO.getSessioneIpById(idSessioneInPresenza);
 				
 				if(sessioneIp==null) {
-					throw new SessioneInPresenzaNotFoundException("Impossibile trovare la sessione in presenza richiesta!");
+					throw new NotFoundException("Impossibile trovare la sessione in presenza richiesta!");
 				}
 				
 				int idChefLoggato = SessionChef.getChefId();
@@ -526,24 +526,30 @@ public class Controller {
 
 			}
 			catch(SQLException ex) {
-				throw new SessioneInPresenzaOperationException("Errore durante l'eliminazione della sessione in presenza");
+				throw new SQLOperationException("Errore durante l'eliminazione della sessione in presenza");
 			}
 		}
 		//----------- FINE METODI SESSIONE IN PRESENZA ----------
 		
 		//----------------------------------------------------------------------------------------------------------------------------
 		
+		//---------- INIZIO METODI SESSIONE ONLINE ----------
+		
+		
+		//----------- FINE METODI SESSIONE ONLINE ----------
+		
+		//----------------------------------------------------------------------------------------------------------------------------
 		
 		//------------INIZIO METODI RICETTA ----------
 		
-		
-		public void inserisciRicetta(String newNomeRicetta, int newTempoPreparazione, int newPorzioni, String newDifficolta)throws RicettaAlreadyExistsException, RicettaOperationException {
+		// METODO PER INSERIRE UNA RICETTA
+		public void inserisciRicetta(String newNomeRicetta, int newTempoPreparazione, int newPorzioni, String newDifficolta)throws AlreadyExistsException, SQLOperationException {
 			try {
 				String nomeNormalizzato = normalizzaNomeInserito(newNomeRicetta);  
 				RicettaDTO ricettaEsistente = ricettaDAO.getRicettaByName(nomeNormalizzato);
 				
 				if(ricettaEsistente !=null) {
-					throw new RicettaAlreadyExistsException("Ricetta già registrata! Aggiungere una nuova ricetta");
+					throw new AlreadyExistsException("Ricetta già registrata! Aggiungere una nuova ricetta");
 				}
 				
 				RicettaDTO ricetta = new RicettaDTO();
@@ -554,17 +560,18 @@ public class Controller {
 				ricettaDAO.insertRicetta(ricetta);
 			}
 			catch(SQLException ex){
-				throw new RicettaOperationException ("Errore durante l'inserimento dei dati");
+				throw new SQLOperationException ("Errore durante l'inserimento dei dati");
 			}
 		}
 
-		public void aggiornaRicetta(String newNomeRicetta, int newTempoPreparazione, int newPorzioni, String newDifficolta )throws RicettaNotFoundException, RicettaOperationException {
+		// METODO PER AGGIORNARE UNA RICETTA
+		public void aggiornaRicetta(String newNomeRicetta, int newTempoPreparazione, int newPorzioni, String newDifficolta )throws NotFoundException, SQLOperationException {
 			try {
 				String nomeNormalizzato = normalizzaNomeInserito(newNomeRicetta);
 				RicettaDTO ricettaCercata = ricettaDAO.getRicettaByName(nomeNormalizzato);
 				
 				if(ricettaCercata==null) {
-					throw new RicettaNotFoundException("Ricetta cercata non trovata");
+					throw new NotFoundException("Ricetta cercata non trovata");
 				}
 				
 				RicettaDTO updateRicetta = new RicettaDTO();
@@ -576,8 +583,9 @@ public class Controller {
 				ricettaDAO.updateRicetta(updateRicetta);
 			}
 			catch(SQLException ex) {
-				throw new RicettaOperationException ("Errore nell'inserimento dei dati");
+				throw new SQLOperationException ("Errore nell'inserimento dei dati");
 			}
 		}
+		
 		//------------FINE METODI RICETTA-------------
 }		
