@@ -48,8 +48,8 @@ public class SessioneInPresenzaDAO {
 		}
 	}
 	
-	// UPDATE newSessioneInPresenza - LOGICA COALESCE
-	public void updateSessioneInPresenza(SessioneInPresenzaDTO newSessioneIP) throws SQLException{
+	// UPDATE SessioneInPresenza - LOGICA COALESCE
+	public void updateSessioneInPresenza(SessioneInPresenzaDTO upSessioneIp) throws SQLException{
 		String updateSessione = "UPDATE sessione SET "+
 								"argomento = COALESCE(?, argomento), " +
 								"orainizio = COALESCE(?, orainizio), " +
@@ -68,29 +68,29 @@ public class SessioneInPresenzaDAO {
 			try(PreparedStatement psSessione = conn.prepareStatement(updateSessione); PreparedStatement psPresenza = conn.prepareStatement(updateSessioneInPresenza)){
 				
 				// AGGIORNAMENTO CAMPI SESSIONE
-				psSessione.setString(1, newSessioneIP.getArgomento());
+				psSessione.setString(1, upSessioneIp.getArgomento());
 				
-				if(newSessioneIP.getOraInizio() == null) {
+				if(upSessioneIp.getOraInizio() == null) {
 					psSessione.setNull(2, java.sql.Types.TIME);
 				} else {
-					psSessione.setTime(2, Time.valueOf(newSessioneIP.getOraInizio()));
+					psSessione.setTime(2, Time.valueOf(upSessioneIp.getOraInizio()));
 				}
 				
-				if (newSessioneIP.getDataSessione() == null) {
+				if (upSessioneIp.getDataSessione() == null) {
 	                psSessione.setNull(3, java.sql.Types.DATE);
 	            } else {
-	                psSessione.setDate(3, java.sql.Date.valueOf(newSessioneIP.getDataSessione()));
+	                psSessione.setDate(3, java.sql.Date.valueOf(upSessioneIp.getDataSessione()));
 	            }
 				
-				psSessione.setInt(4, newSessioneIP.getCorsoSessione().getId());
-				psSessione.setInt(5,  newSessioneIP.getIdSessione());
+				psSessione.setInt(4, upSessioneIp.getCorsoSessione().getId());
+				psSessione.setInt(5,  upSessioneIp.getIdSessione());
 				psSessione.executeUpdate();
 				
 				// AGGIORNAMENTO VALORI SPECIFICI SESSIONE IN PRESENZA
-				psPresenza.setString(1, newSessioneIP.getSede());
-	            psPresenza.setString(2, newSessioneIP.getEdificio());
-	            psPresenza.setString(3, newSessioneIP.getAula());
-	            psPresenza.setInt(4, newSessioneIP.getIdSessione());
+				psPresenza.setString(1, upSessioneIp.getSede());
+	            psPresenza.setString(2, upSessioneIp.getEdificio());
+	            psPresenza.setString(3, upSessioneIp.getAula());
+	            psPresenza.setInt(4, upSessioneIp.getIdSessione());
 	            psPresenza.executeUpdate();
 				
 	            conn.commit(); // LANCIA ENTRAMBE GLI UPDATE
@@ -180,7 +180,8 @@ public class SessioneInPresenzaDAO {
 	// READ (SELECT) SESSIONE IN PRESENZA BY ID
 	public SessioneInPresenzaDTO getSessioneIpById(int idSessioneInPresenza) throws SQLException{
 		String sql = "SELECT * FROM sessione s "
-	               + "JOIN sessioneinpresenza sip ON s.idsessione = sip.fksessione "
+	               + "JOIN sessioneinpresenza sip "
+	               + "ON s.idsessione = sip.fksessione "
 	               + "WHERE sip.idsessioneinpresenza = ?";
 
 	    try (Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -254,7 +255,7 @@ public class SessioneInPresenzaDAO {
 	
 	// DELETE SESSIONE IN PRESENZA
 	public void deleteSessioneInPresenza(SessioneInPresenzaDTO sessioneIP) throws SQLException{
-		    String deleteSessioneSql = "DELETE FROM sessione WHERE idSessione = ?";
+		    String deleteSessioneSql = "DELETE FROM sessione WHERE idSessione = ?"; // eliminiamo solo da sessione, data la presenza del DELETE CASCADE
 		    String countSql = "SELECT COUNT(*) FROM sessione";
 		    String resetSeqId = "ALTER SEQUENCE sessione_idsessione_seq RESTART WITH 1"; // reset id se vuota
 

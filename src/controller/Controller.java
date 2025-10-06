@@ -17,11 +17,14 @@ public class Controller {
 		private CorsoDAO corsoDAO;
 		private RicettaDAO ricettaDAO;
 		private SessioneInPresenzaDAO sessioneIpDAO;
+		private SessioneOnlineDAO sessioneOnDAO;
 		
 		public Controller() {
 			this.chefDAO = new ChefDAO();
 			this.corsoDAO = new CorsoDAO();
 			this.ricettaDAO = new RicettaDAO();
+			this.sessioneIpDAO = new SessioneInPresenzaDAO();
+			this.sessioneOnDAO = new SessioneOnlineDAO();
 		}
 		
 		//METODO PER NORMALIZZARE UNA STRINGA
@@ -535,6 +538,134 @@ public class Controller {
 		
 		//---------- INIZIO METODI SESSIONE ONLINE ----------
 		
+		// METODO PER INSERIRE UNA NUOVA SESSIONE ONLINE
+		public void inserimentoSessioneOn(String newArgomento, LocalTime newOraInizio, LocalDate newDataSessione, int newFkCorso, String newLinkConferenza) throws SQLOperationException, AlreadyExistsException {
+			try {
+				SessioneOnlineDTO sessioneOnEsistente = sessioneOnDAO.getSessioneOnByArgumentAndDate(newArgomento, newDataSessione);
+				
+				if(sessioneOnEsistente!=null) {
+					throw new AlreadyExistsException("Sessione online già inserita!");
+				}
+						
+				SessioneOnlineDTO sessioneOn = new SessioneOnlineDTO();
+				sessioneOn.setArgomento(newArgomento);
+				sessioneOn.setOraInizio(newOraInizio);
+				sessioneOn.setDataSessione(newDataSessione);
+				CorsoDTO corsoSessione = corsoDAO.getCorsoById(newFkCorso);
+				sessioneOn.setCorsoSessione(corsoSessione);
+				sessioneOn.setLinkConferenza(newLinkConferenza);
+				
+				sessioneOnDAO.insertSessioneOnline(sessioneOn);
+			}
+			catch(SQLException ex) {
+				throw new SQLOperationException("Errore in fase di inserimento della sessione!");
+			}
+		}
+				
+		// METODO PER AGGIORNARE I DATI RELATIVI AD UNA SESSIONE IN PRESENZA
+		public void aggiornaSessioneOnline(String newArgomento, LocalTime newOraInizio, LocalDate newDataSessione, int newFkCorso, String newLinkConferenza) throws UnauthorizedOperationException, NotFoundException, SQLOperationException{
+			try {
+				SessioneOnlineDTO sessioneOn = sessioneOnDAO.getSessioneOnByArgumentAndDate(newArgomento, newDataSessione);
+						
+				if(sessioneOn == null) {
+					throw new NotFoundException("Impossibile trovare la sessione richiesta!");
+				}
+						
+				//RECUPERO ID CHEF CORRENTE
+				int idChefLoggato = SessionChef.getChefId();
+						
+				if(idChefLoggato==sessioneOn.getCorsoSessione().getChefCorso().getId()) {
+					SessioneOnlineDTO updateSessioneOn = new SessioneOnlineDTO();
+					updateSessioneOn.setIdSessione(sessioneOn.getIdSessione());
+					updateSessioneOn.setArgomento(newArgomento);
+					updateSessioneOn.setOraInizio(newOraInizio);
+					updateSessioneOn.setDataSessione(newDataSessione);
+					CorsoDTO updateCorsoSessione = corsoDAO.getCorsoById(newFkCorso);
+					updateSessioneOn.setCorsoSessione(updateCorsoSessione);
+					updateSessioneOn.setLinkConferenza(newLinkConferenza);
+							
+					// VERIFICA DEL VALORE IDENTICO AL PRECEDENTE -> LO IMPOSTA A NULL (COALESCE)
+					if(updateSessioneOn.getArgomento()!=null && updateSessioneOn.getArgomento().equals(sessioneOn.getArgomento())) {
+						updateSessioneOn.setArgomento(null);
+					}
+					
+					if(updateSessioneOn.getOraInizio()!=null && updateSessioneOn.getOraInizio().equals(sessioneOn.getOraInizio())) {
+						updateSessioneOn.setOraInizio(null);
+					}
+						
+					if(updateSessioneOn.getDataSessione()!=null && updateSessioneOn.getDataSessione().equals(sessioneOn.getDataSessione())) {
+						updateSessioneOn.setDataSessione(null);
+					}
+							
+					if(updateSessioneOn.getCorsoSessione()!=null && updateSessioneOn.getCorsoSessione().equals(sessioneOn.getCorsoSessione())) {
+						updateSessioneOn.setCorsoSessione(null);
+					}
+					
+					if(updateSessioneOn.getLinkConferenza()!=null && updateSessioneOn.getLinkConferenza().equals(sessioneOn.getLinkConferenza())) {
+						updateSessioneOn.setLinkConferenza(null);
+					}
+							
+					sessioneOnDAO.updateSessioneOnline(updateSessioneOn);
+				}
+				else {
+					throw new UnauthorizedOperationException("Non è possibile modificare sessioni online di corsi di altri chef!");
+				}
+			}
+			catch(SQLException ex) {
+				throw new SQLOperationException("Errore durante l'aggiornamento della sessione");
+			}
+					
+		}
+				
+		// METODO PER VISUALIZZARE TUTTE LE SESSIONI ONLINE
+		public List<SessioneOnlineDTO> visualizzaTutteSessioniOn() throws SQLOperationException{
+			try {
+				return sessioneOnDAO.getAllSessioniOn();
+			}
+			catch(SQLException ex) {
+				throw new SQLOperationException("Impossibile visualizzare le sessioni in presenza");
+			}
+		}
+				
+		// METODO PER VISUALIZZARE TUTTE LE SESSIONI IN PRESENZA DI UN CORSO
+		public List<SessioneOnlineDTO> visualizzaSessioniOnPerCorso(int newIdCorso) throws NotFoundException, SQLOperationException{
+			try {
+				List<SessioneOnlineDTO> elencoSessioniOnCorso = sessioneOnDAO.getSessioniOnByCorso(newIdCorso);
+						
+				if(elencoSessioniOnCorso==null) {
+					throw new NotFoundException("Non sono presenti sessioni online del corso selezionato");
+				}
+				else {
+					return elencoSessioniOnCorso;
+				}
+			}
+			catch(SQLException ex) {
+				throw new SQLOperationException("Errore durante la visualizzazione delle sessioni online del corso");
+			}
+		}
+				
+		// METODO PER ELIMINARE UNA SESSIONE IN PRESENZA DI UN CORSO
+		public void eliminaSessioneOn(int idSessioneOnline) throws NotFoundException, UnauthorizedOperationException, SQLOperationException{
+			try {
+				SessioneOnlineDTO sessioneOn = sessioneOnDAO.getSessioneOnById(idSessioneOnline);
+					
+				if(sessioneOn==null) {
+					throw new NotFoundException("Impossibile trovare la sessione online richiesta!");
+				}
+						
+				int idChefLoggato = SessionChef.getChefId();
+				if(idChefLoggato==sessioneOn.getCorsoSessione().getChefCorso().getId()) {
+					sessioneOnDAO.deleteSessioneOnline(sessioneOn);
+				}
+				else {
+					throw new UnauthorizedOperationException("Impossibile eliminare una sessione online di un corso di un altro chef!");
+				}
+
+			}
+			catch(SQLException ex) {
+				throw new SQLOperationException("Errore durante l'eliminazione della sessione online");
+			}
+		}
 		
 		//----------- FINE METODI SESSIONE ONLINE ----------
 		
@@ -543,7 +674,7 @@ public class Controller {
 		//------------INIZIO METODI RICETTA ----------
 		
 		// METODO PER INSERIRE UNA RICETTA
-		public void inserisciRicetta(String newNomeRicetta, int newTempoPreparazione, int newPorzioni, String newDifficolta)throws AlreadyExistsException, SQLOperationException {
+		public void inserisciRicetta(String newNomeRicetta, int newTempoPreparazione, int newPorzioni, String newDifficolta) throws AlreadyExistsException, SQLOperationException {
 			try {
 				String nomeNormalizzato = normalizzaNomeInserito(newNomeRicetta);  
 				RicettaDTO ricettaEsistente = ricettaDAO.getRicettaByName(nomeNormalizzato);
