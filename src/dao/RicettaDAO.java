@@ -10,21 +10,21 @@ import java.util.*;
 public class RicettaDAO {
 	
 	//Insert newRicetta
-	public void insertRicetta(RicettaDTO newRicetta) throws SQLException{
+	public void insertRicetta(RicettaDTO ricetta) throws SQLException{
 		String sql = "INSERT INTO ricetta (nomericetta, tempopreparazione, porzioni, difficolta,fkSessione VALUES (?,?,?,?,?)" ;
 		
 		try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
-			ps.setString (1, newRicetta.getNomeRicetta());
-			ps.setInt (2, newRicetta.getTempoPreparazione());
-			ps.setInt (3, newRicetta.getPorzioni());
-			ps.setString (4, newRicetta.getDifficolta());
-			ps.setInt(5,newRicetta.getSessioneRicetta().getIdSessione());
+			ps.setString (1, ricetta.getNomeRicetta());
+			ps.setInt (2, ricetta.getTempoPreparazione());
+			ps.setInt (3, ricetta.getPorzioni());
+			ps.setString (4, ricetta.getDifficolta());
+			ps.setInt(5,ricetta.getSessioneRicetta().getIdSessione());
 			ps.executeUpdate();
 		}
 	}
 	
 	//UPDATE newRicetta - LOGICA COALESCE
-	public void updateRicetta(RicettaDTO newRicetta) throws SQLException{
+	public void updateRicetta(RicettaDTO ricetta) throws SQLException{
 		String sql = "UPDATE ricetta SET "
 				+"nomericetta = COALESCE(?,nomericetta)," 
 				+"tempoPreparazione = COALESCE(?,tempoPreparazione),"
@@ -33,10 +33,10 @@ public class RicettaDAO {
 				+"tipoSessione = COALESCE (?,sessioneRicetta)"
 				+"WHERE idricetta = ?";
 		try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
-			ps.setString (1, newRicetta.getNomeRicetta());
-			ps.setInt (2, newRicetta.getTempoPreparazione());
-			ps.setInt (3, newRicetta.getPorzioni());
-			ps.setString(4, newRicetta.getDifficolta());
+			ps.setString (1, ricetta.getNomeRicetta());
+			ps.setInt (2, ricetta.getTempoPreparazione());
+			ps.setInt (3, ricetta.getPorzioni());
+			ps.setString(4, ricetta.getDifficolta());
 			ps.executeUpdate();
 		}
 	}
