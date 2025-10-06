@@ -562,7 +562,7 @@ public class Controller {
 			}
 		}
 				
-		// METODO PER AGGIORNARE I DATI RELATIVI AD UNA SESSIONE IN PRESENZA
+		// METODO PER AGGIORNARE I DATI RELATIVI AD UNA SESSIONE ONLINE
 		public void aggiornaSessioneOnline(String newArgomento, LocalTime newOraInizio, LocalDate newDataSessione, int newFkCorso, String newLinkConferenza) throws UnauthorizedOperationException, NotFoundException, SQLOperationException{
 			try {
 				SessioneOnlineDTO sessioneOn = sessioneOnDAO.getSessioneOnByArgumentAndDate(newArgomento, newDataSessione);
@@ -627,7 +627,7 @@ public class Controller {
 			}
 		}
 				
-		// METODO PER VISUALIZZARE TUTTE LE SESSIONI IN PRESENZA DI UN CORSO
+		// METODO PER VISUALIZZARE TUTTE LE SESSIONI ONLINE DI UN CORSO
 		public List<SessioneOnlineDTO> visualizzaSessioniOnPerCorso(int newIdCorso) throws NotFoundException, SQLOperationException{
 			try {
 				List<SessioneOnlineDTO> elencoSessioniOnCorso = sessioneOnDAO.getSessioniOnByCorso(newIdCorso);
@@ -644,7 +644,7 @@ public class Controller {
 			}
 		}
 				
-		// METODO PER ELIMINARE UNA SESSIONE IN PRESENZA DI UN CORSO
+		// METODO PER ELIMINARE UNA SESSIONE ONLINE DI UN CORSO
 		public void eliminaSessioneOn(int idSessioneOnline) throws NotFoundException, UnauthorizedOperationException, SQLOperationException{
 			try {
 				SessioneOnlineDTO sessioneOn = sessioneOnDAO.getSessioneOnById(idSessioneOnline);
@@ -671,7 +671,7 @@ public class Controller {
 		
 		//----------------------------------------------------------------------------------------------------------------------------
 		
-		//------------INIZIO METODI RICETTA ----------
+		//------------ INIZIO METODI RICETTA ----------
 		
 		// METODO PER INSERIRE UNA RICETTA
 		public void inserisciRicetta(String newNomeRicetta, int newTempoPreparazione, int newPorzioni, String newDifficolta) throws AlreadyExistsException, SQLOperationException {
