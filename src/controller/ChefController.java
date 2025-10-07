@@ -15,7 +15,7 @@ public class ChefController {
 	private ChefDAO chefDAO;
 	
 	public ChefController(){
-		this.chefDAO = chefDAO;
+		this.chefDAO = new ChefDAO();
 	}
 	
 	// ---------- METODI AUSILIARI ------------
