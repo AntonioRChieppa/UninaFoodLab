@@ -109,6 +109,24 @@ public class RicettaDAO {
 	return listaricette;
 	}
 	
-	
-	
+	public RicettaDTO getRicettaById(int id) throws SQLException{
+		String sql = "SELECT * FROM ricetta WHERE idRicetta=?";
+		try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
+			ps.setInt(1,id);
+			ResultSet rs = ps.executeQuery();
+			
+			if(rs.next()) {
+				RicettaDTO ricetta = new RicettaDTO();
+				ricetta.setNomeRicetta(rs.getString("nomeRicetta"));
+				ricetta.setTempoPreparazione(rs.getInt("tempoPreparazione"));
+				ricetta.setPorzioni(rs.getInt("porzioni"));
+				ricetta.setDifficolta(rs.getString("difficoltà"));
+				return ricetta;
+			}
+			else {
+				return null;
+			}
+		}			
 	}
+	
+}

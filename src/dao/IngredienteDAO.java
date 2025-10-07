@@ -53,5 +53,42 @@ public class IngredienteDAO {
 			}
 		}
 	}
-
+	
+	public IngredienteDTO getIngredienteByName(String nomeIngrediente) throws SQLException{
+		String sql = "SELECT * FROM ingrediente WHERE nomeIngrediente=?";
+		try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
+			ps.setString(1,nomeIngrediente);
+			ResultSet rs = ps.executeQuery();
+			
+			if(rs.next()) {
+				IngredienteDTO ingrediente = new IngredienteDTO();
+				ingrediente.setId(rs.getInt("idIngrediente"));
+				ingrediente.setNomeIngrediente(rs.getString("nomeIngrediente"));
+				ingrediente.setTipologia(rs.getString("tipologia"));
+				return ingrediente;
+				}
+			else {
+				return null;
+			}
+		}
 	}
+
+	
+	public IngredienteDTO getIngredienteById(int id) throws SQLException{
+		String sql = "SELECT * FROM ingrediente WHERE idIngrediente=?";
+		try (Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
+		ps.setInt(1,id);
+		ResultSet rs = ps.executeQuery();
+		
+		if(rs.next()) {
+			IngredienteDTO ingrediente = new IngredienteDTO();
+			ingrediente.setNomeIngrediente(rs.getString("nomeIngrediente"));
+			ingrediente.setTipologia(rs.getString("tipologia"));
+			return ingrediente;
+		}
+		else {
+			return null;
+		}
+		}
+	}
+}

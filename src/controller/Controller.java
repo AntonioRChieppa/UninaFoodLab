@@ -18,6 +18,7 @@ public class Controller {
 		private RicettaDAO ricettaDAO;
 		private SessioneInPresenzaDAO sessioneIpDAO;
 		private SessioneOnlineDAO sessioneOnDAO;
+		private IngredienteDAO ingredienteDAO;
 		
 		public Controller() {
 			this.chefDAO = new ChefDAO();
@@ -165,8 +166,7 @@ public class Controller {
 			}
 			catch(SQLException ex) {
 				throw new SQLOperationException("Errore nell'inserimento della nuova password!");
-			}
-				
+			}	
 		}
 		
 		// METODO PER VISUALIZZARE LO CHEF CORRENTE
@@ -679,7 +679,7 @@ public class Controller {
 				String nomeNormalizzato = normalizzaNomeInserito(newNomeRicetta);  
 				RicettaDTO ricettaEsistente = ricettaDAO.getRicettaByName(nomeNormalizzato);
 				
-				if(ricettaEsistente !=null) {
+				if(ricettaEsistente != null) {
 					throw new AlreadyExistsException("Ricetta già registrata! Aggiungere una nuova ricetta");
 				}
 				
@@ -718,5 +718,100 @@ public class Controller {
 			}
 		}
 		
+		//METODO PER VISUALIZZARE TUTTE LE RICETTE
+		public List<RicettaDTO> visualizzaTutteRicette() throws SQLOperationException{
+			try {
+				return ricettaDAO.getAllRecipes();
+			}catch (SQLException e) {
+				throw new SQLOperationException("Errore durante il recupero delle ricette");
+			}
+		}
+		
+		//METODO PER VISUALIZZARE LE RICETTE PER NOME
+		public RicettaDTO cercaRicettaPerNome (String newNomeRicetta) throws NotFoundException, SQLOperationException{
+			try{
+				RicettaDTO ricetta = ricettaDAO.getRicettaByName(newNomeRicetta);
+				
+				if(ricetta==null) {
+					throw new NotFoundException("La ricetta" + newNomeRicetta+ "non è presente. Registrala!");
+				}
+				return ricetta;
+			}catch (SQLException ex) {
+				throw new SQLOperationException("Errore durante la ricerca della ricetta");
+			}
+		}
+		
+		//METODO PER ELIMINARE LE RICETTE
+		public void eliminaRicetta(int id) throws NotFoundException, SQLOperationException{
+			try {
+				RicettaDTO eliminaRicetta = ricettaDAO.getRicettaById(id);
+				
+				if(eliminaRicetta == null) {
+					throw new NotFoundException("Nessuna ricetta trovata");
+				}
+				ricettaDAO.deleteRicetta(eliminaRicetta);
+			}catch(SQLException e) {
+				throw new SQLOperationException("Errore nell'eliminazione della ricetta");
+			}
+		}
+		
 		//------------FINE METODI RICETTA-------------
+		
+		
+		//-----------INIZIO METODI INGREDIENTE---------
+		
+		//METODO PER INSERIRE UN INGREDIENTE
+		public void inserisciIngrediente(String newNomeIngrediente, String newTipologia)throws AlreadyExistsException, SQLOperationException{
+			try {
+			String nomeNormalizzato = normalizzaNomeInserito(newNomeIngrediente);
+			IngredienteDTO ingredienteEsistente = ingredienteDAO.getIngredienteByName(nomeNormalizzato);
+			
+			if(ingredienteEsistente != null) {
+				throw new AlreadyExistsException("Ingrediente già registrato");
+			}
+			IngredienteDTO ingrediente = new IngredienteDTO();
+			ingrediente.setNomeIngrediente(newNomeIngrediente);
+			ingrediente.setTipologia(newTipologia);
+			ingredienteDAO.insertIngrediente(ingrediente);
+			}
+			catch (SQLException e) {
+				throw new SQLOperationException("Erorre nell'inserimento dell'ingrediente");
+			}
+		}
+		
+		//METODO PER AGGIORNARE UN INGREDIENTE
+		public void aggiornaIngrediente(String newNomeIngrediente, String newTipologia) throws NotFoundException, SQLOperationException{
+			try {
+				String nomeNormalizzato = normalizzaNomeInserito(newNomeIngrediente);
+				IngredienteDTO trovaIngrediente = ingredienteDAO.getIngredienteByName(nomeNormalizzato);
+				
+				if(trovaIngrediente == null) {
+					throw new NotFoundException("Ingrediente inserito non trovato. Registralo!");
+				}
+				IngredienteDTO updateIngrediente = new IngredienteDTO();
+				updateIngrediente.setNomeIngrediente(newNomeIngrediente);
+				updateIngrediente.setTipologia(newTipologia);
+				ingredienteDAO.updateIngrediente(updateIngrediente);
+			}catch(SQLException e) {
+				throw new SQLOperationException("Errore dirante l'aggiornamento dell'ingrediente");
+			}
+		}
+		
+		//METODO PER ELIMINARE UN INGREDIENTE
+		public void eliminaIngrediente(int idIngrediente) throws NotFoundException, SQLOperationException{
+			try {
+				IngredienteDTO eliminaIngrediente = ingredienteDAO.getIngredienteById(idIngrediente);
+				
+				if(eliminaIngrediente == null) {
+					throw new NotFoundException("Ingrediente non trovato");
+				}
+				
+				ingredienteDAO.deleteIngrediente(eliminaIngrediente);
+			}catch(SQLException e) {
+				throw new SQLOperationException("Errore nell'eliminazione dell'ingrediente");
+			}
+		}
+		
+		//------------FINE METODI INGREDIENTE-------------
+		
 }		
