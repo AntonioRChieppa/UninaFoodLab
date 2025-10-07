@@ -1,6 +1,6 @@
-import controller.Controller;
+import controller.ChefController;
 import dto.ChefDTO;
-import exception.SQLOperationException;
+import exception.OperationException;
 import exception.NotFoundException;
 import exception.InvalidCredentialsException;
 import exception.AlreadyExistsException;
@@ -9,7 +9,7 @@ import java.util.*;
 public class start_test {
 
 	public static void main(String[] args) {
-		Controller controller = new Controller();
+		ChefController controller = new ChefController();
 
         try {
         	controller.registrazioneChef("Mario", "De Maio", "mdm@email.com", "Password@123");
@@ -38,7 +38,7 @@ public class start_test {
     	System.err.println("Errore: "+e.getMessage());
     	}catch(NotFoundException e) {
     	System.err.println("Errore: "+e.getMessage());
-        }catch (SQLOperationException e) {
+        }catch (OperationException e) {
             System.err.println("Errore di operazione: " + e.getMessage());
         }
 
