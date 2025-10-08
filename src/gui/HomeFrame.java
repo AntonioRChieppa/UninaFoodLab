@@ -1,5 +1,6 @@
 package gui;
 
+import java.awt.Color;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
@@ -20,12 +21,18 @@ public class HomeFrame extends JFrame {
 	 * Create the frame.
 	 */
 	public HomeFrame(LoginFrame previous) {
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
-		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		setContentPane(contentPane);
-		contentPane.setLayout(null);
+		super("UninaFoodLab");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setResizable(false);
+		setSize(850,450);
+		setLocationRelativeTo(null);
+        
+        contentPane = new JPanel();
+        contentPane.setBackground(Color.WHITE);
+        contentPane.setForeground(Color.WHITE);
+        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+        setContentPane(contentPane);
+        contentPane.setLayout(null);
 		
 		JLabel lblNewLabel = new JLabel("Home");
 		lblNewLabel.setFont(new Font("SansSerif", Font.PLAIN, 36));

@@ -156,7 +156,7 @@ public class LoginFrame extends JFrame {
         registerButton.setBounds(290, 279, 140, 40);
         registerButton.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
-        		goToRegistration();
+        		goToRegistrationFrame();
         	}
         });
         loginPanel.add(registerButton);
@@ -187,7 +187,7 @@ public class LoginFrame extends JFrame {
 		}
 	}
 	
-	public void goToRegistration() {
+	public void goToRegistrationFrame() {
 		registerFrame = new RegisterFrame();
 		LoginFrame.this.setVisible(false);
 		registerFrame.setVisible(true);
