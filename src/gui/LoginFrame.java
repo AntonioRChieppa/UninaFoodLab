@@ -24,7 +24,7 @@ public class LoginFrame extends JFrame {
 	private ImageIcon logoIcon;
 	private JLabel lblNewLabel;
 	private JPanel loginPanel;
-	private JLabel lblWelcomeBack;
+	private JLabel lblAccess;
 	private JLabel emailLabel;
 	private JTextField emailField;
 	private JLabel passwordLabel;
@@ -103,13 +103,13 @@ public class LoginFrame extends JFrame {
         loginPanel.setLayout(null);
 
         // "Welcome Back!" label
-        lblWelcomeBack = new JLabel("Welcome Back!", JLabel.CENTER);
-        lblWelcomeBack.setForeground(SystemColor.textHighlight);
-        lblWelcomeBack.setFont(new Font("SansSerif", Font.BOLD, 24));
+        lblAccess = new JLabel("Effettua l'accesso!", JLabel.CENTER);
+        lblAccess.setForeground(SystemColor.textHighlight);
+        lblAccess.setFont(new Font("SansSerif", Font.BOLD, 24));
         int welcomeWidth = 300;
         int welcomeHeight = 40;
-        lblWelcomeBack.setBounds(130, 52, welcomeWidth, welcomeHeight);
-        loginPanel.add(lblWelcomeBack);
+        lblAccess.setBounds(130, 52, welcomeWidth, welcomeHeight);
+        loginPanel.add(lblAccess);
         
         // Email label
         emailLabel = new JLabel("Email");
@@ -149,7 +149,7 @@ public class LoginFrame extends JFrame {
         loginPanel.add(loginButton);
 
         // Register now button
-        registerButton = new JButton("Register now");
+        registerButton = new JButton("Registrati ora");
         registerButton.setFont(new Font("SansSerif", Font.BOLD, 16));
         registerButton.setBackground(new Color(64, 224, 208)); // Turquoise
         registerButton.setForeground(Color.WHITE);
@@ -170,11 +170,11 @@ public class LoginFrame extends JFrame {
 		String email = emailField.getText();
 		String password = new String(passwordField.getPassword());
 		try {
-			homeFrame = new HomeFrame(this);
 			chefController = new ChefController();
 			chefController.loginChef(email, password);
 			JOptionPane.showMessageDialog(LoginFrame.this, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
 			LoginFrame.this.setVisible(false);
+			homeFrame = new HomeFrame(this);
 			homeFrame.setVisible(true);
 		} catch(InvalidCredentialsException ex) {
 			 JOptionPane.showMessageDialog(LoginFrame.this, ex.getMessage(), "Login Error", JOptionPane.ERROR_MESSAGE);

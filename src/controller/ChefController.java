@@ -27,6 +27,12 @@ public class ChefController {
 	    return email.matches("^[^@\\s]+@[^@\\s]+\\.[a-zA-Z]{2,6}$");
 	}
 	
+	// METODO DI VERIFICA INSERIMENTO NOME E COGNOME
+	public boolean isValidNameOrSurname(String input) {
+	    if (input == null || input.isEmpty()) return false;
+	    return input.matches("^[a-zA-Z]+$");
+	}
+	
 	// METODO PER CONTROLLARE I REQUISITI DI SICUREZZA DI UNA PASSWORD
 	public boolean checkPasswordRequirements(String password) {
 		if (password == null || password.length() <= 6) {
@@ -64,9 +70,13 @@ public class ChefController {
 			ChefDTO chefEsistente = chefDAO.getChefByEmail(newEmail);
 									
 			if(chefEsistente!=null) {
-				throw new AlreadyExistsException("Email già registrata! Effettua l'accesso!");
+				throw new AlreadyExistsException("Chef già registrato! Effettua l'accesso!");
 			}
 			
+			if(!isValidNameOrSurname(newNome) || !isValidNameOrSurname(newCognome)) {
+				throw new OperationException("Nome o cognome inseriti non validi! Riprovare");
+			}
+				
 			if(!isValidEmail(newEmail)) {
 				throw new OperationException("Mail non valida! Riprovare!");
 			}
