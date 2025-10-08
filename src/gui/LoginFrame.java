@@ -172,7 +172,7 @@ public class LoginFrame extends JFrame {
 		try {
 			chefController = new ChefController();
 			chefController.loginChef(email, password);
-			JOptionPane.showMessageDialog(LoginFrame.this, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(LoginFrame.this, "Login effettuato con successo!", "Success", JOptionPane.INFORMATION_MESSAGE);
 			LoginFrame.this.setVisible(false);
 			homeFrame = new HomeFrame(this);
 			homeFrame.setVisible(true);
