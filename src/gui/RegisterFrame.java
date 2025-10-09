@@ -95,7 +95,7 @@ public class RegisterFrame extends JFrame {
         registerPanel.setLayout(null);
         
         // small arrow to go back to the login
-        arrowIcon = new ImageIcon(System.getProperty("user.dir") + "/icons/arrow_back.png");
+        arrowIcon = new ImageIcon(System.getProperty("user.dir") + "/src/icons/arrow_back.png");
         Image arrowImg = arrowIcon.getImage().getScaledInstance(35, 35, Image.SCALE_SMOOTH);
         ImageIcon arrowIconScaled = new ImageIcon(arrowImg);
 
