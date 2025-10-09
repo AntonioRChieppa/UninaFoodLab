@@ -1,18 +1,25 @@
 package gui;
 
 import java.awt.EventQueue;
+
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.SystemColor;
-import java.awt.Image;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.awt.event.ActionEvent;
 import controller.ChefController;
 import exception.*;
+import java.io.File;
+import javax.swing.ImageIcon;
+
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+
 
 
 public class LoginFrame extends JFrame {
@@ -21,7 +28,6 @@ public class LoginFrame extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	private JPanel sideBarPanel;
-	private ImageIcon logoIcon;
 	private JLabel lblNewLabel;
 	private JPanel loginPanel;
 	private JLabel lblAccess;
@@ -81,22 +87,19 @@ public class LoginFrame extends JFrame {
         sideBarPanel.setBounds(0, 0, 300, 450);
         contentPane.add(sideBarPanel);
         sideBarPanel.setLayout(null);
-
-        // Logo
-        logoIcon = new ImageIcon(System.getProperty("user.dir") + "/icons/logo_UninaFoodLab.png");
-        Image scaledImage = logoIcon.getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH);
-        setIconImage(logoIcon.getImage());
-        ImageIcon logoIcon2 = new ImageIcon(scaledImage);
-        JLabel logoLabel = new JLabel(logoIcon2);
-        logoLabel.setBounds(47, 100, 206, 178);
-        sideBarPanel.add(logoLabel);
-
+        
         // "UninaFoodLab" label
         lblNewLabel = new JLabel("UninaFoodLab", JLabel.CENTER);
         lblNewLabel.setForeground(Color.WHITE);
         lblNewLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
-        lblNewLabel.setBounds(47, 261, 206, 43); // (300-206)/2 = 47, 100+150+20=270
+        lblNewLabel.setBounds(47, 276, 206, 43); // (300-206)/2 = 47, 100+150+20=270
         sideBarPanel.add(lblNewLabel);
+        
+        JLabel lblNewLabel_1 = new JLabel("");
+        lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
+        lblNewLabel_1.setIcon(new ImageIcon(LoginFrame.class.getResource("/icons/logo_UninaFoodLab.png")));
+        lblNewLabel_1.setBounds(47, 93, 206, 172);
+        sideBarPanel.add(lblNewLabel_1);
 
         loginPanel = new JPanel();
         loginPanel.setBounds(298, 0, 600, 450);
@@ -193,4 +196,22 @@ public class LoginFrame extends JFrame {
 		LoginFrame.this.setVisible(false);
 		registerFrame.setVisible(true);
 	}
+	
+
+public ImageIcon loadImage(String resourcePath, int width, int height) {
+    try {
+        BufferedImage originalImage = ImageIO.read(new File(resourcePath));
+        BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = resizedImage.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.drawImage(originalImage, 0, 0, width, height, null);
+        g2d.dispose();
+        return new ImageIcon(resizedImage);
+    } catch (IOException e) {
+        e.printStackTrace();
+        return null;
+    }
+}
 }

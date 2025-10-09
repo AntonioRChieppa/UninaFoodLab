@@ -2,6 +2,9 @@ package gui;
 
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.ActionEvent;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -9,7 +12,6 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import java.awt.Font;
-import java.awt.Image;
 import java.awt.SystemColor;
 import java.awt.BorderLayout;
 
@@ -50,45 +52,34 @@ public class HomeFrame extends JFrame {
         contentPane.add(sideBarPanel);
         sideBarPanel.setLayout(null);
 
-        // Logo icon
-        logoIcon = new ImageIcon(System.getProperty("user.dir") + "/icons/logo_UninaFoodLab.png");
-        Image scaledImage = logoIcon.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
-        setIconImage(logoIcon.getImage());
-        ImageIcon logoIcon2 = new ImageIcon(scaledImage);
-        sideBarPanel.setLayout(null);
-        JLabel logoLabel = new JLabel(logoIcon2);
-        logoLabel.setBounds(10, 10, 50, 30);
-        sideBarPanel.add(logoLabel);
 
 	    // "application" label
 	    appLabel = new JLabel("Application");
-	    appLabel.setBounds(60, 10, 85, 30);
+	    appLabel.setLabelFor(appLabel);
+	    appLabel.setIcon(new ImageIcon(HomeFrame.class.getResource("/icons/app_icon.png")));
+	    appLabel.setBounds(10, 10, 180, 30);
 	    appLabel.setFont(new Font("SansSerif", Font.BOLD, 15));
 	    appLabel.setForeground(Color.WHITE);
 	    sideBarPanel.add(appLabel);
-	    
-	    ImageIcon dashboardIcon = new ImageIcon(System.getProperty("user.dir") + "/icons/dashboard_logo.png"); // set your path
-	    Image dashboardImg = dashboardIcon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
-	    ImageIcon dashboardIconScaled = new ImageIcon(dashboardImg);
-	    JLabel dashboardIconLabel = new JLabel(dashboardIconScaled);
-
-	    JLabel dashboardLabel = new JLabel("Dashboard");
-	    dashboardLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
-	    dashboardLabel.setForeground(Color.WHITE);
 
 	    JPanel dashboardMenuContent = new JPanel();
 	    dashboardMenuContent.setOpaque(false);
 	    dashboardMenuContent.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 5));
-	    dashboardMenuContent.add(dashboardIconLabel);
-	    dashboardMenuContent.add(dashboardLabel);
 
 	    JPanel dashboardMenu = new JPanel();
 	    dashboardMenu.setBounds(10, 60, 180, 30);
 	    dashboardMenu.setOpaque(false);
 	    dashboardMenu.setLayout(new BorderLayout());
-	    dashboardMenu.add(dashboardMenuContent, BorderLayout.CENTER);
+	    dashboardMenu.add(dashboardMenuContent, BorderLayout.EAST);
 
 	    sideBarPanel.add(dashboardMenu);
+	    
+
+	    JLabel dashboardLabel = new JLabel("Dashboard");
+	    dashboardMenu.add(dashboardLabel, BorderLayout.WEST);
+	    dashboardLabel.setIcon(new ImageIcon(HomeFrame.class.getResource("/icons/dashboard_logo.png")));
+	    dashboardLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+	    dashboardLabel.setForeground(Color.WHITE);
 
 	    // Corso menu (with submenu)
 	    JPanel corsoMenu = new JPanel();
@@ -96,6 +87,7 @@ public class HomeFrame extends JFrame {
 	    corsoMenu.setOpaque(false);
 	    corsoMenu.setLayout(new BorderLayout());
 	    JLabel corsoLabel = new JLabel("Corso");
+	    corsoLabel.setIcon(new ImageIcon(HomeFrame.class.getResource("/icons/corso_logo.png")));
 	    corsoLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
 	    corsoLabel.setForeground(Color.WHITE);
 	    corsoMenu.add(corsoLabel, BorderLayout.CENTER);
@@ -119,26 +111,30 @@ public class HomeFrame extends JFrame {
 	    corsoSubMenu.add(visualizzaCorsiLabel);
 
 	    sideBarPanel.add(corsoSubMenu);
-
-	    corsoMenu.addMouseListener(new java.awt.event.MouseAdapter() {
-	        public void mouseEntered(java.awt.event.MouseEvent evt) {
+	    
+	    // fa visualizzare il sottomenu
+	    corsoMenu.addMouseListener(new MouseAdapter() {
+	        public void mouseEntered(MouseEvent e) {
 	            corsoSubMenu.setVisible(true);
 	        }
-	        public void mouseExited(java.awt.event.MouseEvent evt) {
+	        public void mouseExited(MouseEvent e) {
 	            // Hide submenu only if mouse is not over submenu
-	            java.awt.Point p = evt.getPoint();
+	            java.awt.Point p = e.getPoint();
 	            java.awt.Rectangle subMenuBounds = corsoSubMenu.getBounds();
-	            if (!subMenuBounds.contains(evt.getXOnScreen() - sideBarPanel.getLocationOnScreen().x,
-	                                       evt.getYOnScreen() - sideBarPanel.getLocationOnScreen().y)) {
+	            if (!subMenuBounds.contains(e.getXOnScreen() - sideBarPanel.getLocationOnScreen().x,
+	                                       e.getYOnScreen() - sideBarPanel.getLocationOnScreen().y)) {
 	                corsoSubMenu.setVisible(false);
 	            }
 	        }
 	    });
-	    corsoSubMenu.addMouseListener(new java.awt.event.MouseAdapter() {
-	        public void mouseExited(java.awt.event.MouseEvent evt) {
+	    // toglie la visualizzazione del sottomenu
+	    corsoSubMenu.addMouseListener(new MouseAdapter() {
+	        public void mouseExited(MouseEvent e) {
 	            corsoSubMenu.setVisible(false);
 	        }
 	    });
+
+	    
         
         dashboardPanel = new JPanel();
         dashboardPanel.setBackground(Color.WHITE);
