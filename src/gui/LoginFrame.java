@@ -85,6 +85,7 @@ public class LoginFrame extends JFrame {
         // Logo
         logoIcon = new ImageIcon(System.getProperty("user.dir") + "/icons/logo_UninaFoodLab.png");
         Image scaledImage = logoIcon.getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+        setIconImage(logoIcon.getImage());
         ImageIcon logoIcon2 = new ImageIcon(scaledImage);
         JLabel logoLabel = new JLabel(logoIcon2);
         logoLabel.setBounds(47, 100, 206, 178);
