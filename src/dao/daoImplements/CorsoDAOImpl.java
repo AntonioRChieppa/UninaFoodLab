@@ -1,15 +1,17 @@
-package dao;
+package dao.daoImplements;
 
 import dto.ChefDTO;
 import dto.CorsoDTO;
 import db_connection.db_connection;
+import dao.daoInterfaces.CorsoDAOInt;
 
 import java.sql.*;
 import java.util.*;
 
-public class CorsoDAO {
+public class CorsoDAOImpl implements CorsoDAOInt{
 
 		// INSERT newCorso
+		@Override
 		public void insertCorso(CorsoDTO newCorso) throws SQLException{
 			String sql = "INSERT INTO corso (nomecorso, categoria, datainizio, numerosessioni, fkchef, frequenzasessioni) VALUES (?, ?, ?, ?, ?, ?)";
 			
@@ -25,6 +27,7 @@ public class CorsoDAO {
 		}
 		
 		// UPDATE newCorso - LOGICA COALESCE
+		@Override
 		public void updateCorso(CorsoDTO newCorso) throws SQLException{
 			String sql = "UPDATE corso SET "
 		               + "nomecorso = COALESCE(?, nomecorso), "
@@ -58,6 +61,7 @@ public class CorsoDAO {
 		}
 		
 		// READ (SELECT) Corso by Id
+		@Override
 		public CorsoDTO getCorsoById(int idCorso) throws SQLException{
 			String sql = "SELECT * FROM corso WHERE idCorso = ?";
 			
@@ -74,7 +78,7 @@ public class CorsoDAO {
 					if(sqlDataInizio!=null)
 						corso.setDataInizio(sqlDataInizio.toLocalDate()); // conversione in tipo localDate
 					corso.setNumeroSessioni(rs.getInt("numerosessioni"));
-					ChefDAO chefCorsoDAO = new ChefDAO();
+					ChefDAOImpl chefCorsoDAO = new ChefDAOImpl();
 					ChefDTO chefCorso = chefCorsoDAO.getChefById(rs.getInt("fkchef"));
 					corso.setChefCorso(chefCorso);
 					corso.setFrequenzaSessioni(rs.getString("frequenzasessioni"));
@@ -86,7 +90,8 @@ public class CorsoDAO {
 			}
 		}
 		
-		// READ (SELECT) Corso by nomeCorso 
+		// READ (SELECT) Corso by nomeCorso
+		@Override
 		public CorsoDTO getCorsoByName(String nomeCorso) throws SQLException{
 			String sql = "SELECT * FROM corso WHERE nomecorso = ?";
 			
@@ -103,7 +108,7 @@ public class CorsoDAO {
 					if(sqlDataInizio!=null)
 						corso.setDataInizio(sqlDataInizio.toLocalDate()); // conversione in tipo localDate
 					corso.setNumeroSessioni(rs.getInt("numerosessioni"));
-					ChefDAO chefCorsoDAO = new ChefDAO();
+					ChefDAOImpl chefCorsoDAO = new ChefDAOImpl();
 					ChefDTO chefCorso = chefCorsoDAO.getChefById(rs.getInt("fkchef"));
 					corso.setChefCorso(chefCorso);
 					corso.setFrequenzaSessioni(rs.getString("frequenzasessioni"));
@@ -116,6 +121,7 @@ public class CorsoDAO {
 		}
 		
 		// READ (SELECT) Corsi by idChef (corsi di un determinato chef)
+		@Override
 		public List<CorsoDTO> getCorsoByChefId(int idChef) throws SQLException{
 			String sql = "SELECT * FROM corso WHERE fkchef = ?";
 			List<CorsoDTO> elencoCorsi = new ArrayList<>();
@@ -132,7 +138,7 @@ public class CorsoDAO {
 					if(sqlDataInizio!=null)
 						corso.setDataInizio(sqlDataInizio.toLocalDate()); // conversione in tipo localDate
 					corso.setNumeroSessioni(rs.getInt("numerosessioni"));
-					ChefDAO chefCorsoDAO = new ChefDAO();
+					ChefDAOImpl chefCorsoDAO = new ChefDAOImpl();
 					ChefDTO chefCorso = chefCorsoDAO.getChefById(rs.getInt("fkchef"));
 					corso.setChefCorso(chefCorso);
 					corso.setFrequenzaSessioni(rs.getString("frequenzasessioni"));
@@ -144,6 +150,7 @@ public class CorsoDAO {
 			return elencoCorsi;
 		}
 		
+		@Override
 		public List<CorsoDTO> getAllCorsi() throws SQLException{
 			String sql = "SELECT * FROM corso";
 			List<CorsoDTO> elencoCorsi = new ArrayList<>();
@@ -160,7 +167,7 @@ public class CorsoDAO {
 					if(sqlDataInizio!=null)
 						corso.setDataInizio(sqlDataInizio.toLocalDate()); // conversione in tipo localDate
 					corso.setNumeroSessioni(rs.getInt("numerosessioni"));
-					ChefDAO chefCorsoDAO = new ChefDAO();
+					ChefDAOImpl chefCorsoDAO = new ChefDAOImpl();
 					ChefDTO chefCorso = chefCorsoDAO.getChefById(rs.getInt("fkchef"));
 					corso.setChefCorso(chefCorso);
 					corso.setFrequenzaSessioni(rs.getString("frequenzasessioni"));
@@ -174,6 +181,7 @@ public class CorsoDAO {
 		// READ (SELECT) Corsi by argomento 
 		
 		//DELETE Corso
+		@Override
 		public void deleteCorso(CorsoDTO corso) throws SQLException{
 			String deleteSql = "DELETE FROM corso WHERE idcorso = ?"; 
 			String countSql = "SELECT COUNT(*) FROM corso"; 

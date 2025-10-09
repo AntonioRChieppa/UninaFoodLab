@@ -1,16 +1,18 @@
-package dao;
+package dao.daoImplements;
 
 import dto.SessioneInPresenzaDTO;
 import dto.CorsoDTO;
 import db_connection.db_connection;
 import java.time.*;
+import dao.daoInterfaces.SessioneInPresenzaDAOInt;
 
 import java.sql.*;
 import java.util.*;
 
-public class SessioneInPresenzaDAO {
+public class SessioneInPresenzaDAOImpl implements SessioneInPresenzaDAOInt{
 	
 	// INSERT newSessioneInPresenza - GESTIONE DEGLI INSERIMENTI IN UN'UNICA TRANSAZIONE
+	@Override
 	public void insertSessioneInPresenza(SessioneInPresenzaDTO sessioneIP) throws SQLException{
 		String insertSessioneSql = "INSERT INTO sessione (argomento, orainizio, datasessione, fkcorso) VALUES (?, ?, ?, ?) RETURNING idsessione";
 		String insertSessioneInPresenzaSql = "INSERT INTO sessioneinpresenza (idsessioneinpresenza, sede, edificio, aula, fksessione) VALUES (?, ?, ?, ?, ?)";
@@ -49,6 +51,7 @@ public class SessioneInPresenzaDAO {
 	}
 	
 	// UPDATE SessioneInPresenza - LOGICA COALESCE
+	@Override
 	public void updateSessioneInPresenza(SessioneInPresenzaDTO upSessioneIp) throws SQLException{
 		String updateSessione = "UPDATE sessione SET "+
 								"argomento = COALESCE(?, argomento), " +
@@ -104,6 +107,7 @@ public class SessioneInPresenzaDAO {
 	}
 	
 	// READ (SELECT) ALL SESSIONI IN PRESENZA
+	@Override
 	public List<SessioneInPresenzaDTO> getAllSessioniIP() throws SQLException{
 		String sql = "SELECT * FROM sessione s "
 				+ "JOIN sessioneinpresenza sip "
@@ -125,7 +129,7 @@ public class SessioneInPresenzaDAO {
 	            if (sqlDate != null) {
 	                sessioneIP.setDataSessione(sqlDate.toLocalDate());
 	            }
-	            CorsoDAO corsoSessioneDAO = new CorsoDAO();
+	            CorsoDAOImpl corsoSessioneDAO = new CorsoDAOImpl();
 	            CorsoDTO corsoSessione = corsoSessioneDAO.getCorsoById(rs.getInt("fkCorso"));
 	            sessioneIP.setCorsoSessione(corsoSessione);
 	            
@@ -140,6 +144,7 @@ public class SessioneInPresenzaDAO {
 	}
 	
 	// READ (SELECT) ALL SESSIONI IN PRESENZA BY ARGOMENTO AND DATA
+	@Override
 	public SessioneInPresenzaDTO getSessioneIpByArgumentAndDate(String newArgomento, LocalDate newDataSessione) throws SQLException{
 		String sql = "SELECT * FROM sessione s"
 				+ "JOIN sessioneinpresenza sip"
@@ -161,7 +166,7 @@ public class SessioneInPresenzaDAO {
 	            if (sqlDate != null) {
 	                sessioneIP.setDataSessione(sqlDate.toLocalDate());
 	            }
-	            CorsoDAO corsoSessioneDAO = new CorsoDAO();
+	            CorsoDAOImpl corsoSessioneDAO = new CorsoDAOImpl();
 	            CorsoDTO corsoSessione = corsoSessioneDAO.getCorsoById(rs.getInt("fkCorso"));
 	            sessioneIP.setCorsoSessione(corsoSessione);
 	            
@@ -178,6 +183,7 @@ public class SessioneInPresenzaDAO {
 	}
 	
 	// READ (SELECT) SESSIONE IN PRESENZA BY ID
+	@Override
 	public SessioneInPresenzaDTO getSessioneIpById(int idSessioneInPresenza) throws SQLException{
 		String sql = "SELECT * FROM sessione s "
 	               + "JOIN sessioneinpresenza sip "
@@ -199,7 +205,7 @@ public class SessioneInPresenzaDAO {
 	            if (sqlDate != null) {
 	                sessioneIP.setDataSessione(sqlDate.toLocalDate());
 	            }
-	            CorsoDAO corsoSessioneDAO = new CorsoDAO();
+	            CorsoDAOImpl corsoSessioneDAO = new CorsoDAOImpl();
 	            CorsoDTO corsoSessione = corsoSessioneDAO.getCorsoById(rs.getInt("fkCorso"));
 	            sessioneIP.setCorsoSessione(corsoSessione);
 	            
@@ -215,6 +221,7 @@ public class SessioneInPresenzaDAO {
 	}
 	
 	// READ (SELECT) ALL SESSIONI IN PRESENZA BY CORSO
+	@Override
 	public List<SessioneInPresenzaDTO> getSessioniIpByCorso(int idCorso) throws SQLException{
 		String sql = "SELECT * FROM sessione s "
 				+ "JOIN sessioneinpresenza sip "
@@ -239,7 +246,7 @@ public class SessioneInPresenzaDAO {
 	            if (sqlDate != null) {
 	                sessioneIP.setDataSessione(sqlDate.toLocalDate());
 	            }
-	            CorsoDAO corsoSessioneDAO = new CorsoDAO();
+	            CorsoDAOImpl corsoSessioneDAO = new CorsoDAOImpl();
 	            CorsoDTO corsoSessione = corsoSessioneDAO.getCorsoById(rs.getInt("fkCorso"));
 	            sessioneIP.setCorsoSessione(corsoSessione);
 	            
@@ -254,6 +261,7 @@ public class SessioneInPresenzaDAO {
 	}
 	
 	// DELETE SESSIONE IN PRESENZA
+	@Override
 	public void deleteSessioneInPresenza(SessioneInPresenzaDTO sessioneIP) throws SQLException{
 		    String deleteSessioneSql = "DELETE FROM sessione WHERE idSessione = ?"; // eliminiamo solo da sessione, data la presenza del DELETE CASCADE
 		    String countSql = "SELECT COUNT(*) FROM sessione";

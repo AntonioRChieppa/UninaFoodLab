@@ -1,21 +1,23 @@
 package controller;
 
 import dto.ChefDTO;
-import dao.ChefDAO;
 
 import java.time.*;
 import java.sql.SQLException;
 import java.util.*;
+
+import dao.daoImplements.ChefDAOImpl;
+import dao.daoInterfaces.ChefDAOInt;
 import session.SessionChef;
 import exception.*;
 
 
 public class ChefController {
 
-	private ChefDAO chefDAO;
+	private ChefDAOInt chefDAO;
 	
 	public ChefController(){
-		this.chefDAO = new ChefDAO();
+		this.chefDAO = new ChefDAOImpl();
 	}
 	
 	// ---------- METODI AUSILIARI ------------

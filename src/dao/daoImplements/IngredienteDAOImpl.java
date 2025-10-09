@@ -1,14 +1,15 @@
-package dao;
+package dao.daoImplements;
 
 import dto.IngredienteDTO;
 import db_connection.db_connection;
+import dao.daoInterfaces.IngredienteDAOInt;
 
 import java.sql.*;
-import java.util.*;
 
-public class IngredienteDAO {
+public class IngredienteDAOImpl implements IngredienteDAOInt{
 
-		//CREATE newIngrediente
+	//CREATE newIngrediente
+	@Override
 	public void insertIngrediente(IngredienteDTO ingrediente) throws SQLException {
 		String sql = "INSERT INTO Ingrediente(nomeIngrediente, tipologia) VALUES(?,?)" ;
 		
@@ -20,6 +21,7 @@ public class IngredienteDAO {
 	}
 	
 	//UPDATE Ingrediente
+	@Override
 	public void updateIngrediente(IngredienteDTO ingrediente) throws SQLException {
 		String sql = "UPDATE Ingrediente SET"
 				+ "nomeIngrediente = COALESCE(?,nomeIngrediente),"
@@ -35,6 +37,7 @@ public class IngredienteDAO {
 	}
 	
 	//DELETE Ingrediente
+	@Override
 	public void deleteIngrediente(IngredienteDTO ingrediente) throws SQLException {
 		String deleteSql = "DELETE FROM ingrediente WHERE idIngrediente = ?";
 		String countSql = "SELECT COUNT(*) FROM ingredienti"; 
@@ -54,6 +57,7 @@ public class IngredienteDAO {
 		}
 	}
 	
+	@Override
 	public IngredienteDTO getIngredienteByName(String nomeIngrediente) throws SQLException{
 		String sql = "SELECT * FROM ingrediente WHERE nomeIngrediente=?";
 		try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
@@ -73,7 +77,7 @@ public class IngredienteDAO {
 		}
 	}
 
-	
+	@Override
 	public IngredienteDTO getIngredienteById(int id) throws SQLException{
 		String sql = "SELECT * FROM ingrediente WHERE idIngrediente=?";
 		try (Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){

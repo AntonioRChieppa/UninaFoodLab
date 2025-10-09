@@ -1,14 +1,16 @@
-package dao;
+package dao.daoImplements;
 
 import dto.ChefDTO;
 import db_connection.db_connection;
 
 import java.sql.*;
 import java.util.*;
+import dao.daoInterfaces.ChefDAOInt;
 
-public class ChefDAO {
+public class ChefDAOImpl implements ChefDAOInt{
 	
 	// CREATE newChef
+	@Override
 	public void insertChef(ChefDTO chef) throws SQLException{
 		String sql = "INSERT INTO Chef (nomechef, cognomechef, email, password) VALUES (?, ?, ?, ?)";
 		// USO DEL TRY-WITH-RESOURCES
@@ -22,6 +24,7 @@ public class ChefDAO {
 	}
 	
 	// UPDATE newChef <-- viene passato l'oggetto "updatedChef" che avrà tutti i campi null tranne quelli da modificare recuperati dalla GUI
+	@Override
 	public void updateChef(ChefDTO chef) throws SQLException {
 		String sql = "UPDATE chef SET "
 	               + "nomechef = COALESCE(?, nomechef), "
@@ -40,6 +43,7 @@ public class ChefDAO {
 	}
 	
 	// UPDATE newChef password
+	@Override
 	public void updateChefPassword(ChefDTO chef) throws SQLException{
 		String sql = "UPDATE chef SET password = ? WHERE idchef = ?";
 		
@@ -52,6 +56,7 @@ public class ChefDAO {
 	}
 	
 	// DELETE newChef
+	@Override
 	public void deleteChef(ChefDTO chef) throws SQLException{
 		String deleteSql = "DELETE FROM chef WHERE idchef = ?"; //Stringa che si occupa della cancellazione
 		String countSql = "SELECT COUNT(*) FROM chef"; //Stringa che conta il numero di chef nel sistema
@@ -72,6 +77,7 @@ public class ChefDAO {
 	}
 	
 	// READ (SELECT) newChef by id
+	@Override
 	public ChefDTO getChefById(int id) throws SQLException{
 		String sql = "SELECT * FROM chef WHERE idchef = ?";
 		
@@ -94,6 +100,7 @@ public class ChefDAO {
 		}
 	}
 	
+	@Override
 	public ChefDTO getChefByEmailAndPassword(String email, String password) throws SQLException{
 		String sql = "SELECT * FROM chef WHERE email = ? AND password = ?";
 		
@@ -117,6 +124,7 @@ public class ChefDAO {
 		}
 	}
 	
+	@Override
 	public ChefDTO getChefByEmail(String email) throws SQLException{
 		String sql = "SELECT * FROM chef WHERE email = ?";
 		
@@ -140,6 +148,7 @@ public class ChefDAO {
 	}
 	
 	// READ (SELECT) all chefs
+	@Override
 	public List<ChefDTO> getAllChefs() throws SQLException{
 		String sql = "SELECT * FROM chef";
 		List<ChefDTO> chefList = new ArrayList<>();
@@ -164,6 +173,7 @@ public class ChefDAO {
 	}
 	
 	//READ (SELECT) Chef by name and surname
+	@Override
 	public List<ChefDTO> getChefByNameAndSurname(String nome, String cognome) throws SQLException{
 		String sql = "SELECT * FROM chef WHERE nomechef = ? AND cognomechef = ?";
 		List<ChefDTO> chefListEqualName = new ArrayList<>();

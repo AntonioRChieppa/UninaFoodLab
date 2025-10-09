@@ -1,6 +1,7 @@
 package controller;
 
-import dao.*;
+import dao.daoInterfaces.*;
+import dao.daoImplements.*;
 import dto.*;
 
 import java.time.*;
@@ -13,19 +14,20 @@ import java.sql.SQLException;
 
 public class Controller {
 
-		private ChefDAO chefDAO;
-		private CorsoDAO corsoDAO;
-		private RicettaDAO ricettaDAO;
-		private SessioneInPresenzaDAO sessioneIpDAO;
-		private SessioneOnlineDAO sessioneOnDAO;
-		private IngredienteDAO ingredienteDAO;
+		private ChefDAOInt chefDAO;
+		private CorsoDAOInt corsoDAO;
+		private RicettaDAOInt ricettaDAO;
+		private SessioneInPresenzaDAOInt sessioneIpDAO;
+		private SessioneOnlineDAOInt sessioneOnDAO;
+		private IngredienteDAOInt ingredienteDAO;
 		
 		public Controller() {
-			this.chefDAO = new ChefDAO();
-			this.corsoDAO = new CorsoDAO();
-			this.ricettaDAO = new RicettaDAO();
-			this.sessioneIpDAO = new SessioneInPresenzaDAO();
-			this.sessioneOnDAO = new SessioneOnlineDAO();
+			this.chefDAO = new ChefDAOImpl();
+			this.corsoDAO = new CorsoDAOImpl();
+			this.ricettaDAO = new RicettaDAOImpl();
+			this.sessioneIpDAO = new SessioneInPresenzaDAOImpl();
+			this.sessioneOnDAO = new SessioneOnlineDAOImpl();
+			this.ingredienteDAO = new IngredienteDAOImpl();
 		}
 		
 		//METODO PER NORMALIZZARE UNA STRINGA

@@ -1,17 +1,18 @@
-package dao;
+package dao.daoImplements;
 
 import dto.SessioneOnlineDTO;
 import dto.CorsoDTO;
-import dto.SessioneInPresenzaDTO;
 import db_connection.db_connection;
 import java.time.*;
+import dao.daoInterfaces.SessioneOnlineDAOInt;
 
 import java.sql.*;
 import java.util.*;
 
-public class SessioneOnlineDAO {
+public class SessioneOnlineDAOImpl implements SessioneOnlineDAOInt{
 
 		// INSERT newSessioneOnline - GESTIONE DEGLI INSERIMENTI IN UN'UNICA TRANSIZIONE
+		@Override
 		public void insertSessioneOnline(SessioneOnlineDTO sessioneOn) throws SQLException{
 			String insertSessioneSql = "INSERT INTO sessione (argomento, orainizio, datasessione, fkcorso) VALUES (?, ?, ?, ?) RETURNING idsessione";
 			String insertSessioneOnlineSql = "INSERT INTO sessioneonline (idsessioneonline, linkconferenza) VALUES (?, ?) ";
@@ -47,6 +48,7 @@ public class SessioneOnlineDAO {
 		}
 		
 		// UPDATE sessioneOnline - LOGICA COALESCE
+		@Override
 		public void updateSessioneOnline(SessioneOnlineDTO upSessioneOn) throws SQLException{
 			String updateSessione = "UPDATE sessione SET "+
 					"argomento = COALESCE(?, argomento), " +
@@ -98,6 +100,7 @@ public class SessioneOnlineDAO {
 		}
 		
 		// READ (SELECT) ALL SESSIONI ONLINE
+		@Override
 		public List<SessioneOnlineDTO> getAllSessioniOn() throws SQLException{
 			String sql = "SELECT * FROM sessione s"
 						+ "JOIN sessioneonline son"
@@ -119,7 +122,7 @@ public class SessioneOnlineDAO {
 		            if (sqlDate != null) {
 		            	sessioneOn.setDataSessione(sqlDate.toLocalDate());
 		            }
-		            CorsoDAO corsoSessioneDAO = new CorsoDAO();
+		            CorsoDAOImpl corsoSessioneDAO = new CorsoDAOImpl();
 		            CorsoDTO corsoSessione = corsoSessioneDAO.getCorsoById(rs.getInt("fkCorso"));
 		            sessioneOn.setCorsoSessione(corsoSessione);
 		            
@@ -133,6 +136,7 @@ public class SessioneOnlineDAO {
 		}
 		
 		// READ (SELECT) ALL SESSIONI ONLINE BY ARGOMENTO AND DATA
+		@Override
 		public SessioneOnlineDTO getSessioneOnByArgumentAndDate(String newArgomento, LocalDate newDataSessione) throws SQLException{
 			String sql = "SELECT * FROM sessione s"
 					+ "JOIN sessioneonline son"
@@ -154,7 +158,7 @@ public class SessioneOnlineDAO {
 		            if (sqlDate != null) {
 		            	sessioneOn.setDataSessione(sqlDate.toLocalDate());
 		            }
-		            CorsoDAO corsoSessioneDAO = new CorsoDAO();
+		            CorsoDAOImpl corsoSessioneDAO = new CorsoDAOImpl();
 		            CorsoDTO corsoSessione = corsoSessioneDAO.getCorsoById(rs.getInt("fkCorso"));
 		            sessioneOn.setCorsoSessione(corsoSessione);
 		            
@@ -169,6 +173,7 @@ public class SessioneOnlineDAO {
 		}
 		
 		// READ (SELECT) SESSIONE ONLINE BY ID
+		@Override
 		public SessioneOnlineDTO getSessioneOnById(int idSessioneOnline) throws SQLException{
 			String sql = "SELECT * FROM sessione s "
 		               + "JOIN sessioneonline son "
@@ -190,7 +195,7 @@ public class SessioneOnlineDAO {
 		            if (sqlDate != null) {
 		            	sessioneOn.setDataSessione(sqlDate.toLocalDate());
 		            }
-		            CorsoDAO corsoSessioneDAO = new CorsoDAO();
+		            CorsoDAOImpl corsoSessioneDAO = new CorsoDAOImpl();
 		            CorsoDTO corsoSessione = corsoSessioneDAO.getCorsoById(rs.getInt("fkCorso"));
 		            sessioneOn.setCorsoSessione(corsoSessione);
 		            
@@ -204,6 +209,7 @@ public class SessioneOnlineDAO {
 		}
 		
 		// READ (SELECT) ALL SESSIONI ONLINE BY CORSO
+		@Override
 		public List<SessioneOnlineDTO> getSessioniOnByCorso(int idCorso) throws SQLException{
 			String sql = "SELECT * FROM sessione s "
 					+ "JOIN sessioneonline son "
@@ -228,7 +234,7 @@ public class SessioneOnlineDAO {
 		            if (sqlDate != null) {
 		            	sessioneOn.setDataSessione(sqlDate.toLocalDate());
 		            }
-		            CorsoDAO corsoSessioneDAO = new CorsoDAO();
+		            CorsoDAOImpl corsoSessioneDAO = new CorsoDAOImpl();
 		            CorsoDTO corsoSessione = corsoSessioneDAO.getCorsoById(rs.getInt("fkCorso"));
 		            sessioneOn.setCorsoSessione(corsoSessione);
 		            
@@ -241,6 +247,7 @@ public class SessioneOnlineDAO {
 		}
 		
 		// DELETE SESSIONE ONLINE
+		@Override
 		public void deleteSessioneOnline(SessioneOnlineDTO sessioneOn) throws SQLException{
 			    String deleteSessioneSql = "DELETE FROM sessione WHERE idSessione = ?"; // eliminiamo solo da sessione, data la presenza del DELETE CASCADE
 			    String countSql = "SELECT COUNT(*) FROM sessione";
