@@ -32,7 +32,7 @@ public class ChefController {
 	// METODO DI VERIFICA INSERIMENTO NOME E COGNOME
 	public boolean isValidNameOrSurname(String input) {
 	    if (input == null || input.isEmpty()) return false;
-	    return input.matches("^[a-zA-Z]+$");
+	    return input.matches("^[a-zA-Z]+( [a-zA-Z]+)*$");
 	}
 	
 	// METODO PER CONTROLLARE I REQUISITI DI SICUREZZA DI UNA PASSWORD
