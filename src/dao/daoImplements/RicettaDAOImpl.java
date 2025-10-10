@@ -1,6 +1,7 @@
 package dao.daoImplements;
 
 import dto.RicettaDTO;
+import dto.IngredienteDTO;
 import db_connection.db_connection;
 import dao.daoInterfaces.RicettaDAOInt;
 
@@ -36,8 +37,19 @@ public class RicettaDAOImpl implements RicettaDAOInt{
 				+"WHERE idricetta = ?";
 		try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
 			ps.setString (1, ricetta.getNomeRicetta());
-			ps.setInt (2, ricetta.getTempoPreparazione());
-			ps.setInt (3, ricetta.getPorzioni());
+			
+			if(ricetta.getTempoPreparazione() == null) {
+			ps.setNull (2, java.sql.Types.INTEGER);
+			}
+			else {
+				ps.setInt(2, ricetta.getTempoPreparazione());
+			}
+			if(ricetta.getPorzioni() == null) {
+			ps.setNull (3, java.sql.Types.INTEGER);
+			}
+			else {
+				ps.setInt(3,ricetta.getPorzioni());
+			}
 			ps.setString(4, ricetta.getDifficolta());
 			ps.executeUpdate();
 		}
@@ -132,6 +144,25 @@ public class RicettaDAOImpl implements RicettaDAOInt{
 				return null;
 			}
 		}			
+	}
+	
+	//METODO PER AVERE I NOMI DI TUTTI GLI INGREDIENTI DI UNA RICETTA PASSATA PER ID
+	@Override
+	public List<String> getAllIngredientiByRicetta(int id) throws SQLException{
+		String sql = "SELECT * FROM ingredienti WHERE idRicetta=?";
+		List<String> listaIngredienti = new ArrayList<>();
+		
+		try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
+			
+			ps.setInt(1,id);
+			ResultSet rs = ps.executeQuery();
+			
+			while(rs.next()) {
+				String nomeIngrediente = rs.getString("nomeIngrediente");
+				listaIngredienti.add(nomeIngrediente);
+			}
+		}
+			return listaIngredienti;
 	}
 	
 }

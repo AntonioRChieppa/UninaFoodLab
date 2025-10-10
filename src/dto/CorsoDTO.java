@@ -20,12 +20,13 @@ public class CorsoDTO {
 		}
 		
 		// SPECIFIC CONSTRUCTOR
-		public CorsoDTO(int id, String nomeCorso, String argomento, LocalDate dataInizio, LocalDate dataFine, int anno, ChefDTO chefCorso) {
+		public CorsoDTO(int id, String nomeCorso, String categoria, LocalDate dataInizio,String frequenzaSessioni,Integer numeroSessioni, ChefDTO chefCorso) {
 			this.id = id;
 			this.nomeCorso = nomeCorso;
-			this.categoria = argomento;
+			this.categoria = categoria;
 			this.dataInizio = dataInizio;
-			this.numeroSessioni = anno;
+			this.frequenzaSessioni = frequenzaSessioni;
+			this.numeroSessioni = numeroSessioni;
 			this.chefCorso = chefCorso;
 		}
 		

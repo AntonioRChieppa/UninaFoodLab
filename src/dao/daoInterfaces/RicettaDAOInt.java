@@ -17,5 +17,7 @@ public interface RicettaDAOInt {
 	public List<RicettaDTO> getAllRecipes() throws SQLException;
 	
 	public RicettaDTO getRicettaById(int id) throws SQLException;
+	
+	public List<String> getAllIngredientiByRicetta(int id) throws SQLException;
 
 }

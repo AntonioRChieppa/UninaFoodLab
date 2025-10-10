@@ -49,13 +49,13 @@ public class CorsoDAOImpl implements CorsoDAOInt{
 				}
 				
 				if(newCorso.getNumeroSessioni()==null) {
-					ps.setNull(5, java.sql.Types.INTEGER);
+					ps.setNull(4, java.sql.Types.INTEGER);
 				} else {
-					ps.setInt(5, newCorso.getNumeroSessioni());
+					ps.setInt(4, newCorso.getNumeroSessioni());
 				}
 				
-				ps.setString(6, newCorso.getFrequenzaSessioni());
-				ps.setInt(7, newCorso.getId());
+				ps.setString(5, newCorso.getFrequenzaSessioni());
+				ps.setInt(6, newCorso.getId());
 				ps.executeUpdate();
 			}
 		}
@@ -178,8 +178,6 @@ public class CorsoDAOImpl implements CorsoDAOInt{
 			}
 		}
 		
-		// READ (SELECT) Corsi by argomento 
-		
 		//DELETE Corso
 		@Override
 		public void deleteCorso(CorsoDTO corso) throws SQLException{
@@ -199,5 +197,32 @@ public class CorsoDAOImpl implements CorsoDAOInt{
 			        }
 			        
 				}
+		}
+		// READ (SELECT) Corsi by categoria
+		@Override
+		public List<CorsoDTO> getCorsiPerCategoria() throws SQLException{
+			String sql = "SELECT * FROM corso WHERE categoria = ?";
+			List<CorsoDTO> elencoCorsi = new ArrayList<>();
+			try (Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
+				ResultSet rs = ps.executeQuery();
+				
+			while(rs.next()) {
+				CorsoDTO corso = new CorsoDTO();
+				corso.setId(rs.getInt("idCorso"));
+				corso.setNomeCorso(rs.getString("nomeCorso"));
+				java.sql.Date sqlDataInizio = rs.getDate("datainizio");
+				if(sqlDataInizio!=null)
+					corso.setDataInizio(sqlDataInizio.toLocalDate()); 
+				corso.setFrequenzaSessioni(rs.getString("frequenzaSessioni"));
+				corso.setNumeroSessioni(rs.getInt("numeroSessioni"));
+				
+				ChefDAOImpl chefCorsoDAO = new ChefDAOImpl();
+				ChefDTO chefCorso = chefCorsoDAO.getChefById(rs.getInt("fkChef"));
+				corso.setChefCorso(chefCorso);
+				elencoCorsi.add(corso);
+				
+			}
+			return elencoCorsi;
+			}
 		}
 }

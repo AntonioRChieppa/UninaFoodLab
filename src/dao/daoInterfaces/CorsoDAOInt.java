@@ -21,4 +21,6 @@ public interface CorsoDAOInt {
 	// public List<CorsoDTO> getCorsiByCategory() throws SQLException;
 	
 	public void deleteCorso(CorsoDTO corso) throws SQLException;
+	
+	public List<CorsoDTO> getCorsiPerCategoria() throws SQLException;
 }
