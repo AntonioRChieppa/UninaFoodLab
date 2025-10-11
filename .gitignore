@@ -1,2 +1,29 @@
-bin/
+# === Eclipse ===
+.project
+.classpath
+.settings/
+
+# === VS Code ===
 .vscode/
+
+# === Cartelle di build ===
+/bin/
+/out/
+/target/
+
+# === File compilati ===
+*.class
+*.jar
+*.war
+*.ear
+
+# === File temporanei ===
+*.log
+*.tmp
+*.bak
+*~
+
+# === OS files ===
+.DS_Store
+Thumbs.db
+
