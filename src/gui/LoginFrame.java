@@ -1,217 +1,238 @@
 package gui;
 
-import java.awt.EventQueue;
-
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
+import controller.ChefController;
+import exception.InvalidCredentialsException;
+import exception.OperationException;
 import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.SystemColor;
-import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.awt.event.ActionEvent;
-import controller.ChefController;
-import exception.*;
-import java.io.File;
-import javax.swing.ImageIcon;
-
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
-
-
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 
 public class LoginFrame extends JFrame {
-	
-	// elementi grafici
-	private static final long serialVersionUID = 1L;
-	private JPanel contentPane;
-	private JPanel sideBarPanel;
-	private JLabel lblNewLabel;
-	private JPanel loginPanel;
-	private JLabel lblAccess;
-	private JLabel emailLabel;
-	private JTextField emailField;
-	private JLabel passwordLabel;
-	private JPasswordField passwordField;
-	private JButton loginButton;
-	private JButton registerButton;
-	
-	// chef controller
-	private ChefController chefController;
-	
-	// next screen - Home or Registration
-	private HomeFrame homeFrame;
-	private RegisterFrame registerFrame;
 
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					LoginFrame frame = new LoginFrame();
-					frame.setVisible(true);
+    private static final long serialVersionUID = 1L;
 
-					HomeFrame frame2 = new HomeFrame(frame);
-					RegisterFrame frame3 = new RegisterFrame();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+    // elementi grafici
+    private final JPanel contentPane; //rimane costante fino al termine del programma
+    private JPanel sideBarPanel;
+    private JLabel brandTitle;
+    private JLabel brandSubtitle;
+    private JPanel accentLine;
+    private JPanel loginPanel;
+    private JPanel formCard;
+    private JLabel welcomeLabel;
+    private JLabel welcomeSubtitle;
+    private JLabel lblAccess;
+    private JLabel emailLabel;
+    private JTextField emailField;
+    private JLabel passwordLabel;
+    private JPasswordField passwordField;
+    private JLabel registerHintLabel;
+    private JButton loginButton;
 
-	/**
-	 * Create the frame.
-	 */
-	public LoginFrame() {
+    // controller
+    private ChefController chefController;
+
+    // frame indirizzabili
+    private HomeFrame homeFrame;
+    private RegisterFrame registerFrame;
+
+    public static void main(String[] args) {
+        EventQueue.invokeLater(() -> {
+            try {
+                LoginFrame frame = new LoginFrame();
+                frame.setVisible(true);
+
+                HomeFrame frame2 = new HomeFrame(frame);
+                RegisterFrame frame3 = new RegisterFrame();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public LoginFrame() {
         super("UninaFoodLab");
-        
+
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
-		setSize(850,450);
-		setLocationRelativeTo(null);
-        
+        setSize(850, 500);
+        setLocationRelativeTo(null);
+
         contentPane = new JPanel();
         contentPane.setBackground(Color.WHITE);
-        contentPane.setForeground(Color.WHITE);
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-        setContentPane(contentPane);
         contentPane.setLayout(null);
+        setContentPane(contentPane);
 
+        buildSideBar(); // void per costruire la barra laterale "UninaFoodLab"
+        buildLoginPanel(); // void per costruire il pannello del login / reindirizzamento alla registrazione
+    }
+
+    private void buildSideBar() {
         sideBarPanel = new JPanel();
         sideBarPanel.setBackground(SystemColor.textHighlight);
-        sideBarPanel.setBounds(0, 0, 300, 450);
-        contentPane.add(sideBarPanel);
         sideBarPanel.setLayout(null);
-        
-        // "UninaFoodLab" label
-        lblNewLabel = new JLabel("UninaFoodLab", JLabel.CENTER);
-        lblNewLabel.setForeground(Color.WHITE);
-        lblNewLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
-        lblNewLabel.setBounds(47, 276, 206, 43); // (300-206)/2 = 47, 100+150+20=270
-        sideBarPanel.add(lblNewLabel);
-        
-        JLabel lblNewLabel_1 = new JLabel("");
-        lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
-        lblNewLabel_1.setIcon(new ImageIcon(LoginFrame.class.getResource("/icons/logo_UninaFoodLab.png")));
-        lblNewLabel_1.setBounds(47, 93, 206, 172);
-        sideBarPanel.add(lblNewLabel_1);
+        sideBarPanel.setBounds(0, 0, 300, 500);
+        contentPane.add(sideBarPanel);
 
+        brandTitle = new JLabel("UninaFoodLab", SwingConstants.CENTER);
+        brandTitle.setForeground(Color.WHITE);
+        brandTitle.setFont(new Font("SansSerif", Font.BOLD, 28));
+        brandTitle.setBounds(20, 90, 260, 36);
+        sideBarPanel.add(brandTitle);
+
+        brandSubtitle = new JLabel("Cucina · Impara · Condividi", SwingConstants.CENTER);
+        brandSubtitle.setForeground(new Color(230, 242, 255));
+        brandSubtitle.setFont(new Font("SansSerif", Font.PLAIN, 15));
+        brandSubtitle.setBounds(20, 130, 260, 24);
+        sideBarPanel.add(brandSubtitle);
+
+        accentLine = new JPanel();
+        accentLine.setBackground(new Color(255, 255, 255, 140));
+        accentLine.setBounds(70, 170, 160, 3);
+        sideBarPanel.add(accentLine);
+
+        String[] sidebarPoints = {
+            "• Pianifica le sessioni",
+            "• Gestisci le ricette",
+            "• Coordina i corsi"
+        };
+        for (int i = 0; i < sidebarPoints.length; i++) {
+            JLabel pointLabel = new JLabel(sidebarPoints[i]);
+            pointLabel.setForeground(new Color(230, 242, 255));
+            pointLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
+            pointLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            pointLabel.setBounds(20, 200 + (i * 28), 260, 20);
+            sideBarPanel.add(pointLabel);
+        }
+
+    }
+
+    private void buildLoginPanel() {
         loginPanel = new JPanel();
-        loginPanel.setBounds(298, 0, 600, 450);
-        contentPane.add(loginPanel);
+        loginPanel.setBackground(new Color(245, 247, 252));
         loginPanel.setLayout(null);
+        loginPanel.setBounds(300, 0, 550, 500);
+        contentPane.add(loginPanel);
 
-        // "Welcome Back!" label
-        lblAccess = new JLabel("Effettua l'accesso!", JLabel.CENTER);
-        lblAccess.setForeground(SystemColor.textHighlight);
-        lblAccess.setFont(new Font("SansSerif", Font.BOLD, 24));
-        int welcomeWidth = 300;
-        int welcomeHeight = 40;
-        lblAccess.setBounds(130, 52, welcomeWidth, welcomeHeight);
-        loginPanel.add(lblAccess);
-        
-        // Email label
+        int panelWidth = 550;
+        int cardWidth = 360;
+        int cardHeight = 330;
+        int cardX = (panelWidth - cardWidth) / 2;
+        int cardY = 60;
+
+        formCard = new JPanel();
+        formCard.setBackground(Color.WHITE);
+        formCard.setBorder(new LineBorder(new Color(220, 225, 235), 1, true));
+        formCard.setLayout(null);
+        formCard.setBounds(cardX, cardY, cardWidth, cardHeight);
+        loginPanel.add(formCard);
+
+        welcomeLabel = new JLabel("Bentornato!", SwingConstants.LEFT);
+        welcomeLabel.setForeground(new Color(51, 63, 81));
+        welcomeLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
+        welcomeLabel.setBounds(24, 18, 240, 28);
+        formCard.add(welcomeLabel);
+
+        welcomeSubtitle = new JLabel("Inserisci le tue credenziali per continuare", SwingConstants.LEFT);
+        welcomeSubtitle.setForeground(new Color(105, 115, 134));
+        welcomeSubtitle.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        welcomeSubtitle.setBounds(24, 44, 300, 18);
+        formCard.add(welcomeSubtitle);
+
+        lblAccess = new JLabel("Effettua il login", SwingConstants.LEFT);
+        lblAccess.setForeground(new Color(51, 63, 81));
+        lblAccess.setFont(new Font("SansSerif", Font.BOLD, 16));
+        lblAccess.setBounds(24, 72, 200, 20);
+        formCard.add(lblAccess);
+
         emailLabel = new JLabel("Email");
-        emailLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        emailLabel.setBounds(130, 118, 300, 25);
-        loginPanel.add(emailLabel);
+        emailLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        emailLabel.setBounds(24, 100, 300, 20);
+        formCard.add(emailLabel);
 
-        // Email text field
         emailField = new JTextField();
-        emailField.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        emailField.setBounds(130, 153, 300, 30);
-        loginPanel.add(emailField);
+        emailField.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        emailField.setBounds(24, 120, 312, 32);
+        formCard.add(emailField);
 
-        // Password label
         passwordLabel = new JLabel("Password");
-        passwordLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        passwordLabel.setBounds(130, 193, 300, 25);
-        loginPanel.add(passwordLabel);
+        passwordLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        passwordLabel.setBounds(24, 164, 300, 20);
+        formCard.add(passwordLabel);
 
-        // Password field
         passwordField = new JPasswordField();
-        passwordField.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        passwordField.setBounds(130, 228, 300, 30);
-        loginPanel.add(passwordField);
+        passwordField.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        passwordField.setBounds(24, 184, 312, 32);
+        formCard.add(passwordField);
 
-        // Log in button
         loginButton = new JButton("Log in");
-        loginButton.setFont(new Font("SansSerif", Font.BOLD, 16));
+        loginButton.setFont(new Font("SansSerif", Font.BOLD, 15));
         loginButton.setBackground(SystemColor.textHighlight);
         loginButton.setForeground(Color.WHITE);
-        loginButton.setBounds(130, 279, 140, 40);
+        loginButton.setBounds(110, 236, 140, 40);
         loginButton.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		executeLogin();
-        	}
+            @Override
+            public void actionPerformed(ActionEvent e){
+                executeLogin();
+            }
         });
-        loginPanel.add(loginButton);
+        formCard.add(loginButton);
 
-        // Register now button
-        registerButton = new JButton("Registrati ora");
-        registerButton.setFont(new Font("SansSerif", Font.BOLD, 16));
-        registerButton.setBackground(new Color(64, 224, 208)); // Turquoise
-        registerButton.setForeground(Color.WHITE);
-        registerButton.setBounds(290, 279, 140, 40);
-        registerButton.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		goToRegistrationFrame();
-        	}
+        registerHintLabel = new JLabel("Non hai un account? Registrati per iniziare.", SwingConstants.CENTER);
+        registerHintLabel.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        registerHintLabel.setForeground(new Color(72, 107, 196));
+        registerHintLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        registerHintLabel.setBounds(24, 295, 312, 20);
+        registerHintLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                goToRegistrationFrame();
+            }
         });
-        loginPanel.add(registerButton);
-        
-        setVisible(true);
-
-	}
-	
-	// FUNZIONI AUSILIARIE
-	public void executeLogin() {
-		String email = emailField.getText();
-		String password = new String(passwordField.getPassword());
-		try {
-			chefController = new ChefController();
-			chefController.loginChef(email, password);
-			JOptionPane.showMessageDialog(LoginFrame.this, "Login effettuato con successo!", "Success", JOptionPane.INFORMATION_MESSAGE);
-			LoginFrame.this.setVisible(false);
-			homeFrame = new HomeFrame(this);
-			homeFrame.setVisible(true);
-		} catch(InvalidCredentialsException ex) {
-			 JOptionPane.showMessageDialog(LoginFrame.this, ex.getMessage(), "Login Error", JOptionPane.ERROR_MESSAGE);
-			 emailField.setText("");
-	         passwordField.setText("");
-		} catch(OperationException ex) {
-			JOptionPane.showMessageDialog(LoginFrame.this, ex.getMessage(), "Operation Error", JOptionPane.ERROR_MESSAGE);
-			emailField.setText("");
-	        passwordField.setText("");
-		}
-	}
-	
-	public void goToRegistrationFrame() {
-		registerFrame = new RegisterFrame();
-		LoginFrame.this.setVisible(false);
-		registerFrame.setVisible(true);
-	}
-	
-
-public ImageIcon loadImage(String resourcePath, int width, int height) {
-    try {
-        BufferedImage originalImage = ImageIO.read(new File(resourcePath));
-        BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2d = resizedImage.createGraphics();
-        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2d.drawImage(originalImage, 0, 0, width, height, null);
-        g2d.dispose();
-        return new ImageIcon(resizedImage);
-    } catch (IOException e) {
-        e.printStackTrace();
-        return null;
+        formCard.add(registerHintLabel);
     }
-}
+
+    public void executeLogin() {
+        String email = emailField.getText();
+        String password = new String(passwordField.getPassword());
+        try {
+            chefController = new ChefController();
+            chefController.loginChef(email, password);
+            JOptionPane.showMessageDialog(LoginFrame.this, "Login effettuato con successo!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            LoginFrame.this.setVisible(false);
+            homeFrame = new HomeFrame(this);
+            homeFrame.setVisible(true);
+        } catch (InvalidCredentialsException ex) {
+            JOptionPane.showMessageDialog(LoginFrame.this, ex.getMessage(), "Login Error", JOptionPane.ERROR_MESSAGE);
+            emailField.setText("");
+            passwordField.setText("");
+        } catch (OperationException ex) {
+            JOptionPane.showMessageDialog(LoginFrame.this, ex.getMessage(), "Operation Error", JOptionPane.ERROR_MESSAGE);
+            emailField.setText("");
+            passwordField.setText("");
+        }
+    }
+
+    public void goToRegistrationFrame() {
+        registerFrame = new RegisterFrame();
+        LoginFrame.this.setVisible(false);
+        registerFrame.setVisible(true);
+    }
 }

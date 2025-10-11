@@ -1,16 +1,13 @@
 package controller;
 
-import dao.daoInterfaces.*;
 import dao.daoImplements.*;
+import dao.daoInterfaces.*;
 import dto.*;
-
-import java.time.*;
-import session.SessionChef;
-
 import exception.*;
-
-import java.util.*;
 import java.sql.SQLException;
+import java.time.*;
+import java.util.*;
+import session.SessionChef;
 
 public class Controller {
 
@@ -593,7 +590,7 @@ public class Controller {
 			ingredienteDAO.insertIngrediente(ingrediente);
 			}
 			catch (SQLException e) {
-				throw new OperationException("Erorre nell'inserimento dell'ingrediente");
+				throw new OperationException("Errore nell'inserimento dell'ingrediente");
 			}
 		}
 		
