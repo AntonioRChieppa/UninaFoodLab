@@ -1,2 +1,23 @@
+# Ignore compiled classes and build output
 bin/
+*.class
+
+# Keep gradle/maven build directories if present
+build/
+target/
+
+# IDE files
+.classpath
+.project
+.settings/
+.idea/
+*.iml
 .vscode/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Misc
+sources.txt
+src_list.txt
