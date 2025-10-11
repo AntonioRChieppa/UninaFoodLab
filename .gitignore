@@ -1,22 +1,36 @@
-# Ignore compiled classes and build output
-bin/
-*.class
-
-# Keep gradle/maven build directories if present
-build/
-target/
-
-# IDE files
-.classpath
+# === Eclipse ===
 .project
+.classpath
 .settings/
-.idea/
-*.iml
+
+# === VS Code ===
 .vscode/
 
-# OS files
-Thumbs.db
+# === IDEs ===
+.idea/
+*.iml
+
+# === Build folders ===
+/bin/
+/out/
+/target/
+/build/
+
+# === Compiled files ===
+*.class
+*.jar
+*.war
+*.ear
+
+# === Temporary files ===
+*.log
+*.tmp
+*.bak
+*~
+
+# === OS files ===
 .DS_Store
+Thumbs.db
 
 # Misc
 sources.txt
