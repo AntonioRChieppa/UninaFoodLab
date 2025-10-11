@@ -556,6 +556,22 @@ public class Controller {
 			}
 		}
 		
+		//METODO PER VISUALIZZARE TUTTI GLI INGREDIENTI DI UNA RICETTA
+		public List<String> visualizzaTuttiIngredientiRicetta(int newId) throws NotFoundException, OperationException{
+			try {
+				List <String> listaIngredientiRicetta = ricettaDAO.getAllIngredientiRicetta(newId);
+				
+				if(listaIngredientiRicetta == null) {
+					throw new NotFoundException("Non sono presenti ingredienti nella ricetta selezionata");
+				}
+				else {
+					return listaIngredientiRicetta;
+				}
+			}catch(SQLException ex) {
+					throw new OperationException("Errore durante la visualizzazione degli ingredienti della ricetta");	
+			}
+		}
+		
 		//------------FINE METODI RICETTA-------------
 		
 		//----------------------------------------------------------------------------------------------------------------------------

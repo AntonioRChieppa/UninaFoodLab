@@ -148,7 +148,7 @@ public class RicettaDAOImpl implements RicettaDAOInt{
 	
 	//METODO PER AVERE I NOMI DI TUTTI GLI INGREDIENTI DI UNA RICETTA PASSATA PER ID
 	@Override
-	public List<String> getAllIngredientiByRicetta(int id) throws SQLException{
+	public List<String> getAllIngredientiRicetta(int id) throws SQLException{
 		String sql = "SELECT * FROM ingredienti WHERE idRicetta=?";
 		List<String> listaIngredienti = new ArrayList<>();
 		
