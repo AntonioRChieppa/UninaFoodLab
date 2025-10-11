@@ -14,16 +14,16 @@ public class RicettaDTO {
 	private Integer porzioni;
 	private String difficolta;
 	private SessioneDTO sessioneRicetta;
-	private IngredienteDTO ingredienteRicetta;
-	private List<IngredienteDTO> listaIngredienti;
+	private IngredienteDTO ingredienteRicetta; // added missing field
+	
 	
 	//COSTRUTTORE DI DEFAULT
 	public RicettaDTO () {
-	listaIngredienti = new ArrayList<>();
-	}
 	
+	}
+
 	//COSTRUTTORE SPECIFICO
-	public RicettaDTO(int id, String nomeRicetta, Integer tempoPreparazione, Integer porzioni, String difficolta,IngredienteDTO ingredienteRicetta, SessioneDTO sessioneRicetta) {
+	public RicettaDTO(int id, String nomeRicetta, Integer tempoPreparazione, Integer porzioni, String difficolta, SessioneDTO sessioneRicetta, IngredienteDTO ingredienteRicetta) {
 		this.id = id;
 		this.nomeRicetta = nomeRicetta;
 		this.tempoPreparazione = tempoPreparazione;
@@ -31,7 +31,6 @@ public class RicettaDTO {
 		this.difficolta = difficolta;
 		this.sessioneRicetta = sessioneRicetta;
 		this.ingredienteRicetta = ingredienteRicetta;
-		listaIngredienti = new ArrayList<>();
 	}
 	
 	//GETTER E SETTER

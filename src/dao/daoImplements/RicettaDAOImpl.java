@@ -13,7 +13,7 @@ public class RicettaDAOImpl implements RicettaDAOInt{
 	//Insert newRicetta
 	@Override
 	public void insertRicetta(RicettaDTO ricetta) throws SQLException{
-		String sql = "INSERT INTO ricetta (nomericetta, tempopreparazione, porzioni, difficolta,fkSessione VALUES (?,?,?,?,?)" ;
+		String sql = "INSERT INTO ricetta (nomericetta, tempopreparazione, porzioni, difficolta, fkSessione) VALUES (?,?,?,?,?)" ;
 		
 		try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
 			ps.setString (1, ricetta.getNomeRicetta());
@@ -33,9 +33,10 @@ public class RicettaDAOImpl implements RicettaDAOInt{
 				+"tempoPreparazione = COALESCE(?,tempoPreparazione),"
 				+"porzioni =  COALESCE(?,porzioni),"
 				+"difficolta = COALESCE(?,difficolta),"
-				+"tipoSessione = COALESCE (?,sessioneRicetta)"
+				+"fksessione = COALESCE (?,fksessione)"
 				+"WHERE idricetta = ?";
 		try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
+			
 			ps.setString (1, ricetta.getNomeRicetta());
 			
 			if(ricetta.getTempoPreparazione() == null) {
@@ -51,6 +52,9 @@ public class RicettaDAOImpl implements RicettaDAOInt{
 				ps.setInt(3,ricetta.getPorzioni());
 			}
 			ps.setString(4, ricetta.getDifficolta());
+			ps.setInt(5,ricetta.getSessioneRicetta().getIdSessione());
+			ps.setInt(6,ricetta.getId());
+			
 			ps.executeUpdate();
 		}
 	}
@@ -58,7 +62,7 @@ public class RicettaDAOImpl implements RicettaDAOInt{
 	//DELETE Ricetta
 	@Override
 	public void deleteRicetta(RicettaDTO ricetta) throws SQLException {
-		String deleteSql = "DELETE FROM ricetta WHERE idRicetta? ?";
+		String deleteSql = "DELETE FROM ricetta WHERE idricetta = ?";
 		String countSql = "SELECT COUNT(*) FROM ricetta";
 		String resetSqlId = "ALTER SEQUENCE ricetta_idricetta_seq RESTART WITH 1";
 		
@@ -145,24 +149,4 @@ public class RicettaDAOImpl implements RicettaDAOInt{
 			}
 		}			
 	}
-	
-	//METODO PER AVERE I NOMI DI TUTTI GLI INGREDIENTI DI UNA RICETTA PASSATA PER ID
-	@Override
-	public List<String> getAllIngredientiRicetta(int id) throws SQLException{
-		String sql = "SELECT * FROM ingredienti WHERE idRicetta=?";
-		List<String> listaIngredienti = new ArrayList<>();
-		
-		try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
-			
-			ps.setInt(1,id);
-			ResultSet rs = ps.executeQuery();
-			
-			while(rs.next()) {
-				String nomeIngrediente = rs.getString("nomeIngrediente");
-				listaIngredienti.add(nomeIngrediente);
-			}
-		}
-			return listaIngredienti;
-	}
-	
 }

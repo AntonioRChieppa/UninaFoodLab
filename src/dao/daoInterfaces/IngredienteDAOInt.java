@@ -2,6 +2,7 @@ package dao.daoInterfaces;
 
 import dto.IngredienteDTO;
 import java.sql.SQLException;
+import java.util.List;
 
 public interface IngredienteDAOInt {
 
@@ -14,4 +15,6 @@ public interface IngredienteDAOInt {
 	public IngredienteDTO getIngredienteByName(String nomeIngrediente) throws SQLException;
 	
 	public IngredienteDTO getIngredienteById(int id) throws SQLException;
+	
+	public List<String> getAllIngredientiRicetta(int id) throws SQLException;
 }

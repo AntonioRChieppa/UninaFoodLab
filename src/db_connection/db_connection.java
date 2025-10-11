@@ -6,7 +6,7 @@ public class db_connection {
 	
 	private static final String URL = "jdbc:postgresql://localhost:5432/uninafoodlab";
 	private static final String USER = "postgres";
-	private static final String PASSWORD = "Aurorina2013";
+	private static final String PASSWORD = "Laura1998";
 	
 	private static Connection conn = null;
 	

@@ -5,6 +5,8 @@ import db_connection.db_connection;
 import dao.daoInterfaces.IngredienteDAOInt;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class IngredienteDAOImpl implements IngredienteDAOInt{
 
@@ -94,5 +96,24 @@ public class IngredienteDAOImpl implements IngredienteDAOInt{
 			return null;
 		}
 		}
+	}
+	
+	//METODO PER AVERE I NOMI DI TUTTI GLI INGREDIENTI DI UNA RICETTA PASSATA PER ID
+	@Override
+	public List<String> getAllIngredientiRicetta(int id) throws SQLException{
+		String sql = "SELECT * FROM ingredienti WHERE fkricetta = ?";
+		List<String> listaIngredienti = new ArrayList<>();
+		
+		try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
+			
+			ps.setInt(1,id);
+			ResultSet rs = ps.executeQuery();
+			
+			while(rs.next()) {
+				String nomeIngrediente = rs.getString("nomeIngrediente");
+				listaIngredienti.add(nomeIngrediente);
+			}
+		}
+			return listaIngredienti;
 	}
 }
