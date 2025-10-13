@@ -30,7 +30,7 @@ public class RicettaDAOImpl implements RicettaDAOInt{
 	public void updateRicetta(RicettaDTO ricetta) throws SQLException{
 		String sql = "UPDATE ricetta SET "
 				+"nomericetta = COALESCE(?,nomericetta)," 
-				+"tempoPreparazione = COALESCE(?,tempoPreparazione),"
+				+"tempopreparazione = COALESCE(?,tempopreparazione),"
 				+"porzioni =  COALESCE(?,porzioni),"
 				+"difficolta = COALESCE(?,difficolta),"
 				+"fksessione = COALESCE (?,fksessione)"

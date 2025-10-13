@@ -17,6 +17,7 @@ public class Controller {
 		private SessioneInPresenzaDAOInt sessioneIpDAO;
 		private SessioneOnlineDAOInt sessioneOnDAO;
 		private IngredienteDAOInt ingredienteDAO;
+		private ComposizioneDAOInt composizioneDAO;
 		
 		public Controller() {
 			this.chefDAO = new ChefDAOImpl();
@@ -25,6 +26,7 @@ public class Controller {
 			this.sessioneIpDAO = new SessioneInPresenzaDAOImpl();
 			this.sessioneOnDAO = new SessioneOnlineDAOImpl();
 			this.ingredienteDAO = new IngredienteDAOImpl();
+			this.composizioneDAO = new ComposizioneDAOImpl();
 		}
 		
 		//METODO PER NORMALIZZARE UNA STRINGA
@@ -497,9 +499,9 @@ public class Controller {
 		public void aggiornaRicetta(String newNomeRicetta, int newTempoPreparazione, int newPorzioni, String newDifficolta )throws NotFoundException, OperationException {
 			try {
 				String nomeNormalizzato = normalizzaNomeInserito(newNomeRicetta);
-				RicettaDTO ricettaCercata = ricettaDAO.getRicettaByName(nomeNormalizzato);
+				RicettaDTO ricetta = ricettaDAO.getRicettaByName(nomeNormalizzato);
 				
-				if(ricettaCercata==null) {
+				if(ricetta==null) {
 					throw new NotFoundException("Ricetta cercata non trovata");
 				}
 				
@@ -509,6 +511,21 @@ public class Controller {
 				updateRicetta.setPorzioni(newPorzioni);
 				updateRicetta.setDifficolta(newDifficolta);
 				
+				if(updateRicetta.getNomeRicetta()!=null && updateRicetta.getNomeRicetta().equals(ricetta.getNomeRicetta())) {
+					updateRicetta.setNomeRicetta(null);
+				}
+				
+				if(updateRicetta.getTempoPreparazione()!=null && updateRicetta.getTempoPreparazione().equals(ricetta.getTempoPreparazione())) {
+					updateRicetta.setTempoPreparazione(null);
+				}
+				
+				if(updateRicetta.getPorzioni()!=null && updateRicetta.getPorzioni().equals(ricetta.getPorzioni())) {
+					updateRicetta.setPorzioni(null);
+				}
+				
+				if(updateRicetta.getDifficolta()!=null && updateRicetta.getDifficolta().equals(ricetta.getDifficolta())) {
+					updateRicetta.setDifficolta(null);
+				}
 				ricettaDAO.updateRicetta(updateRicetta);
 			}
 			catch(SQLException ex) {
@@ -553,22 +570,6 @@ public class Controller {
 			}
 		}
 		
-		//METODO PER VISUALIZZARE TUTTI GLI INGREDIENTI DI UNA RICETTA
-		public List<String> visualizzaTuttiIngredientiRicetta(int newId) throws NotFoundException, OperationException{
-			try {
-				List<String> listaIngredientiRicetta = ingredienteDAO.getAllIngredientiRicetta(newId);
-				
-				if(listaIngredientiRicetta == null) {
-					throw new NotFoundException("Non sono presenti ingredienti nella ricetta selezionata");
-				}
-				else {
-					return listaIngredientiRicetta;
-				}
-			}catch(SQLException ex) {
-					throw new OperationException("Errore durante la visualizzazione degli ingredienti della ricetta");	
-			}
-		}
-		
 		//------------FINE METODI RICETTA-------------
 		
 		//----------------------------------------------------------------------------------------------------------------------------
@@ -585,6 +586,7 @@ public class Controller {
 				throw new AlreadyExistsException("Ingrediente già registrato");
 			}
 			IngredienteDTO ingrediente = new IngredienteDTO();
+			
 			ingrediente.setNomeIngrediente(newNomeIngrediente);
 			ingrediente.setTipologia(newTipologia);
 			ingredienteDAO.insertIngrediente(ingrediente);
@@ -598,14 +600,25 @@ public class Controller {
 		public void aggiornaIngrediente(String newNomeIngrediente, String newTipologia) throws NotFoundException, OperationException{
 			try {
 				String nomeNormalizzato = normalizzaNomeInserito(newNomeIngrediente);
-				IngredienteDTO trovaIngrediente = ingredienteDAO.getIngredienteByName(nomeNormalizzato);
+				IngredienteDTO ingrediente = ingredienteDAO.getIngredienteByName(nomeNormalizzato);
 				
-				if(trovaIngrediente == null) {
+				if(ingrediente == null) {
 					throw new NotFoundException("Ingrediente inserito non trovato. Registralo!");
 				}
+				
 				IngredienteDTO updateIngrediente = new IngredienteDTO();
+		
 				updateIngrediente.setNomeIngrediente(newNomeIngrediente);
 				updateIngrediente.setTipologia(newTipologia);
+				
+				if(updateIngrediente.getNomeIngrediente()!=null && updateIngrediente.getNomeIngrediente().equals(ingrediente.getNomeIngrediente())) {
+					updateIngrediente.setNomeIngrediente(null);
+				}
+				
+				if(updateIngrediente.getTipologia()!=null && updateIngrediente.getTipologia().equals(ingrediente.getTipologia())){
+					ingrediente.setTipologia(null);
+				}
+				
 				ingredienteDAO.updateIngrediente(updateIngrediente);
 			}catch(SQLException e) {
 				throw new OperationException("Errore dirante l'aggiornamento dell'ingrediente");
@@ -629,4 +642,61 @@ public class Controller {
 		
 		//------------FINE METODI INGREDIENTE-------------
 		
+		
+		
+		//----------------------------------------------------------------------------------------------------------------------------
+		
+		
+		//INIZIO METODI COMPOSIZIONE
+		
+		//METODO PER ASSOCIARE UN INGREDIENTE AD UNA RICETTA
+		public List<ComposizioneDTO> associaIngredienteARicetta(int newIdIngrediente, int newIdRicetta) throws NotFoundException, AlreadyExistsException, OperationException{
+			try {
+				IngredienteDTO ingrediente = ingredienteDAO.getIngredienteById(newIdIngrediente);
+				RicettaDTO ricetta = ricettaDAO.getRicettaById(newIdRicetta);
+				
+				if(ingrediente == null) {
+					throw new NotFoundException("Ingrediente non trovato. Registralo!");
+				}
+				
+				if(ricetta == null) {
+					throw new NotFoundException("Ricetta non trovata. Registrala!");
+				}
+				
+				List<ComposizioneDTO> elencoIngredientiRicetta = composizioneDAO.getAllIngredientiRicetta(newIdRicetta);
+				
+				if(elencoIngredientiRicetta == null) {
+					throw new AlreadyExistsException("L'ingrediente selezionato è già associato alla ricetta scelta");
+				}
+				
+				ComposizioneDTO composizione = new ComposizioneDTO();
+				
+				composizione.setIngredienteRicetta(ingrediente);
+				composizione.setRicettaIngrediente(ricetta);
+				
+				composizioneDAO.insertComposizione(composizione);
+				return elencoIngredientiRicetta;
+			
+			}catch(SQLException ex) {
+				throw new OperationException("Errore durante l'associazione dell'ingrediente alla ricetta");
+			}
+		}
+		
+		
+		/*METODO PER VISUALIZZARE TUTTI GLI INGREDIENTI DI UNA RICETTA
+				public List<String> visualizzaTuttiIngredientiRicetta(int newId) throws NotFoundException, OperationException{
+					try {
+						List<String> listaIngredientiRicetta = composizioneDAO.getAllIngredientiRicetta(newId);
+						
+						if(listaIngredientiRicetta == null) {
+							throw new NotFoundException("Non sono presenti ingredienti nella ricetta selezionata");
+						}
+						else {
+							return listaIngredientiRicetta;
+						}
+					}catch(SQLException ex) {
+							throw new OperationException("Errore durante la visualizzazione degli ingredienti della ricetta");	
+					}
+				}
+				*/
 }

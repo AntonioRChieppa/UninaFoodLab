@@ -33,7 +33,7 @@ public class CorsoDAOImpl implements CorsoDAOInt{
 		               + "nomecorso = COALESCE(?, nomecorso), "
 		               + "categoria = COALESCE(?, categoria), "
 		               + "datainizio = COALESCE(?, datainizio) "
-		               + "numeroSessioni = COALESCE(?, numeroSessioni) "
+		               + "numerosessioni = COALESCE(?, numerosessioni) "
 		               + "frequenzasessioni = COALESCE(?, frequenzasessioni) "
 		               + "WHERE idcorso = ?";
 			

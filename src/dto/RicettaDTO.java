@@ -1,7 +1,5 @@
 package dto;
 
-import dto.IngredienteDTO;
-import dto.SessioneDTO;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -14,7 +12,7 @@ public class RicettaDTO {
 	private Integer porzioni;
 	private String difficolta;
 	private SessioneDTO sessioneRicetta;
-	private IngredienteDTO ingredienteRicetta; // added missing field
+	
 	
 	
 	//COSTRUTTORE DI DEFAULT
@@ -23,14 +21,13 @@ public class RicettaDTO {
 	}
 
 	//COSTRUTTORE SPECIFICO
-	public RicettaDTO(int id, String nomeRicetta, Integer tempoPreparazione, Integer porzioni, String difficolta, SessioneDTO sessioneRicetta, IngredienteDTO ingredienteRicetta) {
+	public RicettaDTO(int id, String nomeRicetta, Integer tempoPreparazione, Integer porzioni, String difficolta, SessioneDTO sessioneRicetta) {
 		this.id = id;
 		this.nomeRicetta = nomeRicetta;
 		this.tempoPreparazione = tempoPreparazione;
 		this.porzioni = porzioni;
 		this.difficolta = difficolta;
 		this.sessioneRicetta = sessioneRicetta;
-		this.ingredienteRicetta = ingredienteRicetta;
 	}
 	
 	//GETTER E SETTER
@@ -81,13 +78,5 @@ public class RicettaDTO {
 	
 	public void setSessioneRicetta(SessioneDTO sessioneRicetta){
 		this.sessioneRicetta = sessioneRicetta;
-	}
-	
-	public IngredienteDTO getIngredienteRicetta() {
-		return ingredienteRicetta;
-	}
-	
-	public void setIngredienteRicetta(IngredienteDTO ingredienteRicetta) {
-		this.ingredienteRicetta = ingredienteRicetta;
 	}
 }
