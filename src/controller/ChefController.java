@@ -109,6 +109,7 @@ public class ChefController {
 			}
 									
 			SessionChef.setChefId(chef.getId());
+			SessionChef.setNameChef(chef.getNome());
 			return chef;
 		}
 		catch(SQLException ex) {
