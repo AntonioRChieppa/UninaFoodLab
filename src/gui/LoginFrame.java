@@ -208,6 +208,10 @@ public class LoginFrame extends JFrame {
         });
         formCard.add(registerHintLabel);
     }
+    
+    // =========================================================================
+ 	// FUNZIONI AUSILIARIE - HANDLER 
+ 	// =========================================================================
 
     public void executeLogin() {
         String email = emailField.getText();

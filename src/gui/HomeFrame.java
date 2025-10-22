@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout; // Necessario per la centratura
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
@@ -12,7 +13,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
+import javax.swing.Box; // Necessario per il Glue
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -21,8 +22,11 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import session.SessionChef;
+import controller.Controller;
 
 public class HomeFrame extends JFrame {
 
@@ -77,6 +81,9 @@ public class HomeFrame extends JFrame {
 		buildBanner();
 		buildDashboard();
 		buildMainActions();
+        
+        // Al costruttore, carichiamo la vista di default (la Dashboard)
+        showMainPanel(buildDashboardContentPanel());
 	}
 
 	// =========================================================================
@@ -87,7 +94,8 @@ public class HomeFrame extends JFrame {
 		sideBarSections.clear();
 		sideBarPanel = new JPanel(new BorderLayout());
 		sideBarPanel.setBackground(new Color(27, 52, 84));
-		sideBarPanel.setBounds(0, 0, 220, 500); 
+        // CORREZIONE: Imposto la larghezza a 220px per coerenza
+		sideBarPanel.setBounds(0, 0, 200, 500); 
 		contentPane.add(sideBarPanel);
 
 		headerPanel = new JPanel();
@@ -117,26 +125,33 @@ public class HomeFrame extends JFrame {
 		menuContainer.setBorder(new EmptyBorder(0, 16, 24, 16)); 
 
 		dashboardButton = createNavButton("Dashboard");
-		dashboardButton.addActionListener(event -> {
-			event.getSource();
-			collapseAllSections();
+		dashboardButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				e.getSource();
+				collapseAllSections();
+				showMainPanel(buildDashboardContentPanel()); // Torna alla Dashboard
+			}
 		});
 		menuContainer.add(dashboardButton);
 		menuContainer.add(Box.createVerticalStrut(12));
 
-		addExpandableSection(menuContainer, "Corsi", "Inserisci nuovo corso", "Gestisci i tuoi corsi");
+		addExpandableSection(menuContainer, "Corsi", "Crea nuovo corso", "Gestisci i tuoi corsi");
 		menuContainer.add(Box.createVerticalStrut(12));
 
-		addExpandableSection(menuContainer, "Sessioni", "Inserisci sessione", "Gestisci sessioni");
+		addExpandableSection(menuContainer, "Sessioni", "Crea nuova sessione", "Gestisci le tue sessioni");
 		menuContainer.add(Box.createVerticalStrut(12));
 
-		addExpandableSection(menuContainer, "Ricette", "Inserisci nuova ricetta", "Gestisci ricette");
+		addExpandableSection(menuContainer, "Ricette", "Inserisci nuova ricetta", "Gestisci le tue ricette");
 		menuContainer.add(Box.createVerticalStrut(12));
 
 		profileButton = createNavButton("Profilo");
-		profileButton.addActionListener(event -> {
-			event.getSource();
-			collapseAllSections();
+		profileButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				e.getSource();
+				collapseAllSections();
+				// Simula la visualizzazione del pannello Profilo
+				showMainPanel(new ProfilePanel(HomeFrame.this)); 
+			}
 		});
 		menuContainer.add(profileButton);
 		menuContainer.add(Box.createVerticalGlue());
@@ -157,63 +172,112 @@ public class HomeFrame extends JFrame {
 		bannerPanel.add(greetingLabel, BorderLayout.WEST);
 	}
 
+
 	private void buildDashboard() {
 		dashboardPanel = new JPanel(new BorderLayout());
 		dashboardPanel.setBackground(new Color(248, 249, 252));
 		dashboardPanel.setBounds(220, 48, 850 - 220, 452); 
 		contentPane.add(dashboardPanel);
-
-		dashboardContentPanel = new JPanel();
-		dashboardContentPanel.setOpaque(false);
-		dashboardContentPanel.setLayout(new BoxLayout(dashboardContentPanel, BoxLayout.Y_AXIS));
-		dashboardContentPanel.setBorder(new EmptyBorder(20, 24, 24, 24)); 
-		dashboardPanel.add(dashboardContentPanel, BorderLayout.CENTER);
-
-		infoCard = new JPanel();
-		infoCard.setOpaque(false);
-		infoCard.setLayout(new BoxLayout(infoCard, BoxLayout.Y_AXIS));
-		infoCard.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-		infoCardBody = new JPanel();
-		infoCardBody.setBackground(Color.WHITE);
-		infoCardBody.setBorder(BorderFactory.createCompoundBorder(
-			BorderFactory.createLineBorder(new Color(230, 235, 245)),
-			new EmptyBorder(20, 24, 20, 24)));
-		infoCardBody.setLayout(new BoxLayout(infoCardBody, BoxLayout.Y_AXIS));
-
-		cardTitle = new JLabel("Scopri tutte le funzioni!");
-		cardTitle.setFont(new Font("SansSerif", Font.BOLD, 19));
-		cardTitle.setForeground(new Color(51, 63, 81));
-		cardTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
-		infoCardBody.add(cardTitle);
-
-		infoCardBody.add(Box.createVerticalStrut(6));
-
-		cardSubtitle = new JLabel("Gestisci corsi, ricette e sessioni in un unico spazio organizzato.");
-		cardSubtitle.setFont(new Font("SansSerif", Font.PLAIN, 14));
-		cardSubtitle.setForeground(new Color(90, 103, 123));
-		cardSubtitle.setAlignmentX(Component.LEFT_ALIGNMENT);
-		infoCardBody.add(cardSubtitle);
-
-		infoCardBody.add(Box.createVerticalStrut(10));
-
-		cardHint = new JLabel("Sfrutta il menù laterale per iniziare →");
-		cardHint.setFont(new Font("SansSerif", Font.PLAIN, 13));
-		cardHint.setForeground(new Color(122, 133, 152));
-		cardHint.setAlignmentX(Component.LEFT_ALIGNMENT);
-		infoCardBody.add(cardHint);
-
-		infoCardBody.setAlignmentX(Component.LEFT_ALIGNMENT);
-		infoCard.add(infoCardBody);
-		int infoCardHeight = infoCardBody.getPreferredSize().height + 16;
-		infoCard.setMaximumSize(new Dimension(580, infoCardHeight)); 
-		infoCard.setPreferredSize(new Dimension(580, infoCardHeight));
-
-		dashboardContentPanel.add(infoCard);
-		dashboardContentPanel.add(Box.createVerticalStrut(24));
+        
+        dashboardContentPanel = new JPanel(new BorderLayout());
+        dashboardContentPanel.setOpaque(false);
+        dashboardPanel.add(dashboardContentPanel, BorderLayout.CENTER);
 	}
+    
+    
+    private JPanel buildDashboardContentPanel() {
+        // Wrapper principale interno (gestisce l'allineamento verticale degli elementi Dashboard)
+        JPanel verticalWrapper = new JPanel();
+        verticalWrapper.setOpaque(false);
+        verticalWrapper.setLayout(new BoxLayout(verticalWrapper, BoxLayout.Y_AXIS));
+        verticalWrapper.setBorder(new EmptyBorder(20, 32, 24, 32)); 
+
+        infoCard = new JPanel();
+        infoCard.setOpaque(false);
+        infoCard.setLayout(new BoxLayout(infoCard, BoxLayout.Y_AXIS));
+        infoCard.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        infoCardBody = new JPanel();
+        infoCardBody.setBackground(Color.WHITE);
+        infoCardBody.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(230, 235, 245)),
+            new EmptyBorder(20, 24, 20, 24)));
+        infoCardBody.setLayout(new BoxLayout(infoCardBody, BoxLayout.Y_AXIS));
+
+        cardTitle = new JLabel("Scopri tutte le funzioni!");
+        cardTitle.setFont(new Font("SansSerif", Font.BOLD, 19));
+        cardTitle.setForeground(new Color(51, 63, 81));
+        cardTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        infoCardBody.add(cardTitle);
+
+        infoCardBody.add(Box.createVerticalStrut(6));
+
+        cardSubtitle = new JLabel("Gestisci corsi, ricette e sessioni in un unico spazio organizzato.");
+        cardSubtitle.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        cardSubtitle.setForeground(new Color(90, 103, 123));
+        cardSubtitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        infoCardBody.add(cardSubtitle);
+
+        infoCardBody.add(Box.createVerticalStrut(10));
+
+        cardHint = new JLabel("Sfrutta il menù laterale per iniziare →");
+        cardHint.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        cardHint.setForeground(new Color(122, 133, 152));
+        cardHint.setAlignmentX(Component.LEFT_ALIGNMENT);
+        infoCardBody.add(cardHint);
+
+        infoCardBody.setAlignmentX(Component.LEFT_ALIGNMENT);
+        infoCard.add(infoCardBody);
+        int infoCardHeight = infoCardBody.getPreferredSize().height + 16;
+        infoCard.setMaximumSize(new Dimension(580, infoCardHeight)); 
+        infoCard.setPreferredSize(new Dimension(580, infoCardHeight));
+
+        verticalWrapper.add(infoCard);
+        verticalWrapper.add(Box.createVerticalStrut(24));
+        
+        // Aggiunge le azioni principali
+        buildMainActionsDashboard(verticalWrapper);
+        
+        return verticalWrapper;
+    }
+
 
 	private void buildMainActions() {
+		
+		viewCoursesButton = createActionButton("Visualizza tutti i corsi");
+        viewCoursesButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showMainPanel(new VisualizzaTuttiCorsiPanel()); 
+            }
+        });
+        
+		viewChefsButton = createActionButton("Visualizza tutti gli chef");
+		viewChefsButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				showMainPanel(new VisualizzaTuttiChefPanel());
+			}
+		});
+		
+		viewRecipesButton = createActionButton("Visualizza tutte le ricette");
+		viewRecipesButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				showMainPanel(new VisualizzaTutteRicettePanel());
+			}
+		});
+		
+		viewMonthlyReportButton = createActionButton("Visualizza report mensile");
+		viewMonthlyReportButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				showMainPanel(new VisualizzaReportPanel());
+			}
+		});
+	}
+    
+	private void buildMainActionsDashboard(JPanel targetPanel) {
 		actionsPanel = new JPanel();
 		actionsPanel.setOpaque(false);
 		actionsPanel.setLayout(new GridLayout(2, 2, 16, 16));
@@ -221,22 +285,38 @@ public class HomeFrame extends JFrame {
 		actionsPanel.setMaximumSize(new Dimension(580, 192)); 
 		actionsPanel.setPreferredSize(new Dimension(580, 192));
 
-		viewCoursesButton = createActionButton("Visualizza tutti i corsi");
-		viewChefsButton = createActionButton("Visualizza tutti gli chef");
-		viewRecipesButton = createActionButton("Visualizza tutte le ricette");
-		viewMonthlyReportButton = createActionButton("Visualizza report mensile");
-
 		actionsPanel.add(viewCoursesButton);
 		actionsPanel.add(viewChefsButton);
 		actionsPanel.add(viewRecipesButton);
 		actionsPanel.add(viewMonthlyReportButton);
 
-		dashboardContentPanel.add(actionsPanel);
+		targetPanel.add(actionsPanel);
 	}
     
 	// =========================================================================
-	// FUNZIONI AUSILIARIE
+	// FUNZIONI AUSILIARIE - INTERFACCIA
 	// =========================================================================
+    
+    // METODO PRINCIPALE PER MODIFICARE IL MAIN PANEL CON CENTRATURA V/H
+    public void showMainPanel(JPanel newPanel) {
+        // 1. Centratura Orizzontale (FlowLayout.CENTER)
+        JPanel centerWrapperH = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        centerWrapperH.setOpaque(false);
+        centerWrapperH.add(newPanel);
+        
+        // 2. Centratura Verticale (BorderLayout con Glue)
+        JPanel centerWrapperV = new JPanel(new BorderLayout());
+        centerWrapperV.setOpaque(false);
+        
+        centerWrapperV.add(Box.createVerticalGlue(), BorderLayout.NORTH);
+        centerWrapperV.add(centerWrapperH, BorderLayout.CENTER);
+        centerWrapperV.add(Box.createVerticalGlue(), BorderLayout.SOUTH);
+        
+        dashboardContentPanel.removeAll();
+        dashboardContentPanel.add(centerWrapperV, BorderLayout.CENTER);
+        dashboardContentPanel.revalidate();
+        dashboardContentPanel.repaint();
+    }
 
 	public void setGreetingText(String text) {
 		if (greetingLabel != null) {
@@ -284,6 +364,71 @@ public class HomeFrame extends JFrame {
 			contentPanel.add(itemButton);
 			if (i < entries.length - 1) {
 				contentPanel.add(Box.createVerticalStrut(6));
+			}
+			
+			//Section: Corsi
+			if(title.equals("Corsi")) {
+				// Voce 0: "Crea nuovo corso"
+				if(i==0) {
+					itemButton.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							collapseAllSections();
+							showMainPanel(new CreaNuovoCorsoPanel());
+						}
+					});
+				}
+				// Voce 1: "Gestisci i tuoi corsi"
+				else if(i==1) {
+					itemButton.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							collapseAllSections();
+							showMainPanel(new GestioneCorsiPanel());
+						}
+					});
+				}
+			}
+			//Section: Sessioni
+			else if(title.equals("Sessioni")) {	
+				// Voce 0: "Crea nuova sessione"
+				if(i==0) {
+					itemButton.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							collapseAllSections();
+							showMainPanel(new CreaNuovaSessionePanel());
+						}
+					});
+				}
+				// Voce 1: "Gestisci le tue sessioni"
+				else if(i==1) {
+					itemButton.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							collapseAllSections();
+							showMainPanel(new GestioneSessioniPanel());
+						}
+					});
+				}
+			}
+			//Section: Ricette
+			else if(title.equals("Ricette")) {
+				// Voce 0: "Inserisci nuova ricetta"
+				if(i==0) {
+					itemButton.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							collapseAllSections();
+							showMainPanel(new CreaNuovaRicettaPanel());
+						}
+					});
+				}
+				// Voce 1: "Gestisci le tue ricette"
+				else if(i==1) {
+					itemButton.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							collapseAllSections();
+							showMainPanel(new GestioneRicettePanel());
+						}
+					});
+				}
+				
 			}
 		}
 
@@ -426,4 +571,6 @@ public class HomeFrame extends JFrame {
 			}
 		});
 	}
+    
+    
 }
