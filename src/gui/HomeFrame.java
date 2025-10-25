@@ -5,7 +5,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.FlowLayout; // Necessario per la centratura
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
@@ -13,7 +13,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
-import javax.swing.Box; // Necessario per il Glue
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -31,17 +31,16 @@ import controller.Controller;
 public class HomeFrame extends JFrame {
 
 	private static final long serialVersionUID = 1L;
-    private static final Color BUTTON_BASE_COLOR = new Color(30, 144, 255); 
-    
-    // elementi grafici
+    private static final Color BUTTON_BASE_COLOR = new Color(30, 144, 255);
+
 	private final JPanel contentPane;
 	private JPanel sideBarPanel;
     private JPanel headerPanel;
     private SimpleBrandLogo brandLogo;
-    private JLabel brandName; 
+    private JLabel brandName;
     private JPanel menuContainer;
-    private JButton dashboardButton; 
-    private JButton profileButton; 
+    private JButton dashboardButton;
+    private JButton profileButton;
 	private JPanel dashboardPanel;
 	private JPanel dashboardContentPanel;
 	private JPanel bannerPanel;
@@ -57,7 +56,7 @@ public class HomeFrame extends JFrame {
 	private JButton viewRecipesButton;
 	private JButton viewMonthlyReportButton;
 
-	private final List<SideBarSection> sideBarSections = new ArrayList<>();
+	private final List<JPanel> sideBarContentPanels = new ArrayList<>();
 
 	@SuppressWarnings("unused")
 	private final LoginFrame previous;
@@ -68,40 +67,34 @@ public class HomeFrame extends JFrame {
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
-		setSize(850, 500);
+		setSize(1000, 600);
 		setLocationRelativeTo(null);
 
 		contentPane = new JPanel();
 		contentPane.setBackground(Color.WHITE);
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setBorder(new EmptyBorder(0, 0, 0, 0));
 		contentPane.setLayout(null);
 		setContentPane(contentPane);
 
 		buildSideBar();
-		buildBanner();
 		buildDashboard();
+		buildBanner();
 		buildMainActions();
-        
-        // Al costruttore, carichiamo la vista di default (la Dashboard)
+
         showMainPanel(buildDashboardContentPanel());
 	}
 
-	// =========================================================================
-	// FUNZIONI PRINCIPALI (CHIAMATE NEL COSTRUTTORE)
-	// =========================================================================
-
 	private void buildSideBar() {
-		sideBarSections.clear();
+		sideBarContentPanels.clear();
 		sideBarPanel = new JPanel(new BorderLayout());
 		sideBarPanel.setBackground(new Color(27, 52, 84));
-        // CORREZIONE: Imposto la larghezza a 220px per coerenza
-		sideBarPanel.setBounds(0, 0, 200, 500); 
+		sideBarPanel.setBounds(0, 0, 200, 600);
 		contentPane.add(sideBarPanel);
 
 		headerPanel = new JPanel();
 		headerPanel.setOpaque(false);
 		headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
-		headerPanel.setBorder(new EmptyBorder(20, 24, 12, 24)); 
+		headerPanel.setBorder(new EmptyBorder(20, 24, 12, 24));
 
 		brandLogo = new SimpleBrandLogo(Color.WHITE, new Color(17, 36, 62));
 		brandLogo.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -122,14 +115,14 @@ public class HomeFrame extends JFrame {
 		menuContainer = new JPanel();
 		menuContainer.setOpaque(false);
 		menuContainer.setLayout(new BoxLayout(menuContainer, BoxLayout.Y_AXIS));
-		menuContainer.setBorder(new EmptyBorder(0, 16, 24, 16)); 
+		menuContainer.setBorder(new EmptyBorder(0, 16, 24, 16));
 
 		dashboardButton = createNavButton("Dashboard");
 		dashboardButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				e.getSource();
 				collapseAllSections();
-				showMainPanel(buildDashboardContentPanel()); // Torna alla Dashboard
+				showMainPanel(buildDashboardContentPanel());
 			}
 		});
 		menuContainer.add(dashboardButton);
@@ -149,8 +142,7 @@ public class HomeFrame extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				e.getSource();
 				collapseAllSections();
-				// Simula la visualizzazione del pannello Profilo
-				showMainPanel(new ProfilePanel(HomeFrame.this)); 
+				showMainPanel(new ProfilePanel(HomeFrame.this));
 			}
 		});
 		menuContainer.add(profileButton);
@@ -163,34 +155,33 @@ public class HomeFrame extends JFrame {
 		bannerPanel = new JPanel(new BorderLayout());
 		bannerPanel.setBackground(Color.WHITE);
 		bannerPanel.setBorder(new EmptyBorder(0, 24, 0, 24));
-		bannerPanel.setBounds(220, 0, 850 - 220, 48); 
+		bannerPanel.setBounds(200, 0, 800, 48);
 		contentPane.add(bannerPanel);
 
 		greetingLabel = new JLabel("Bentornato "+SessionChef.getNameChef()+" !", SwingConstants.LEFT);
 		greetingLabel.setFont(new Font("SansSerif", Font.BOLD, 20));
 		greetingLabel.setForeground(new Color(51, 63, 81));
-		bannerPanel.add(greetingLabel, BorderLayout.WEST);
+		bannerPanel.add(greetingLabel, BorderLayout.CENTER);
 	}
 
 
 	private void buildDashboard() {
 		dashboardPanel = new JPanel(new BorderLayout());
 		dashboardPanel.setBackground(new Color(248, 249, 252));
-		dashboardPanel.setBounds(220, 48, 850 - 220, 452); 
+		dashboardPanel.setBounds(200, 48, 800, 552);
 		contentPane.add(dashboardPanel);
-        
-        dashboardContentPanel = new JPanel(new BorderLayout());
+
+		dashboardContentPanel = new JPanel(new BorderLayout());
         dashboardContentPanel.setOpaque(false);
         dashboardPanel.add(dashboardContentPanel, BorderLayout.CENTER);
 	}
-    
-    
+
+
     private JPanel buildDashboardContentPanel() {
-        // Wrapper principale interno (gestisce l'allineamento verticale degli elementi Dashboard)
         JPanel verticalWrapper = new JPanel();
         verticalWrapper.setOpaque(false);
         verticalWrapper.setLayout(new BoxLayout(verticalWrapper, BoxLayout.Y_AXIS));
-        verticalWrapper.setBorder(new EmptyBorder(20, 32, 24, 32)); 
+        verticalWrapper.setBorder(new EmptyBorder(20, 32, 24, 32));
 
         infoCard = new JPanel();
         infoCard.setOpaque(false);
@@ -229,29 +220,29 @@ public class HomeFrame extends JFrame {
         infoCardBody.setAlignmentX(Component.LEFT_ALIGNMENT);
         infoCard.add(infoCardBody);
         int infoCardHeight = infoCardBody.getPreferredSize().height + 16;
-        infoCard.setMaximumSize(new Dimension(580, infoCardHeight)); 
+
+        infoCard.setMaximumSize(new Dimension(580, infoCardHeight));
         infoCard.setPreferredSize(new Dimension(580, infoCardHeight));
 
         verticalWrapper.add(infoCard);
         verticalWrapper.add(Box.createVerticalStrut(24));
-        
-        // Aggiunge le azioni principali
+
         buildMainActionsDashboard(verticalWrapper);
-        
+
         return verticalWrapper;
     }
 
 
 	private void buildMainActions() {
-		
+
 		viewCoursesButton = createActionButton("Visualizza tutti i corsi");
         viewCoursesButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                showMainPanel(new VisualizzaTuttiCorsiPanel()); 
+                showMainPanel(new VisualizzaTuttiCorsiPanel());
             }
         });
-        
+
 		viewChefsButton = createActionButton("Visualizza tutti gli chef");
 		viewChefsButton.addActionListener(new ActionListener() {
 			@Override
@@ -259,7 +250,7 @@ public class HomeFrame extends JFrame {
 				showMainPanel(new VisualizzaTuttiChefPanel());
 			}
 		});
-		
+
 		viewRecipesButton = createActionButton("Visualizza tutte le ricette");
 		viewRecipesButton.addActionListener(new ActionListener() {
 			@Override
@@ -267,7 +258,7 @@ public class HomeFrame extends JFrame {
 				showMainPanel(new VisualizzaTutteRicettePanel());
 			}
 		});
-		
+
 		viewMonthlyReportButton = createActionButton("Visualizza report mensile");
 		viewMonthlyReportButton.addActionListener(new ActionListener() {
 			@Override
@@ -276,13 +267,13 @@ public class HomeFrame extends JFrame {
 			}
 		});
 	}
-    
+
 	private void buildMainActionsDashboard(JPanel targetPanel) {
 		actionsPanel = new JPanel();
 		actionsPanel.setOpaque(false);
 		actionsPanel.setLayout(new GridLayout(2, 2, 16, 16));
 		actionsPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-		actionsPanel.setMaximumSize(new Dimension(580, 192)); 
+		actionsPanel.setMaximumSize(new Dimension(580, 192));
 		actionsPanel.setPreferredSize(new Dimension(580, 192));
 
 		actionsPanel.add(viewCoursesButton);
@@ -292,28 +283,14 @@ public class HomeFrame extends JFrame {
 
 		targetPanel.add(actionsPanel);
 	}
-    
+
 	// =========================================================================
 	// FUNZIONI AUSILIARIE - INTERFACCIA
 	// =========================================================================
-    
-    // METODO PRINCIPALE PER MODIFICARE IL MAIN PANEL CON CENTRATURA V/H
+
     public void showMainPanel(JPanel newPanel) {
-        // 1. Centratura Orizzontale (FlowLayout.CENTER)
-        JPanel centerWrapperH = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        centerWrapperH.setOpaque(false);
-        centerWrapperH.add(newPanel);
-        
-        // 2. Centratura Verticale (BorderLayout con Glue)
-        JPanel centerWrapperV = new JPanel(new BorderLayout());
-        centerWrapperV.setOpaque(false);
-        
-        centerWrapperV.add(Box.createVerticalGlue(), BorderLayout.NORTH);
-        centerWrapperV.add(centerWrapperH, BorderLayout.CENTER);
-        centerWrapperV.add(Box.createVerticalGlue(), BorderLayout.SOUTH);
-        
         dashboardContentPanel.removeAll();
-        dashboardContentPanel.add(centerWrapperV, BorderLayout.CENTER);
+        dashboardContentPanel.add(newPanel, BorderLayout.CENTER);
         dashboardContentPanel.revalidate();
         dashboardContentPanel.repaint();
     }
@@ -340,12 +317,10 @@ public class HomeFrame extends JFrame {
 	}
 
 	private void addExpandableSection(JPanel container, String title, String... entries) {
-		SideBarSection section = createSection(title, entries);
-		container.add(section.wrapperPanel);
-		sideBarSections.add(section);
+		container.add(createSection(title, entries));
 	}
 
-	private SideBarSection createSection(String title, String... entries) {
+	private JPanel createSection(String title, String... entries) {
 		JPanel wrapper = new JPanel();
 		wrapper.setLayout(new BoxLayout(wrapper, BoxLayout.Y_AXIS));
 		wrapper.setOpaque(false);
@@ -365,10 +340,8 @@ public class HomeFrame extends JFrame {
 			if (i < entries.length - 1) {
 				contentPanel.add(Box.createVerticalStrut(6));
 			}
-			
-			//Section: Corsi
+
 			if(title.equals("Corsi")) {
-				// Voce 0: "Crea nuovo corso"
 				if(i==0) {
 					itemButton.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
@@ -377,7 +350,6 @@ public class HomeFrame extends JFrame {
 						}
 					});
 				}
-				// Voce 1: "Gestisci i tuoi corsi"
 				else if(i==1) {
 					itemButton.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
@@ -387,9 +359,7 @@ public class HomeFrame extends JFrame {
 					});
 				}
 			}
-			//Section: Sessioni
-			else if(title.equals("Sessioni")) {	
-				// Voce 0: "Crea nuova sessione"
+			else if(title.equals("Sessioni")) {
 				if(i==0) {
 					itemButton.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
@@ -398,7 +368,6 @@ public class HomeFrame extends JFrame {
 						}
 					});
 				}
-				// Voce 1: "Gestisci le tue sessioni"
 				else if(i==1) {
 					itemButton.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
@@ -408,9 +377,7 @@ public class HomeFrame extends JFrame {
 					});
 				}
 			}
-			//Section: Ricette
 			else if(title.equals("Ricette")) {
-				// Voce 0: "Inserisci nuova ricetta"
 				if(i==0) {
 					itemButton.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
@@ -419,7 +386,6 @@ public class HomeFrame extends JFrame {
 						}
 					});
 				}
-				// Voce 1: "Gestisci le tue ricette"
 				else if(i==1) {
 					itemButton.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
@@ -428,21 +394,20 @@ public class HomeFrame extends JFrame {
 						}
 					});
 				}
-				
 			}
 		}
 
 		contentPanel.setVisible(false);
 		wrapper.add(contentPanel);
 
-		SideBarSection section = new SideBarSection(title, headerButton, contentPanel, wrapper);
+		sideBarContentPanels.add(contentPanel);
 
 		headerButton.addActionListener(event -> {
 			event.getSource();
-			toggleSection(section);
+			toggleSection(contentPanel, headerButton, title);
 		});
 
-		return section;
+		return wrapper;
 	}
 
 	private JButton createSectionButton(String title, boolean expanded) {
@@ -476,67 +441,59 @@ public class HomeFrame extends JFrame {
 		return button;
 	}
 
-	private void toggleSection(SideBarSection target) {
-		boolean shouldExpand = !target.contentPanel.isVisible();
-		collapseAllSections(); 
-		setSectionExpanded(target, shouldExpand);
+	private void toggleSection(JPanel contentPanel, JButton headerButton, String title) {
+		boolean shouldExpand = !contentPanel.isVisible();
+		collapseAllSections();
+		setSectionExpanded(contentPanel, headerButton, title, shouldExpand);
 	}
 
 	private void collapseAllSections() {
-		for (SideBarSection section : sideBarSections) {
-			setSectionExpanded(section, false);
+		for (JPanel contentPanel : sideBarContentPanels) {
+			if (contentPanel.isVisible()) {
+				JPanel wrapper = (JPanel) contentPanel.getParent();
+				JButton headerButton = (JButton) wrapper.getComponent(0);
+				String text = headerButton.getText();
+				String title = text.substring(3);
+				setSectionExpanded(contentPanel, headerButton, title, false);
+			}
 		}
 	}
 
-	private void setSectionExpanded(SideBarSection section, boolean expanded) {
-		section.contentPanel.setVisible(expanded);
-		section.headerButton.setText(buildSectionTitle(section.title, expanded));
+	private void setSectionExpanded(JPanel contentPanel, JButton headerButton, String title, boolean expanded) {
+		contentPanel.setVisible(expanded);
+		headerButton.setText(buildSectionTitle(title, expanded));
 	}
 
 	private String buildSectionTitle(String title, boolean expanded) {
 		String arrow = expanded ? "\u25BC" : "\u25B6";
-		return arrow + "  " + title;
-	}
-
-	private static class SideBarSection {
-		private final String title;
-		private final JButton headerButton;
-		private final JPanel contentPanel;
-		private final JPanel wrapperPanel;
-
-		private SideBarSection(String title, JButton headerButton, JPanel contentPanel, JPanel wrapperPanel) {
-			this.title = title;
-			this.headerButton = headerButton;
-			this.contentPanel = contentPanel;
-			this.wrapperPanel = wrapperPanel;
-		}
+		return arrow + "  " + title;
 	}
 
 	private JButton createActionButton(String title) {
 		JButton button = new JButton(title);
 		button.setFocusPainted(false);
-		
-		button.setHorizontalAlignment(SwingConstants.CENTER); 
+
+		button.setHorizontalAlignment(SwingConstants.CENTER);
 		button.setVerticalAlignment(SwingConstants.TOP);
-		
-		button.setFont(new Font("SansSerif", Font.BOLD, 20)); 
+
+		button.setFont(new Font("SansSerif", Font.BOLD, 20));
 		button.setForeground(Color.WHITE);
-		button.setBackground(BUTTON_BASE_COLOR); 
+		button.setBackground(BUTTON_BASE_COLOR);
 		button.setOpaque(true);
-		
+
 		Color shadowColor = BUTTON_BASE_COLOR.darker();
-        Color underlineColor = new Color(255, 255, 255, 120); 
-        
+        Color underlineColor = new Color(255, 255, 255, 120);
+
         Border lineAndPadding = BorderFactory.createCompoundBorder(
-            new EmptyBorder(22, 20, 5, 20), 
-            BorderFactory.createMatteBorder(0, 0, 1, 0, underlineColor) 
+            new EmptyBorder(22, 20, 5, 20),
+            BorderFactory.createMatteBorder(0, 0, 1, 0, underlineColor)
         );
-        
+
 		button.setBorder(BorderFactory.createCompoundBorder(
-		    BorderFactory.createMatteBorder(1, 1, 3, 1, shadowColor), 
+		    BorderFactory.createMatteBorder(1, 1, 3, 1, shadowColor),
 		    lineAndPadding
 		));
-		
+
 		button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		installButtonHoverEffect(button, BUTTON_BASE_COLOR);
 		return button;
@@ -571,6 +528,4 @@ public class HomeFrame extends JFrame {
 			}
 		});
 	}
-    
-    
 }

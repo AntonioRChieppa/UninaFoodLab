@@ -31,16 +31,25 @@ public class Controller {
 		
 		//METODO PER NORMALIZZARE UNA STRINGA
 		public static String normalizzaNomeInserito(String nome) {
-			if(nome == null) {
-				return null;
-			}
-			return nome.trim().toLowerCase().replaceAll("\\s", "");
-			}
+		    if(nome == null) {
+		        return null;
+		    }
+		    
+		    return nome.trim().toLowerCase().replaceAll("\\s+", " ");
+		}
+		
+		public boolean isOnlyLettersAndSpaces(String text) {
+		    if (text == null) {
+		        return false;
+		    }
+		    
+		    return text.matches("^[\\p{L} ]+$");
+		}
 		
 		//---------- INIZIO METODI CORSO ----------
 		
 		// METODO PER INSERIRE UN NUOVO CORSO
-		public void inserimentoCorso(String newNomeCorso, String newCategoria, LocalDate newDataInizio, Integer newNumeroSessioni, String newFrequenzaSessioni, int newFkChef) throws OperationException, AlreadyExistsException {
+		public void inserimentoCorso(String newNomeCorso, String newCategoria, java.util.Date newDataInizioUtil, String newNumeroSessioni, String newFrequenzaSessioni, int newFkChef) throws OperationException, AlreadyExistsException {
 			try {
 				CorsoDTO corsoEsistente = corsoDAO.getCorsoByName(newNomeCorso);
 				
@@ -48,11 +57,29 @@ public class Controller {
 					throw new AlreadyExistsException("Corso già registrato!");
 				}
 				
+				if(newNomeCorso.isEmpty() || newCategoria.isEmpty() || newDataInizioUtil == null || newNumeroSessioni==null) {
+					throw new OperationException("Tutti i campi sono obbligatori!");
+				}
+				
+				if(!isOnlyLettersAndSpaces(newNomeCorso) || !isOnlyLettersAndSpaces(newCategoria)) {
+					throw new OperationException("Nome del corso e categoria ammettono solo caratteri!");
+				}
+				
+				Integer numSessioni = Integer.parseInt(newNumeroSessioni);
+				if(numSessioni <= 0) {
+					throw new OperationException("Il numero di sessioni deve essere un intero positivo.");
+				}
+				
+				// Conversione da Date -> LocalDate in java
+				LocalDate newDataInizio = Instant.ofEpochMilli(newDataInizioUtil.getTime())
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+				
 				CorsoDTO corso = new CorsoDTO();
-				corso.setNomeCorso(newNomeCorso);
-				corso.setCategoria(newCategoria);
+				corso.setNomeCorso(normalizzaNomeInserito(newNomeCorso));
+				corso.setCategoria(normalizzaNomeInserito(newCategoria));
 				corso.setDataInizio(newDataInizio);
-				corso.setNumeroSessioni(newNumeroSessioni);
+				corso.setNumeroSessioni(numSessioni);
 				corso.setFrequenzaSessioni(newFrequenzaSessioni);
 				int idChefLoggato = SessionChef.getChefId();
 		        ChefDTO chef = chefDAO.getChefById(idChefLoggato);
@@ -67,56 +94,76 @@ public class Controller {
 		}
 
 		// METODO PER AGGIORNARE I DATI RELATIVI AD UN CORSO
-		public void aggiornaCorso(String newNomeCorso, String newCategoria, LocalDate newDataInizio, Integer newNumeroSessioni, String newFrequenzaSessioni) throws UnauthorizedOperationException, NotFoundException, OperationException{
+		public void aggiornaCorso(String nomeCorsoOriginale, String newCategoria, java.util.Date newDataInizioUtil, String newNumeroSessioni, String newFrequenzaSessioni) throws UnauthorizedOperationException, NotFoundException, OperationException{
 			try {
-				CorsoDTO corso = corsoDAO.getCorsoByName(newNomeCorso);
 				
+				CorsoDTO corso = corsoDAO.getCorsoByName(nomeCorsoOriginale);
 				if(corso==null) {
-					throw new NotFoundException("Impossibile trovare il corso: "+newNomeCorso);
+					throw new NotFoundException("Impossibile trovare il corso: "+nomeCorsoOriginale);
+				}
+				
+				if(!isOnlyLettersAndSpaces(newCategoria)) {
+					throw new OperationException("Categoria ammette solo caratteri!");
+				}
+				
+				if(newCategoria.isEmpty() || newDataInizioUtil==null || newNumeroSessioni.isEmpty()) {
+					throw new OperationException("Tutti i campi sono obbligatori per la modifica.");
+				}
+				
+				Integer numSessioni;
+				try {
+					numSessioni = Integer.parseInt(newNumeroSessioni);
+					if(numSessioni <= 0) {
+						throw new NumberFormatException();
+					}
+				}catch(NumberFormatException ex) {
+					throw new OperationException("Il numero di sessioni deve essere un intero positivo.");
 				}
 				
 				// RECUPERO DELLO CHEF CORRENTE
 				int idChefLoggato = SessionChef.getChefId();
+				if(corso.getChefCorso() == null || idChefLoggato != corso.getChefCorso().getId()) {
+					throw new UnauthorizedOperationException("Impossibile modificare corsi degli altri chef o corsi senza chef assegnato!");
+				}
 				
-				if(idChefLoggato==corso.getChefCorso().getId()) { // VERIFICA SE GLI ID CORRISPONDONO
-					CorsoDTO updateCorso = new CorsoDTO();
-					updateCorso.setId(corso.getId());
-					updateCorso.setNomeCorso(newNomeCorso);
-					updateCorso.setCategoria(newCategoria);
-					updateCorso.setDataInizio(newDataInizio);
-					updateCorso.setNumeroSessioni(newNumeroSessioni);
-					updateCorso.setFrequenzaSessioni(newFrequenzaSessioni);
+				LocalDate newDataInizio = Instant.ofEpochMilli(newDataInizioUtil.getTime())
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+				
+				CorsoDTO updateCorso = new CorsoDTO();
+				updateCorso.setId(corso.getId());
+				updateCorso.setNomeCorso(nomeCorsoOriginale);
+				updateCorso.setCategoria(normalizzaNomeInserito(newCategoria));
+				updateCorso.setDataInizio(newDataInizio);
+				updateCorso.setNumeroSessioni(numSessioni);
+				updateCorso.setFrequenzaSessioni(newFrequenzaSessioni);
 					
-					// VERIFICA DEL VALORE IDENTICO AL PRECEDENTE -> LO IMPOSTA A NULL (COALESCE)
-					if(updateCorso.getNomeCorso()!=null && updateCorso.getNomeCorso().equals(corso.getNomeCorso())) {
-						updateCorso.setNomeCorso(null);
-					}
-					
-					if(updateCorso.getCategoria()!=null && updateCorso.getCategoria().equals(corso.getCategoria())) {
-						updateCorso.setCategoria(null);
-					}
-					
-					if(updateCorso.getDataInizio()!=null && updateCorso.getDataInizio().equals(corso.getDataInizio())) {
-						updateCorso.setDataInizio(null);
-					}
-					
-					if(updateCorso.getNumeroSessioni()!=null && updateCorso.getNumeroSessioni().equals(corso.getNumeroSessioni())) {
-						updateCorso.setNumeroSessioni(null);
-					}
-					
-					if(updateCorso.getFrequenzaSessioni()!=null && updateCorso.getFrequenzaSessioni().equals(updateCorso.getFrequenzaSessioni())) {
-						updateCorso.setFrequenzaSessioni(null);
-					}
-					
-					corsoDAO.updateCorso(updateCorso);
+				// VERIFICA DEL VALORE IDENTICO AL PRECEDENTE -> LO IMPOSTA A NULL (COALESCE)
+				if(updateCorso.getNomeCorso()!=null && updateCorso.getNomeCorso().equals(corso.getNomeCorso())) {
+					updateCorso.setNomeCorso(null);
 				}
-				else {
-					throw new UnauthorizedOperationException("Impossibile modificare corsi degli altri chef!");
+				
+				if(updateCorso.getCategoria()!=null && updateCorso.getCategoria().equals(corso.getCategoria())) {
+					updateCorso.setCategoria(null);
 				}
+					
+				if(updateCorso.getDataInizio()!=null && updateCorso.getDataInizio().equals(corso.getDataInizio())) {
+					updateCorso.setDataInizio(null);
+				}
+					
+				if(updateCorso.getNumeroSessioni()!=null && updateCorso.getNumeroSessioni().equals(corso.getNumeroSessioni())) {
+					updateCorso.setNumeroSessioni(null);
+				}
+					
+				if(updateCorso.getFrequenzaSessioni()!=null && updateCorso.getFrequenzaSessioni().equals(updateCorso.getFrequenzaSessioni())) {
+					updateCorso.setFrequenzaSessioni(null);
+				}
+					
+				corsoDAO.updateCorso(updateCorso);
 				
 			}
 			catch(SQLException ex) {
-				throw new OperationException("Errore durante l'aggiornamento dello chef");
+				throw new OperationException("Errore durante l'aggiornamento del corso");
 			}
 		}
 		
@@ -124,7 +171,7 @@ public class Controller {
 		public List<CorsoDTO> visualizzaTuttiCorsi() throws OperationException{
 			try {
 				return corsoDAO.getAllCorsi();
-			} catch (SQLException e) {
+			} catch (SQLException ex) {
 		        throw new OperationException("Errore durante il recupero di tutti i corsi");
 		    }
 		}
@@ -150,25 +197,28 @@ public class Controller {
 			}
 		}
 		
-		// METODO PER CERCARE UN CORSO DAL NOME
-		public CorsoDTO cercaCorsoPerNome(String newNomeCorso) throws NotFoundException, OperationException{
+		// METODO PER VISUALIZZARE TUTTI I CORSI DI UNA DETERMINATA CATEGORIA
+		public List<CorsoDTO> visualizzaCorsiPerCategoria(String categoria) throws NotFoundException, OperationException{
 			try {
-				CorsoDTO corso = corsoDAO.getCorsoByName(newNomeCorso);
-				
-				if(corso==null) {
-					throw new NotFoundException("Il corso "+newNomeCorso+" non è presente. Registralo!");
-				}
-				
-				return corso;
+				return corsoDAO.getCorsiByCategory(categoria);
+			} catch(SQLException ex) {
+				throw new OperationException("Errore nel recupero dei corsi filtrati!");
+			}
+		}
+		
+		// METODO PER PRELEVARE TUTTE LE CATEGORIE PRESENTI
+		public List<String> getAllCategorie() throws OperationException{
+			try {
+				return corsoDAO.getAllCategories();
 			}catch(SQLException ex) {
-				throw new OperationException("Errore durante la ricerca del corso");
+				throw new OperationException("Errore nel recupero delle categorie");
 			}
 		}
 		
 		// METODO PER ELIMINARE UN CORSO
-		public void eliminaCorso(int idCorso) throws NotFoundException, UnauthorizedOperationException, OperationException{
+		public void eliminaCorso(String nomeCorso) throws NotFoundException, UnauthorizedOperationException, OperationException{
 			try {
-				CorsoDTO corso = corsoDAO.getCorsoById(idCorso);
+				CorsoDTO corso = corsoDAO.getCorsoByName(nomeCorso);
 				
 				if(corso==null) {
 					throw new NotFoundException("Impossibile trovare il corso!");

@@ -1,14 +1,263 @@
 package gui;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
+import java.util.ArrayList;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.border.EmptyBorder;
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
+import controller.Controller;
+import dto.CorsoDTO;
+import exception.OperationException;
+import exception.NotFoundException;
 
 public class VisualizzaTuttiCorsiPanel extends JPanel {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
+    
+    private static final Color PRIMARY_BLUE = new Color(30, 144, 255); 
+    private static final Color TEXT_DARK = new Color(51, 63, 81);
+    private static final Color BORDER_GRAY = new Color(220, 225, 235);
+    private static final Color STRIPE_COLOR = new Color(245, 247, 252);
+    
+    private JLabel pageTitle;
+    private JPanel titleContainer;
+    
+    private JPanel contentPanel;
+    private JPanel filterPanel;
+    private JComboBox<String> categoryFilter;
+    private JButton applyFilterButton;
 
-	
-	public VisualizzaTuttiCorsiPanel() {
+    private JTable coursesTable;
+    private JScrollPane tableScrollPane;
+    
+    private DefaultTableModel tableModel;
+    
+    private Controller controller;
+    
+    private static final int HORIZONTAL_PADDING = 20; 
+    private static final int TABLE_HEIGHT = 450; 
 
-	}
+    public VisualizzaTuttiCorsiPanel() {
+        controller = new Controller();
+        
+        setLayout(new BorderLayout(0, 20));
+        setOpaque(false);
+        setBorder(new EmptyBorder(20, HORIZONTAL_PADDING, HORIZONTAL_PADDING, HORIZONTAL_PADDING));
+        
+        add(buildTitlePanel(), BorderLayout.NORTH);
+        add(buildContentPanel(), BorderLayout.CENTER);
+        
+        loadInitialData();
+    }
 
+    private JPanel buildTitlePanel() {
+        titleContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0)); 
+        titleContainer.setOpaque(false);
+        
+        pageTitle = new JLabel("Visualizza Tutti i Corsi");
+        pageTitle.setFont(new Font("SansSerif", Font.BOLD, 24));
+        pageTitle.setForeground(TEXT_DARK);
+        
+        titleContainer.add(pageTitle);
+
+        return titleContainer;
+    }
+    
+    private JPanel buildContentPanel() {
+        contentPanel = new JPanel();
+        contentPanel.setOpaque(false);
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS)); 
+        
+        filterPanel = buildFilterPanel();
+        
+        JPanel filterWrapper = new JPanel(new BorderLayout());
+        filterWrapper.setOpaque(false);
+        filterWrapper.add(filterPanel, BorderLayout.WEST);
+        filterWrapper.setAlignmentX(Component.LEFT_ALIGNMENT); 
+        
+        contentPanel.add(filterWrapper);
+        
+        contentPanel.add(Box.createVerticalStrut(15));
+        
+        tableScrollPane = buildTableScrollPane();
+        tableScrollPane.setAlignmentX(Component.LEFT_ALIGNMENT); 
+        
+        contentPanel.add(tableScrollPane);
+        
+        return contentPanel;
+    }
+
+    private JPanel buildFilterPanel() {
+        filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0)); 
+        filterPanel.setOpaque(false);
+        
+        filterPanel.add(new JLabel("Filtra per Categoria:"));
+        
+        categoryFilter = new JComboBox<>();
+        
+        try {
+            List<String> categorie = controller.getAllCategorie();
+            categoryFilter.addItem("Tutte");
+            for (String cat : categorie) {
+                categoryFilter.addItem(cat);
+            }
+        } catch (OperationException e) {
+            JOptionPane.showMessageDialog(this, "Impossibile caricare le categorie: " + e.getMessage(), "Errore DB", JOptionPane.ERROR_MESSAGE);
+            categoryFilter.addItem("Tutte");
+        }
+        
+        categoryFilter.setPreferredSize(new Dimension(150, 32));
+        categoryFilter.setBackground(Color.WHITE);
+        categoryFilter.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        filterPanel.add(categoryFilter);
+        
+        applyFilterButton = new JButton("Applica Filtro");
+        applyFilterButton.setFont(new Font("SansSerif", Font.BOLD, 14));
+        applyFilterButton.setBackground(PRIMARY_BLUE); 
+        applyFilterButton.setForeground(Color.WHITE);
+        applyFilterButton.setOpaque(true);
+        applyFilterButton.setBorder(new EmptyBorder(6, 12, 6, 12));
+        applyFilterButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+            	applyCourseFilter();
+            }
+        });
+        filterPanel.add(applyFilterButton);
+
+        return filterPanel;
+    }
+
+    private JScrollPane buildTableScrollPane() {
+        String[] columnNames = {"Nome", "Categoria", "Data Inizio", "Frequenza Sessioni", "Numero Sessioni", "Chef"};
+        
+        tableModel = new DefaultTableModel(null, columnNames) {
+             @Override
+             public boolean isCellEditable(int row, int column) {
+                 return false;
+             }
+         };
+        
+        coursesTable = new JTable(tableModel);
+        coursesTable.setFillsViewportHeight(true);
+        coursesTable.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        coursesTable.setRowHeight(30);
+        coursesTable.setGridColor(BORDER_GRAY);
+        coursesTable.setBackground(Color.WHITE);
+        coursesTable.setShowVerticalLines(false);
+        coursesTable.setIntercellSpacing(new Dimension(0, 0));
+        
+        coursesTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                
+                if (!isSelected) {
+                    label.setBackground(row % 2 == 0 ? Color.WHITE : STRIPE_COLOR);
+                }
+
+                label.setBorder(new EmptyBorder(7, 8, 7, 8)); 
+                return label;
+            }
+        });
+
+        coursesTable.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 13));
+        coursesTable.getTableHeader().setBackground(TEXT_DARK);
+        coursesTable.getTableHeader().setForeground(Color.WHITE);
+        coursesTable.getTableHeader().setReorderingAllowed(false);
+        coursesTable.getTableHeader().setPreferredSize(new Dimension(coursesTable.getTableHeader().getWidth(), 35));
+
+        
+        tableScrollPane = new JScrollPane(coursesTable);
+        
+        tableScrollPane.setPreferredSize(new Dimension(0, TABLE_HEIGHT)); 
+        tableScrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, TABLE_HEIGHT));
+        
+        tableScrollPane.setBorder(BorderFactory.createLineBorder(BORDER_GRAY));
+        
+        return tableScrollPane;
+    }
+    
+    //===============================================
+    // FUNZIONI AUSILIARIE 
+    //===============================================
+    private void loadInitialData() {
+        try {
+            List<CorsoDTO> elencoCorsi = controller.visualizzaTuttiCorsi();
+            updateTable(elencoCorsi);
+        } catch (OperationException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Errore DB", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    private void applyCourseFilter() {
+        String categoriaSelezionata = (String) categoryFilter.getSelectedItem();
+        List<CorsoDTO> corsiFiltrati = new ArrayList<>();
+        
+        try {
+            if (categoriaSelezionata.equals("Tutte")) {
+                corsiFiltrati = controller.visualizzaTuttiCorsi();
+            } else {
+                corsiFiltrati = controller.visualizzaCorsiPerCategoria(categoriaSelezionata);
+            }
+            updateTable(corsiFiltrati);
+            
+        } catch(NotFoundException ex) {
+        	JOptionPane.showMessageDialog(this, ex.getMessage(), "Errore DB", JOptionPane.ERROR_MESSAGE);
+        } catch (OperationException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Errore DB", JOptionPane.ERROR_MESSAGE);
+        } 
+    }
+    
+    private void updateTable(List<CorsoDTO> elencoCorsi) {
+        tableModel.setRowCount(0);
+        
+        for(CorsoDTO corso: elencoCorsi) {
+            String nomeCompletoChef;
+            if (corso.getChefCorso() != null) {
+                nomeCompletoChef = "Chef " + corso.getChefCorso().getCognome();
+            } else {
+                nomeCompletoChef = "N/A - Dati mancanti";
+            }
+            
+            String[] rowData = {
+                corso.getNomeCorso(),
+                corso.getCategoria(),
+                localDateToString(corso.getDataInizio()),
+                corso.getFrequenzaSessioni(),
+                String.valueOf(corso.getNumeroSessioni()),
+                nomeCompletoChef
+            };
+            tableModel.addRow(rowData);
+        }
+    }
+    
+    public String localDateToString(LocalDate date) {
+       if (date == null) return "Non Definita";
+       
+       DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            
+       return date.format(formatter);
+    }
+   
 }
