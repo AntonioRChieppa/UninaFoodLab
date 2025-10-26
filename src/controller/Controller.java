@@ -451,14 +451,14 @@ public class Controller {
 		// METODO PER INSERIRE UNA NUOVA SESSIONE ONLINE
 		public void inserimentoSessioneOn(String newArgomento, LocalTime newOraInizio, java.util.Date newDataSessioneUtil, Integer newFkCorso, String newLinkConferenza) throws OperationException, AlreadyExistsException {
 			try {
+				if(newArgomento.isEmpty() || newOraInizio == null || newDataSessioneUtil == null || newFkCorso == null || newLinkConferenza.isEmpty()) {
+					throw new OperationException("Tutti i campi sono obbligatori");
+				}
+				
 				//Conversione da java.util.Date -> LocalDate
 				LocalDate newDataSessione = Instant.ofEpochMilli(newDataSessioneUtil.getTime())
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate();
-				
-				if(newArgomento.isEmpty() || newOraInizio == null || newDataSessione == null || newFkCorso == null || newLinkConferenza.isEmpty()) {
-					throw new OperationException("Tutti i campi sono obbligatori");
-				}
 				
 				SessioneOnlineDTO sessioneOnEsistente = sessioneOnDAO.getSessioneOnByArgumentAndDate(newArgomento, newDataSessione);
 				if(sessioneOnEsistente!=null) {
@@ -492,14 +492,14 @@ public class Controller {
 		// METODO PER AGGIORNARE I DATI RELATIVI AD UNA SESSIONE ONLINE
 		public void aggiornaSessioneOnline(int idSessione, String newArgomento, LocalTime newOraInizio, java.util.Date newDataSessioneUtil, Integer newFkCorso, String newLinkConferenza) throws UnauthorizedOperationException, NotFoundException, OperationException{
 			try {
+				if(newArgomento.isEmpty() || newOraInizio == null || newDataSessioneUtil == null || newFkCorso == null || newLinkConferenza.isEmpty()) {
+					throw new OperationException("Tutti i campi sono obbligatori");
+				}
+				
 				//Conversione da java.util.Date -> LocalDate
 				LocalDate newDataSessione = Instant.ofEpochMilli(newDataSessioneUtil.getTime())
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate();
-				
-				if(newArgomento.isEmpty() || newOraInizio == null || newDataSessione == null || newFkCorso == null || newLinkConferenza.isEmpty()) {
-					throw new OperationException("Tutti i campi sono obbligatori");
-				}
 				
 				SessioneOnlineDTO sessioneOn = sessioneOnDAO.getSessioneOnById(idSessione);
 				if(sessioneOn == null) {

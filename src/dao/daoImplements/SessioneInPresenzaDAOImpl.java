@@ -13,42 +13,60 @@ public class SessioneInPresenzaDAOImpl implements SessioneInPresenzaDAOInt{
 	
 	// INSERT newSessioneInPresenza - GESTIONE DEGLI INSERIMENTI IN UN'UNICA TRANSAZIONE
 	@Override
-	public void insertSessioneInPresenza(SessioneInPresenzaDTO sessioneIP) throws SQLException{
-		String insertSessioneSql = "INSERT INTO sessione (argomento, orainizio, datasessione, fkcorso, tiposessione) VALUES (?, ?, ?, ?, ?) RETURNING idsessione";
-		String insertSessioneInPresenzaSql = "INSERT INTO sessioneinpresenza (idsessioneinpresenza, sede, edificio, aula, fksessione) VALUES (?, ?, ?, ?, ?)";
-		
-		try(Connection conn = db_connection.getConnection()){
-			conn.setAutoCommit(false); // inizio transazione
-			try(PreparedStatement psSessione = conn.prepareStatement(insertSessioneSql)){
-				psSessione.setString(1, sessioneIP.getArgomento());
-		        psSessione.setTime(2, Time.valueOf(sessioneIP.getOraInizio()));
-		        psSessione.setDate(3, java.sql.Date.valueOf(sessioneIP.getDataSessione()));
-		        psSessione.setInt(4, sessioneIP.getCorsoSessione().getId());
-		        psSessione.setString(5, "In presenza");
-		        
-		        ResultSet rs = psSessione.executeQuery();
-		        if(rs.next()) {
-		        	int idSessione = rs.getInt("idSessione");
-		            sessioneIP.setIdSessione(idSessione);
-		            
-		            try (PreparedStatement psPresenza = conn.prepareStatement(insertSessioneInPresenzaSql)) {
-		                psPresenza.setInt(1, idSessione);
-		                psPresenza.setString(2, sessioneIP.getSede());
-		                psPresenza.setString(3, sessioneIP.getEdificio());
-		                psPresenza.setString(4, sessioneIP.getAula());
-		                psPresenza.setInt(5, idSessione);
-		                psPresenza.executeUpdate();
-		            }
-		        }
-		        
-		        conn.commit(); // conferma, concludi transazione
-		        }catch(SQLException ex) {
-		        	conn.rollback(); // se uno dei due inserimenti fallisce, annulla tutto
-		        	throw ex; // rilancia l'eccezione al fine che il controller possa gestirla
-		        }finally {
-		        	conn.setAutoCommit(true); // ripristina lo stato originale
-		        }
-		}
+	public void insertSessioneInPresenza(SessioneInPresenzaDTO sessioneIP) throws SQLException {
+	    String insertSessioneSql = "INSERT INTO sessione (argomento, orainizio, datasessione, fkcorso, tiposessione) VALUES (?, ?, ?, ?, ?)";
+	    String insertSessioneInPresenzaSql = "INSERT INTO sessioneinpresenza (idsessioneinpresenza, sede, edificio, aula, fksessione) VALUES (?, ?, ?, ?, ?)";
+
+	    // Usa try-with-resources per la connessione
+	    try (Connection conn = db_connection.getConnection()) {
+	        conn.setAutoCommit(false); // inizio transazione
+
+	        // Usa try-catch-finally interno per gestire la transazione
+	        try {
+	            int idSessione = -1; 
+
+	            // Primo inserimento (sessione) usando try-with-resources per lo statement
+	            try (PreparedStatement psSessione = conn.prepareStatement(insertSessioneSql, Statement.RETURN_GENERATED_KEYS)) {
+	                psSessione.setString(1, sessioneIP.getArgomento());
+	                psSessione.setTime(2, Time.valueOf(sessioneIP.getOraInizio()));
+	                psSessione.setDate(3, java.sql.Date.valueOf(sessioneIP.getDataSessione()));
+	                psSessione.setInt(4, sessioneIP.getCorsoSessione().getId());
+	                psSessione.setString(5, "presenza");
+
+	                psSessione.executeUpdate(); // Esegui l'update
+
+	                // Recupera l'ID generato usando try-with-resources per il ResultSet
+	                try (ResultSet generatedKeys = psSessione.getGeneratedKeys()) {
+	                    if (generatedKeys.next()) {
+	                        idSessione = generatedKeys.getInt(1);
+	                        sessioneIP.setIdSessione(idSessione); // Aggiorna DTO se necessario
+	                    } else {
+	                        conn.rollback();
+	                        throw new SQLException("Inserimento sessione base fallito, nessun ID ottenuto.");
+	                    }
+	                } 
+	            } 
+	            
+	            // Secondo inserimento (sessioneinpresenza) usando try-with-resources
+	            try (PreparedStatement psPresenza = conn.prepareStatement(insertSessioneInPresenzaSql)) {
+	                psPresenza.setInt(1, idSessione); // Usa l'ID recuperato
+	                psPresenza.setString(2, sessioneIP.getSede());
+	                psPresenza.setString(3, sessioneIP.getEdificio());
+	                psPresenza.setString(4, sessioneIP.getAula());
+	                psPresenza.setInt(5, idSessione); // Usa l'ID recuperato
+
+	                psPresenza.executeUpdate(); // Esegui l'update
+	            } 
+
+	            conn.commit(); // Conferma transazione solo se tutto è andato a buon fine
+
+	        } catch (SQLException ex) {
+	            conn.rollback(); // Se uno degli inserimenti fallisce, annulla tutto
+	            throw ex; // Rilancia l'eccezione originale al controller
+	        } finally {
+	            conn.setAutoCommit(true); // Ripristina lo stato originale (questo finally si riferisce al try interno)
+	        }
+	    } // conn chiusa automaticamente qui (dal try-with-resources esterno)
 	}
 	
 	// UPDATE SessioneInPresenza - LOGICA COALESCE
@@ -61,9 +79,9 @@ public class SessioneInPresenzaDAOImpl implements SessioneInPresenzaDAOInt{
 								"fkcorso = COALESCE(?, fkcorso) " +
 								"WHERE idsessione = ?";
 		
-		String updateSessioneInPresenza = "UPDATE sessioneinpresenza SET"+
-										  "sede = COALESCE(?, sede)"+
-										  "edificio = COALESCE(?, edificio)"+
+		String updateSessioneInPresenza = "UPDATE sessioneinpresenza SET "+
+										  "sede = COALESCE(?, sede), "+
+										  "edificio = COALESCE(?, edificio), "+
 										  "aula = COALESCE(?, aula) " +
 										  "WHERE idsessioneinpresenza = ?";
 		
@@ -86,7 +104,12 @@ public class SessioneInPresenzaDAOImpl implements SessioneInPresenzaDAOInt{
 	                psSessione.setDate(3, java.sql.Date.valueOf(upSessioneIp.getDataSessione()));
 	            }
 				
-				psSessione.setInt(4, upSessioneIp.getCorsoSessione().getId());
+				if(upSessioneIp.getCorsoSessione() == null) {
+					psSessione.setNull(4, java.sql.Types.INTEGER);
+				} else {
+					psSessione.setInt(4, upSessioneIp.getCorsoSessione().getId());
+				}
+				
 				psSessione.setInt(5,  upSessioneIp.getIdSessione());
 				psSessione.executeUpdate();
 				
@@ -113,20 +136,20 @@ public class SessioneInPresenzaDAOImpl implements SessioneInPresenzaDAOInt{
 		String sql = "SELECT s.idsessione, s.argomento, s.orainizio, s.datasessione, s.fkcorso, s.tipoSessione, " // Aggiunto s.tipoSessione
 	               + "sip.sede, sip.edificio, sip.aula "
 	               + "FROM sessione s "
-	               + "JOIN sessioneinpresenza sip"
-	               + "ON s.idsessione = sip.fksessione"
+	               + "JOIN sessioneinpresenza sip "
+	               + "ON s.idsessione = sip.fksessione "
 	               + "WHERE argomento = ? AND datasessione = ?";
 		
 		try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
 			ps.setString(1, newArgomento);
-            ps.setDate(3, java.sql.Date.valueOf(newDataSessione));
+            ps.setDate(2, java.sql.Date.valueOf(newDataSessione));
             ResultSet rs = ps.executeQuery();
             
             if(rs.next()) {
             	SessioneInPresenzaDTO sessioneIP = new SessioneInPresenzaDTO();
             	sessioneIP.setIdSessione(rs.getInt("idsessione"));
 				sessioneIP.setArgomento(rs.getString("argomento"));
-	            sessioneIP.setOraInizio(rs.getTime("orarioinizio").toLocalTime());
+	            sessioneIP.setOraInizio(rs.getTime("orainizio").toLocalTime());
 
 	            java.sql.Date sqlDate = rs.getDate("datasessione");
 	            if (sqlDate != null) {
@@ -168,7 +191,7 @@ public class SessioneInPresenzaDAOImpl implements SessioneInPresenzaDAOInt{
             	SessioneInPresenzaDTO sessioneIP = new SessioneInPresenzaDTO();
             	sessioneIP.setIdSessione(rs.getInt("idsessione"));
 				sessioneIP.setArgomento(rs.getString("argomento"));
-	            sessioneIP.setOraInizio(rs.getTime("orarioinizio").toLocalTime());
+	            sessioneIP.setOraInizio(rs.getTime("orainizio").toLocalTime());
 
 	            java.sql.Date sqlDate = rs.getDate("datasessione");
 	            if (sqlDate != null) {
@@ -197,8 +220,8 @@ public class SessioneInPresenzaDAOImpl implements SessioneInPresenzaDAOInt{
 	               + "sip.sede, sip.edificio, sip.aula "
 	               + "FROM sessione s "
 	               + "JOIN sessioneinpresenza sip "
-	               + "ON s.idsessione = sip.fksessione"
-	               + "WHERE s.fkcorso = ?"
+	               + "ON s.idsessione = sip.fksessione "
+	               + "WHERE s.fkcorso = ? "
 	               + "ORDER BY s.datasessione ASC";
 		
 		List<SessioneInPresenzaDTO> elencoSessioniInPresenzaCorso = new ArrayList<>();
@@ -212,7 +235,7 @@ public class SessioneInPresenzaDAOImpl implements SessioneInPresenzaDAOInt{
 				SessioneInPresenzaDTO sessioneIP = new SessioneInPresenzaDTO();
 				sessioneIP.setIdSessione(rs.getInt("idsessione"));
 				sessioneIP.setArgomento(rs.getString("argomento"));
-	            sessioneIP.setOraInizio(rs.getTime("orarioinizio").toLocalTime());
+	            sessioneIP.setOraInizio(rs.getTime("orainizio").toLocalTime());
 
 	            java.sql.Date sqlDate = rs.getDate("datasessione");
 	            if (sqlDate != null) {

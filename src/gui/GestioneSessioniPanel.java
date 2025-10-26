@@ -13,14 +13,10 @@ import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Comparator;
-// import java.util.Vector; // Non più necessario
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-// import javax.swing.DefaultComboBoxModel; // Non più necessario
-// import javax.swing.DefaultListCellRenderer; // Non più necessario
 import javax.swing.JButton;
-// import javax.swing.JComboBox; // Non più necessario
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -61,12 +57,12 @@ public class GestioneSessioniPanel extends JPanel {
     private static final Color STRIPE_COLOR = new Color(245, 247, 252);
     private static final Color DELETE_RED = new Color(220, 53, 69);
     private static final Color ADD_GREEN = new Color(40, 167, 69);
+    private static final Color LIGHT_GRAY_BACKGROUND = new Color(240, 240, 240); // Nuovo colore di sfondo per il dialog
 
     private JLabel pageTitle;
     private JPanel titleContainer;
     private JPanel contentPanel;
     private JPanel infoCardPanel;
-    // Rimossi componenti filtro
     private JTable sessioniTable;
     private JScrollPane tableScrollPane;
     private DefaultTableModel tableModel;
@@ -78,9 +74,7 @@ public class GestioneSessioniPanel extends JPanel {
     private List<SessioneDTO> elencoSessioniAttuale;
 
     private static final int HORIZONTAL_PADDING = 20;
-    // Riportata altezza tabella come prima
     private static final int TABLE_HEIGHT = 420;
-    // Rimossi costanti filtri
 
     public GestioneSessioniPanel() {
         controller = new Controller();
@@ -94,7 +88,6 @@ public class GestioneSessioniPanel extends JPanel {
         add(buildContentPanel(), BorderLayout.CENTER);
 
         loadInitialData();
-        // Rimossa chiamata a loadCorsoFilter();
     }
 
     private void loadInitialData() {
@@ -133,8 +126,6 @@ public class GestioneSessioniPanel extends JPanel {
         infoCardPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         infoCardPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, infoCardPanel.getPreferredSize().height));
 
-        // Rimosso filterPanel da qui
-
         tableScrollPane = buildTableScrollPane();
         tableScrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -143,7 +134,7 @@ public class GestioneSessioniPanel extends JPanel {
         buttonPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, buttonPanel.getPreferredSize().height));
 
         contentPanel.add(infoCardPanel);
-        contentPanel.add(Box.createVerticalStrut(15)); // Unico spazio tra card e tabella
+        contentPanel.add(Box.createVerticalStrut(15));
         contentPanel.add(tableScrollPane);
         contentPanel.add(Box.createVerticalStrut(10));
         contentPanel.add(buttonPanel);
@@ -247,7 +238,12 @@ public class GestioneSessioniPanel extends JPanel {
         aggiungiRicettaButton.setOpaque(true);
         aggiungiRicettaButton.setBorder(new EmptyBorder(6, 12, 6, 12));
         aggiungiRicettaButton.setEnabled(false);
-        aggiungiRicettaButton.addActionListener(e -> handleAggiungiRicetta());
+        aggiungiRicettaButton.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		executeAggiungiRicetta();
+        	}
+        });
+        
         JPanel addRecipeWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         addRecipeWrapper.setOpaque(false);
         addRecipeWrapper.add(aggiungiRicettaButton);
@@ -343,21 +339,24 @@ public class GestioneSessioniPanel extends JPanel {
 
         JDialog detailsDialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Dettagli Sessione", true);
         detailsDialog.setLayout(new BorderLayout(10, 10));
-        detailsDialog.setSize(400, 300);
+        detailsDialog.setSize(450, 400); // Aumentato un po' la dimensione per più spazio
         detailsDialog.setLocationRelativeTo(this);
         detailsDialog.setResizable(false);
+        detailsDialog.setBackground(LIGHT_GRAY_BACKGROUND); // Sfondo leggermente grigio
 
         JPanel detailsPanel = new JPanel();
         detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
         detailsPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
+        detailsPanel.setBackground(Color.WHITE); // Sfondo bianco per il pannello dei dettagli interni
 
+        // Ogni componente aggiunto al detailsPanel deve essere allineato a sinistra
         detailsPanel.add(createDetailLabel("Argomento:", sessioneSelezionata.getArgomento()));
         detailsPanel.add(Box.createVerticalStrut(8));
         detailsPanel.add(createDetailLabel("Data:", localDateToString(sessioneSelezionata.getDataSessione())));
         detailsPanel.add(Box.createVerticalStrut(8));
         detailsPanel.add(createDetailLabel("Ora:", localTimeToString(sessioneSelezionata.getOraInizio())));
         detailsPanel.add(Box.createVerticalStrut(8));
-        detailsPanel.add(createDetailLabel("Corso:", sessioneSelezionata.getCorsoSessione().getNomeCorso()));
+        detailsPanel.add(createDetailLabel("Corso:", (sessioneSelezionata.getCorsoSessione() != null) ? sessioneSelezionata.getCorsoSessione().getNomeCorso() : "N/D"));
         detailsPanel.add(Box.createVerticalStrut(12));
 
 
@@ -373,10 +372,10 @@ public class GestioneSessioniPanel extends JPanel {
                     detailsPanel.add(Box.createVerticalStrut(8));
                     detailsPanel.add(createDetailLabel("Aula:", sessioneIP.getAula()));
                 } else {
-                     detailsPanel.add(new JLabel("Dettagli presenza non trovati."));
+                     detailsPanel.add(createErrorLabel("Dettagli presenza non trovati."));
                 }
              } catch (OperationException e) {
-                 detailsPanel.add(new JLabel("<html><font color='red'>Errore nel recupero dettagli: " + e.getMessage() + "</font></html>"));
+                 detailsPanel.add(createErrorLabel("Errore nel recupero dettagli: " + e.getMessage()));
              }
         } else if ("online".equalsIgnoreCase(sessioneSelezionata.getTipoSessione())) {
             detailsPanel.add(createDetailLabel("Tipo:", "Online"));
@@ -384,32 +383,48 @@ public class GestioneSessioniPanel extends JPanel {
              try {
                 SessioneOnlineDTO sessioneOn = controller.getSessioneOnlineById(sessioneSelezionata.getIdSessione());
                 if (sessioneOn != null) {
-                     detailsPanel.add(createDetailLabel("Link:", null));
+                     // createDetailLabel per il link, e poi una JTextArea per il valore
+                     detailsPanel.add(createDetailLabel("Link:", null)); // Label "Link:" senza valore
                      JTextArea linkArea = new JTextArea(sessioneOn.getLinkConferenza());
                      linkArea.setEditable(false);
                      linkArea.setLineWrap(true);
                      linkArea.setWrapStyleWord(true);
                      linkArea.setFont(new Font("SansSerif", Font.PLAIN, 13));
                      linkArea.setBackground(detailsPanel.getBackground());
-                     linkArea.setBorder(null);
+                     linkArea.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0)); // Padding minimo
+                     linkArea.setForeground(TEXT_DARK);
+                     linkArea.setAlignmentX(Component.LEFT_ALIGNMENT); // Allinea a sinistra
+                     linkArea.setMaximumSize(new Dimension(detailsDialog.getWidth() - 50, linkArea.getPreferredSize().height)); // Limita larghezza
                      detailsPanel.add(linkArea);
 
                 } else {
-                    detailsPanel.add(new JLabel("Dettagli online non trovati."));
+                    detailsPanel.add(createErrorLabel("Dettagli online non trovati."));
                 }
              } catch (OperationException e) {
-                  detailsPanel.add(new JLabel("<html><font color='red'>Errore nel recupero dettagli: " + e.getMessage() + "</font></html>"));
+                  detailsPanel.add(createErrorLabel("Errore nel recupero dettagli: " + e.getMessage()));
              }
         } else {
              detailsPanel.add(createDetailLabel("Tipo:", "Non specificato"));
         }
 
-        JButton closeButton = new JButton("Chiudi");
-        closeButton.addActionListener(e -> detailsDialog.dispose());
+        // Pannello per il bottone Chiudi
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.setBackground(LIGHT_GRAY_BACKGROUND); // Sfondo leggermente grigio
+        buttonPanel.setBorder(new EmptyBorder(0, 0, 10, 0)); // Spazio inferiore
+
+        JButton closeButton = new JButton("Chiudi");
+        closeButton.setFont(new Font("SansSerif", Font.BOLD, 14));
+        closeButton.setBackground(PRIMARY_BLUE); // Usa colore primario
+        closeButton.setForeground(Color.WHITE);
+        closeButton.setFocusPainted(false); // Rimuove il bordo focus
+        closeButton.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(PRIMARY_BLUE.darker(), 1), // Bordo leggermente più scuro
+            new EmptyBorder(8, 20, 8, 20) // Padding interno
+        ));
+        closeButton.addActionListener(e -> detailsDialog.dispose());
         buttonPanel.add(closeButton);
 
-        detailsDialog.add(new JScrollPane(detailsPanel), BorderLayout.CENTER);
+        detailsDialog.add(new JScrollPane(detailsPanel), BorderLayout.CENTER); // Aggiunto JScrollPane per i dettagli
         detailsDialog.add(buttonPanel, BorderLayout.SOUTH);
         detailsDialog.setVisible(true);
     }
@@ -424,6 +439,15 @@ public class GestioneSessioniPanel extends JPanel {
         label.setText(text);
         label.setFont(new Font("SansSerif", Font.PLAIN, 13));
         label.setForeground(TEXT_DARK);
+        label.setAlignmentX(Component.LEFT_ALIGNMENT); // Allinea a sinistra
+        return label;
+    }
+    
+    // Nuovo metodo per creare etichette di errore rosse
+    private JLabel createErrorLabel(String text) {
+        JLabel label = new JLabel("<html><font color='red'>" + text + "</font></html>");
+        label.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        label.setAlignmentX(Component.LEFT_ALIGNMENT); // Allinea a sinistra
         return label;
     }
     
@@ -431,7 +455,8 @@ public class GestioneSessioniPanel extends JPanel {
     // FUNZIONI AUSILIARIE
     //========================================================
 
-    private void handleAggiungiRicetta() {
+    
+    private void executeAggiungiRicetta() {
         int selectedRow = sessioniTable.getSelectedRow();
         if (selectedRow == -1) return;
         SessioneDTO sessioneSelezionata = elencoSessioniAttuale.get(selectedRow);
@@ -446,8 +471,13 @@ public class GestioneSessioniPanel extends JPanel {
 
         SessioneDTO sessioneSelezionata = elencoSessioniAttuale.get(selectedRow);
 
-        JOptionPane.showMessageDialog(this, "Apertura dialog modifica per sessione: "
-            + sessioneSelezionata.getArgomento() + "\n(Logica da implementare)");
+        JFrame owner = (JFrame) SwingUtilities.getWindowAncestor(this);
+        ModificaSessioneDialog dialog = new ModificaSessioneDialog(owner, sessioneSelezionata, controller);
+        dialog.setVisible(true);
+        
+        if (dialog.isSaved()) {
+            loadInitialData(); 
+        }
 
     }
 
@@ -473,7 +503,6 @@ public class GestioneSessioniPanel extends JPanel {
                 } else if ("online".equalsIgnoreCase(sessioneSelezionata.getTipoSessione())) {
                      controller.eliminaSessioneOn(sessioneSelezionata.getIdSessione());
                 } else {
-                    System.err.println("Tipo sessione non riconosciuto per l'eliminazione: " + sessioneSelezionata.getTipoSessione());
                     throw new OperationException("Tipo sessione non valido per l'eliminazione.");
                 }
 
@@ -486,7 +515,7 @@ public class GestioneSessioniPanel extends JPanel {
             } catch(UnauthorizedOperationException ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
             } catch (OperationException ex) {
-                JOptionPane.showMessageDialog(this, "Errore durante l'eliminazione: " + ex.getMessage(), "Errore DB", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this,ex.getMessage(), "Errore DB", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
