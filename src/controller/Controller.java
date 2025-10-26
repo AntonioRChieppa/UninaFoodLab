@@ -6,8 +6,11 @@ import dto.*;
 import exception.*;
 import java.sql.SQLException;
 import java.time.*;
-import java.util.*;
 import session.SessionChef;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Controller {
 
@@ -38,12 +41,24 @@ public class Controller {
 		    return nome.trim().toLowerCase().replaceAll("\\s+", " ");
 		}
 		
+		//METODO PER CONTROLLARE SE UNA STRINGA NON CONTIENE NUMERI
 		public boolean isOnlyLettersAndSpaces(String text) {
 		    if (text == null) {
 		        return false;
 		    }
 		    
 		    return text.matches("^[\\p{L} ]+$");
+		}
+		
+		//METODO DI VERIFICA DI LINK VALIDO
+		public boolean isValidHttpUrl(String url) {
+		    if (url == null || url.isEmpty()) {
+		        return false; 
+		    }
+		    
+		    Pattern urlPattern = Pattern.compile("^(https?://).+", Pattern.CASE_INSENSITIVE);
+		    Matcher matcher = urlPattern.matcher(url.trim()); 
+		    return matcher.matches();
 		}
 		
 		//---------- INIZIO METODI CORSO ----------
@@ -240,26 +255,59 @@ public class Controller {
 		
 		//-------------------------------------------------------------------------------------------------------------
 		
+		//---------- METODO PER VISUALIZZARE TUTTE LE SESSIONI ----------
+		public List<SessioneDTO> visualizzaTutteSessioniPerChef() throws NotFoundException, OperationException{
+			try {
+				List<SessioneDTO> elencoTutteSessioni = new ArrayList<>();
+				
+				int idChefLoggato = SessionChef.getChefId();
+				List<SessioneInPresenzaDTO> sessionIP = sessioneIpDAO.getSessioniIpByChefId(idChefLoggato);
+				elencoTutteSessioni.addAll(sessionIP);
+				
+				List<SessioneOnlineDTO> sessioniOn = sessioneOnDAO.getSessioniOnByChefId(idChefLoggato);
+				elencoTutteSessioni.addAll(sessioniOn);
+				
+				return elencoTutteSessioni;
+			} catch(SQLException ex) {
+				throw new OperationException("Errore in fase di visualizzazione delle sessioni!");
+			}
+		}
+		
 		//---------- INIZIO METODI SESSIONE IN PRESENZA ----------
 		
 		// METODO PER INSERIRE UNA NUOVA SESSIONE IN PRESENZA
-		public void inserimentoSessioneIP(String newArgomento, LocalTime newOraInizio, LocalDate newDataSessione, int newFkCorso, String newSede, String newEdificio, String newAula) throws OperationException, AlreadyExistsException {
+		public void inserimentoSessioneIP(String newArgomento, LocalTime newOraInizio, java.util.Date newDataSessioneUtil, Integer newFkCorso, String newSede, String newEdificio, String newAula) throws OperationException, AlreadyExistsException {
 			try {
+				
+				if(newArgomento.isEmpty() || newOraInizio == null || newDataSessioneUtil == null || newFkCorso == null || newSede.isEmpty() || newEdificio.isEmpty() || newAula.isEmpty()) {
+					throw new OperationException("Tutti i campi sono obbligatori!");
+				}
+				
+				//Conversione da java.util.Date -> LocalDate
+				LocalDate newDataSessione = Instant.ofEpochMilli(newDataSessioneUtil.getTime())
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+				
 				SessioneInPresenzaDTO sessioneIpEsistente = sessioneIpDAO.getSessioneIpByArgumentAndDate(newArgomento, newDataSessione);
 				
 				if(sessioneIpEsistente!=null) {
 					throw new AlreadyExistsException("Sessione in presenza già inserita!");
 				}
 				
+				if(!isOnlyLettersAndSpaces(newArgomento) || !isOnlyLettersAndSpaces(newSede)) {
+					throw new OperationException("I campi argomento e sede possono contenere solo caratteri!");
+				}
+				
 				SessioneInPresenzaDTO sessioneIp = new SessioneInPresenzaDTO();
-				sessioneIp.setArgomento(newArgomento);
+				sessioneIp.setArgomento(normalizzaNomeInserito(newArgomento));
 				sessioneIp.setOraInizio(newOraInizio);
 				sessioneIp.setDataSessione(newDataSessione);
 				CorsoDTO corsoSessione = corsoDAO.getCorsoById(newFkCorso);
 				sessioneIp.setCorsoSessione(corsoSessione);
-				sessioneIp.setSede(newSede);
-				sessioneIp.setEdificio(newEdificio);
-				sessioneIp.setAula(newAula);
+				sessioneIp.setTipoSessione("presenza");
+				sessioneIp.setSede(normalizzaNomeInserito(newSede));
+				sessioneIp.setEdificio(normalizzaNomeInserito(newEdificio));
+				sessioneIp.setAula(normalizzaNomeInserito(newAula));
 				
 				sessioneIpDAO.insertSessioneInPresenza(sessioneIp);
 			}
@@ -269,78 +317,80 @@ public class Controller {
 		}
 		
 		// METODO PER AGGIORNARE I DATI RELATIVI AD UNA SESSIONE IN PRESENZA
-		public void aggiornaSessioneInPresenza(String newArgomento, LocalTime newOraInizio, LocalDate newDataSessione, int newFkCorso, String newSede, String newEdificio, String newAula) throws UnauthorizedOperationException, NotFoundException, OperationException{
+		public void aggiornaSessioneInPresenza(int idSessione, String newArgomento, LocalTime newOraInizio, java.util.Date newDataSessioneUtil, Integer newFkCorso, String newSede, String newEdificio, String newAula) throws UnauthorizedOperationException, NotFoundException, OperationException{
 			try {
-				SessioneInPresenzaDTO sessioneIp = sessioneIpDAO.getSessioneIpByArgumentAndDate(newArgomento, newDataSessione);
+				if(newArgomento.isEmpty() || newOraInizio == null || newDataSessioneUtil == null || newFkCorso == null || newSede.isEmpty() || newEdificio.isEmpty() || newAula.isEmpty()) {
+					throw new OperationException("Tutti i campi sono obbligatori!");
+				}
 				
+				SessioneInPresenzaDTO sessioneIp = sessioneIpDAO.getSessioneIpById(idSessione);
 				if(sessioneIp == null) {
 					throw new NotFoundException("Impossibile trovare la sessione cercata!");
 				}
 				
+				if(!isOnlyLettersAndSpaces(newArgomento) || !isOnlyLettersAndSpaces(newSede)) {
+					throw new OperationException("I campi argomento e sede possono contener solo caratteri!");
+				}
+				
 				//RECUPERO ID CHEF CORRENTE
 				int idChefLoggato = SessionChef.getChefId();
+				if(sessioneIp.getCorsoSessione().getChefCorso()==null || idChefLoggato!=sessioneIp.getCorsoSessione().getChefCorso().getId()) {
+					throw new UnauthorizedOperationException("Impossibile modificare sessioni di corsi di altri chef!");
+				}
 				
-				if(idChefLoggato==sessioneIp.getCorsoSessione().getChefCorso().getId()) {
-					SessioneInPresenzaDTO updateSessioneIp = new SessioneInPresenzaDTO();
-					updateSessioneIp.setIdSessione(sessioneIp.getIdSessione());
-					updateSessioneIp.setArgomento(newArgomento);
-					updateSessioneIp.setOraInizio(newOraInizio);
-					updateSessioneIp.setDataSessione(newDataSessione);
-					CorsoDTO updateCorsoSessione = corsoDAO.getCorsoById(newFkCorso);
-					updateSessioneIp.setCorsoSessione(updateCorsoSessione);
-					updateSessioneIp.setSede(newSede);
-					updateSessioneIp.setEdificio(newEdificio);
-					updateSessioneIp.setAula(newAula);
+				//Conversione da java.util.Date -> LocalDate
+				LocalDate newDataSessione = Instant.ofEpochMilli(newDataSessioneUtil.getTime())
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+			
+				SessioneInPresenzaDTO updateSessioneIp = new SessioneInPresenzaDTO();
+				updateSessioneIp.setIdSessione(sessioneIp.getIdSessione());
+				updateSessioneIp.setArgomento(normalizzaNomeInserito(newArgomento));
+				updateSessioneIp.setOraInizio(newOraInizio);
+				updateSessioneIp.setDataSessione(newDataSessione);
+				CorsoDTO updateCorsoSessione = corsoDAO.getCorsoById(newFkCorso);
+				updateSessioneIp.setCorsoSessione(updateCorsoSessione);
+				updateSessioneIp.setSede(normalizzaNomeInserito(newSede));
+				updateSessioneIp.setEdificio(normalizzaNomeInserito(newEdificio));
+				updateSessioneIp.setAula(normalizzaNomeInserito(newAula));
 					
-					// VERIFICA DEL VALORE IDENTICO AL PRECEDENTE -> LO IMPOSTA A NULL (COALESCE)
-					if(updateSessioneIp.getArgomento()!=null && updateSessioneIp.getArgomento().equals(sessioneIp.getArgomento())) {
-						updateSessioneIp.setArgomento(null);
-					}
-					
-					if(updateSessioneIp.getOraInizio()!=null && updateSessioneIp.getOraInizio().equals(sessioneIp.getOraInizio())) {
-						updateSessioneIp.setOraInizio(null);
-					}
-					
-					if(updateSessioneIp.getDataSessione()!=null && updateSessioneIp.getDataSessione().equals(sessioneIp.getDataSessione())) {
-						updateSessioneIp.setDataSessione(null);
-					}
-					
-					if(updateSessioneIp.getCorsoSessione()!=null && updateSessioneIp.getCorsoSessione().equals(sessioneIp.getCorsoSessione())) {
-						updateSessioneIp.setCorsoSessione(null);
-					}
-					
-					if(updateSessioneIp.getSede()!=null && updateSessioneIp.getSede().equals(sessioneIp.getSede())) {
-						updateSessioneIp.setSede(null);
-					}
-					
-					if(updateSessioneIp.getEdificio()!=null && updateSessioneIp.getEdificio().equals(sessioneIp.getEdificio())) {
-						updateSessioneIp.setEdificio(null);
-					}
-					
-					if(updateSessioneIp.getAula()!=null && updateSessioneIp.getAula().equals(sessioneIp.getAula())) {
-						updateSessioneIp.setAula(null);
-					}
-					
-					sessioneIpDAO.updateSessioneInPresenza(updateSessioneIp);
+				// VERIFICA DEL VALORE IDENTICO AL PRECEDENTE -> LO IMPOSTA A NULL (COALESCE)
+				if(updateSessioneIp.getArgomento()!=null && updateSessioneIp.getArgomento().equals(sessioneIp.getArgomento())) {
+					updateSessioneIp.setArgomento(null);
 				}
-				else {
-					throw new UnauthorizedOperationException("Non è possibile modificare sessioni di corsi di altri chef!");
+					
+				if(updateSessioneIp.getOraInizio()!=null && updateSessioneIp.getOraInizio().equals(sessioneIp.getOraInizio())) {
+					updateSessioneIp.setOraInizio(null);
 				}
+				
+				if(updateSessioneIp.getDataSessione()!=null && updateSessioneIp.getDataSessione().equals(sessioneIp.getDataSessione())) {
+					updateSessioneIp.setDataSessione(null);
+				}
+					
+				if (updateSessioneIp.getCorsoSessione() != null && sessioneIp.getCorsoSessione() != null &&
+					    updateSessioneIp.getCorsoSessione().getId() == sessioneIp.getCorsoSessione().getId()) {
+					    updateSessioneIp.setCorsoSessione(null); 
+				}
+					
+				if(updateSessioneIp.getSede()!=null && updateSessioneIp.getSede().equals(sessioneIp.getSede())) {
+					updateSessioneIp.setSede(null);
+				}
+					
+				if(updateSessioneIp.getEdificio()!=null && updateSessioneIp.getEdificio().equals(sessioneIp.getEdificio())) {
+					updateSessioneIp.setEdificio(null);
+				}
+					
+				if(updateSessioneIp.getAula()!=null && updateSessioneIp.getAula().equals(sessioneIp.getAula())) {
+					updateSessioneIp.setAula(null);
+				}
+					
+				sessioneIpDAO.updateSessioneInPresenza(updateSessioneIp);
+				
 			}
 			catch(SQLException ex) {
 				throw new OperationException("Errore durante l'aggiornamento della sessione");
 			}
 			
-		}
-		
-		// METODO PER VISUALIZZARE TUTTE LE SESSIONI IN PRESENZA
-		public List<SessioneInPresenzaDTO> visualizzaTutteSessioniIp() throws OperationException{
-			try {
-				return sessioneIpDAO.getAllSessioniIP();
-			}
-			catch(SQLException ex) {
-				throw new OperationException("Impossibile visualizzare le sessioni in presenza");
-			}
 		}
 		
 		// METODO PER VISUALIZZARE TUTTE LE SESSIONI IN PRESENZA DI UN CORSO
@@ -359,6 +409,16 @@ public class Controller {
 				throw new OperationException("Errore durante la visualizzazione delle sessioni in presenza del corso");
 			}
 		}
+		
+		// METODO PER RECUPERARE UNA SESSIONE IN PRESENZA DALL'ID DELLA SESSIONE
+		public SessioneInPresenzaDTO getSessioneInPresenzaById(int idSessione) throws OperationException {
+	        try {
+	            SessioneInPresenzaDTO sessioneIP = sessioneIpDAO.getSessioneIpById(idSessione);
+	            return sessioneIP;
+	        } catch (SQLException e) {
+	            throw new OperationException("Errore database nel recupero dettagli sessione in presenza");
+	        }
+	    }
 		
 		// METODO PER ELIMINARE UNA SESSIONE IN PRESENZA DI UN CORSO
 		public void eliminaSessioneIp(int idSessioneInPresenza) throws NotFoundException, UnauthorizedOperationException, OperationException{
@@ -389,20 +449,37 @@ public class Controller {
 		//---------- INIZIO METODI SESSIONE ONLINE ----------
 		
 		// METODO PER INSERIRE UNA NUOVA SESSIONE ONLINE
-		public void inserimentoSessioneOn(String newArgomento, LocalTime newOraInizio, LocalDate newDataSessione, int newFkCorso, String newLinkConferenza) throws OperationException, AlreadyExistsException {
+		public void inserimentoSessioneOn(String newArgomento, LocalTime newOraInizio, java.util.Date newDataSessioneUtil, Integer newFkCorso, String newLinkConferenza) throws OperationException, AlreadyExistsException {
 			try {
-				SessioneOnlineDTO sessioneOnEsistente = sessioneOnDAO.getSessioneOnByArgumentAndDate(newArgomento, newDataSessione);
+				//Conversione da java.util.Date -> LocalDate
+				LocalDate newDataSessione = Instant.ofEpochMilli(newDataSessioneUtil.getTime())
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
 				
+				if(newArgomento.isEmpty() || newOraInizio == null || newDataSessione == null || newFkCorso == null || newLinkConferenza.isEmpty()) {
+					throw new OperationException("Tutti i campi sono obbligatori");
+				}
+				
+				SessioneOnlineDTO sessioneOnEsistente = sessioneOnDAO.getSessioneOnByArgumentAndDate(newArgomento, newDataSessione);
 				if(sessioneOnEsistente!=null) {
 					throw new AlreadyExistsException("Sessione online già inserita!");
 				}
+				
+				if(!isValidHttpUrl(newLinkConferenza)) {
+					throw new OperationException("Link non valido!");
+				}
+				
+				if(!isOnlyLettersAndSpaces(newArgomento)) {
+					throw new OperationException("Argomento può contenere solo caratteri!");
+				}
 						
 				SessioneOnlineDTO sessioneOn = new SessioneOnlineDTO();
-				sessioneOn.setArgomento(newArgomento);
+				sessioneOn.setArgomento(normalizzaNomeInserito(newArgomento));
 				sessioneOn.setOraInizio(newOraInizio);
 				sessioneOn.setDataSessione(newDataSessione);
 				CorsoDTO corsoSessione = corsoDAO.getCorsoById(newFkCorso);
 				sessioneOn.setCorsoSessione(corsoSessione);
+				sessioneOn.setTipoSessione("online");
 				sessioneOn.setLinkConferenza(newLinkConferenza);
 				
 				sessioneOnDAO.insertSessioneOnline(sessioneOn);
@@ -413,68 +490,73 @@ public class Controller {
 		}
 				
 		// METODO PER AGGIORNARE I DATI RELATIVI AD UNA SESSIONE ONLINE
-		public void aggiornaSessioneOnline(String newArgomento, LocalTime newOraInizio, LocalDate newDataSessione, int newFkCorso, String newLinkConferenza) throws UnauthorizedOperationException, NotFoundException, OperationException{
+		public void aggiornaSessioneOnline(int idSessione, String newArgomento, LocalTime newOraInizio, java.util.Date newDataSessioneUtil, Integer newFkCorso, String newLinkConferenza) throws UnauthorizedOperationException, NotFoundException, OperationException{
 			try {
-				SessioneOnlineDTO sessioneOn = sessioneOnDAO.getSessioneOnByArgumentAndDate(newArgomento, newDataSessione);
-						
+				//Conversione da java.util.Date -> LocalDate
+				LocalDate newDataSessione = Instant.ofEpochMilli(newDataSessioneUtil.getTime())
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+				
+				if(newArgomento.isEmpty() || newOraInizio == null || newDataSessione == null || newFkCorso == null || newLinkConferenza.isEmpty()) {
+					throw new OperationException("Tutti i campi sono obbligatori");
+				}
+				
+				SessioneOnlineDTO sessioneOn = sessioneOnDAO.getSessioneOnById(idSessione);
 				if(sessioneOn == null) {
 					throw new NotFoundException("Impossibile trovare la sessione richiesta!");
 				}
-						
+				
+				if(!isValidHttpUrl(newLinkConferenza)) {
+					throw new OperationException("Link non valido!");
+				}
+				
+				if(!isOnlyLettersAndSpaces(newArgomento)) {
+					throw new OperationException("Argomento può contenere solo caratteri!");
+				}
+				
 				//RECUPERO ID CHEF CORRENTE
 				int idChefLoggato = SessionChef.getChefId();
-						
-				if(idChefLoggato==sessioneOn.getCorsoSessione().getChefCorso().getId()) {
-					SessioneOnlineDTO updateSessioneOn = new SessioneOnlineDTO();
-					updateSessioneOn.setIdSessione(sessioneOn.getIdSessione());
-					updateSessioneOn.setArgomento(newArgomento);
-					updateSessioneOn.setOraInizio(newOraInizio);
-					updateSessioneOn.setDataSessione(newDataSessione);
-					CorsoDTO updateCorsoSessione = corsoDAO.getCorsoById(newFkCorso);
-					updateSessioneOn.setCorsoSessione(updateCorsoSessione);
-					updateSessioneOn.setLinkConferenza(newLinkConferenza);
-							
-					// VERIFICA DEL VALORE IDENTICO AL PRECEDENTE -> LO IMPOSTA A NULL (COALESCE)
-					if(updateSessioneOn.getArgomento()!=null && updateSessioneOn.getArgomento().equals(sessioneOn.getArgomento())) {
-						updateSessioneOn.setArgomento(null);
-					}
-					
-					if(updateSessioneOn.getOraInizio()!=null && updateSessioneOn.getOraInizio().equals(sessioneOn.getOraInizio())) {
-						updateSessioneOn.setOraInizio(null);
-					}
-						
-					if(updateSessioneOn.getDataSessione()!=null && updateSessioneOn.getDataSessione().equals(sessioneOn.getDataSessione())) {
-						updateSessioneOn.setDataSessione(null);
-					}
-							
-					if(updateSessioneOn.getCorsoSessione()!=null && updateSessioneOn.getCorsoSessione().equals(sessioneOn.getCorsoSessione())) {
-						updateSessioneOn.setCorsoSessione(null);
-					}
-					
-					if(updateSessioneOn.getLinkConferenza()!=null && updateSessioneOn.getLinkConferenza().equals(sessioneOn.getLinkConferenza())) {
-						updateSessioneOn.setLinkConferenza(null);
-					}
-							
-					sessioneOnDAO.updateSessioneOnline(updateSessioneOn);
+				if(sessioneOn.getCorsoSessione().getChefCorso()==null || idChefLoggato!=sessioneOn.getCorsoSessione().getChefCorso().getId()) {
+					throw new UnauthorizedOperationException("Impossibile modificare sessioni di corsi di altri chef!");
 				}
-				else {
-					throw new UnauthorizedOperationException("Non è possibile modificare sessioni online di corsi di altri chef!");
+						
+				SessioneOnlineDTO updateSessioneOn = new SessioneOnlineDTO();
+				updateSessioneOn.setIdSessione(sessioneOn.getIdSessione());
+				updateSessioneOn.setArgomento(normalizzaNomeInserito(newArgomento));
+				updateSessioneOn.setOraInizio(newOraInizio);
+				updateSessioneOn.setDataSessione(newDataSessione);
+				CorsoDTO updateCorsoSessione = corsoDAO.getCorsoById(newFkCorso);
+				updateSessioneOn.setCorsoSessione(updateCorsoSessione);
+				updateSessioneOn.setLinkConferenza(newLinkConferenza);
+							
+				// VERIFICA DEL VALORE IDENTICO AL PRECEDENTE -> LO IMPOSTA A NULL (COALESCE)
+				if(updateSessioneOn.getArgomento()!=null && updateSessioneOn.getArgomento().equals(sessioneOn.getArgomento())) {
+					updateSessioneOn.setArgomento(null);
 				}
-			}
-			catch(SQLException ex) {
+					
+				if(updateSessioneOn.getOraInizio()!=null && updateSessioneOn.getOraInizio().equals(sessioneOn.getOraInizio())) {
+					updateSessioneOn.setOraInizio(null);
+				}
+						
+				if(updateSessioneOn.getDataSessione()!=null && updateSessioneOn.getDataSessione().equals(sessioneOn.getDataSessione())) {
+					updateSessioneOn.setDataSessione(null);
+				}
+							
+				if (updateSessioneOn.getCorsoSessione() != null && sessioneOn.getCorsoSessione() != null &&
+						updateSessioneOn.getCorsoSessione().getId() == sessioneOn.getCorsoSessione().getId()) {
+						updateSessioneOn.setCorsoSessione(null); 
+				}
+					
+				if(updateSessioneOn.getLinkConferenza()!=null && updateSessioneOn.getLinkConferenza().equals(sessioneOn.getLinkConferenza())) {
+					updateSessioneOn.setLinkConferenza(null);
+				}
+							
+				sessioneOnDAO.updateSessioneOnline(updateSessioneOn);
+				
+			} catch(SQLException ex) {
 				throw new OperationException("Errore durante l'aggiornamento della sessione");
 			}
 					
-		}
-				
-		// METODO PER VISUALIZZARE TUTTE LE SESSIONI ONLINE
-		public List<SessioneOnlineDTO> visualizzaTutteSessioniOn() throws OperationException{
-			try {
-				return sessioneOnDAO.getAllSessioniOn();
-			}
-			catch(SQLException ex) {
-				throw new OperationException("Impossibile visualizzare le sessioni in presenza");
-			}
 		}
 				
 		// METODO PER VISUALIZZARE TUTTE LE SESSIONI ONLINE DI UN CORSO
@@ -493,6 +575,16 @@ public class Controller {
 				throw new OperationException("Errore durante la visualizzazione delle sessioni online del corso");
 			}
 		}
+		
+		// METODO PER RECUPERARE UNA SESSIONE ONLINE DALL'ID DELLA SESSIONE
+		public SessioneOnlineDTO getSessioneOnlineById(int idSessione) throws OperationException {
+	        try {
+	            SessioneOnlineDTO sessioneOn = sessioneOnDAO.getSessioneOnById(idSessione);
+	            return sessioneOn;
+	        } catch (SQLException e) {
+	            throw new OperationException("Errore database nel recupero dettagli sessione online: " + e.getMessage());
+	        }
+	    }
 				
 		// METODO PER ELIMINARE UNA SESSIONE ONLINE DI UN CORSO
 		public void eliminaSessioneOn(int idSessioneOnline) throws NotFoundException, UnauthorizedOperationException, OperationException{
@@ -692,10 +784,7 @@ public class Controller {
 		
 		//------------FINE METODI INGREDIENTE-------------
 		
-		
-		
 		//----------------------------------------------------------------------------------------------------------------------------
-		
 		
 		//INIZIO METODI COMPOSIZIONE
 		

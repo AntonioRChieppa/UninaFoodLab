@@ -10,7 +10,8 @@ public abstract class SessioneDTO {
 		private LocalTime oraInizio;
 		private LocalDate dataSessione;
 		private CorsoDTO corsoSessione;
-		
+		private String tipoSessione;
+
 		// DEFAULT CONSTRUCTOR
 		public SessioneDTO() {
 			// TODO Auto-generated constructor stub
@@ -64,5 +65,13 @@ public abstract class SessioneDTO {
 
 		public void setCorsoSessione(CorsoDTO corsoSessione) {
 			this.corsoSessione = corsoSessione;
+		}
+		
+		public String getTipoSessione() {
+			return tipoSessione;
+		}
+
+		public void setTipoSessione(String tipoSessione) {
+			this.tipoSessione = tipoSessione;
 		}
 }

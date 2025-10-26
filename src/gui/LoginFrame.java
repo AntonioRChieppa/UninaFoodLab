@@ -213,7 +213,7 @@ public class LoginFrame extends JFrame {
  	// FUNZIONI AUSILIARIE - HANDLER 
  	// =========================================================================
 
-    public void executeLogin() {
+    private void executeLogin() {
         String email = emailField.getText();
         String password = new String(passwordField.getPassword());
         try {
@@ -234,7 +234,7 @@ public class LoginFrame extends JFrame {
         }
     }
 
-    public void goToRegistrationFrame() {
+    private void goToRegistrationFrame() {
         registerFrame = new RegisterFrame();
         LoginFrame.this.setVisible(false);
         registerFrame.setVisible(true);

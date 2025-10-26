@@ -212,7 +212,7 @@ public class GestioneCorsiPanel extends JPanel {
         }
     }
     
-    public void executeModifica() {
+    private void executeModifica() {
         int selectedRow = coursesTable.getSelectedRow();
         if (selectedRow == -1) return;
         

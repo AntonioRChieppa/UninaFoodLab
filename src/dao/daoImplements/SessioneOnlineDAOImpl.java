@@ -14,7 +14,7 @@ public class SessioneOnlineDAOImpl implements SessioneOnlineDAOInt{
 		// INSERT newSessioneOnline - GESTIONE DEGLI INSERIMENTI IN UN'UNICA TRANSIZIONE
 		@Override
 		public void insertSessioneOnline(SessioneOnlineDTO sessioneOn) throws SQLException{
-			String insertSessioneSql = "INSERT INTO sessione (argomento, orainizio, datasessione, fkcorso) VALUES (?, ?, ?, ?) RETURNING idsessione";
+			String insertSessioneSql = "INSERT INTO sessione (argomento, orainizio, datasessione, fkcorso, tiposessione) VALUES (?, ?, ?, ?, ?) RETURNING idsessione";
 			String insertSessioneOnlineSql = "INSERT INTO sessioneonline (idsessioneonline, linkconferenza) VALUES (?, ?) ";
 			
 			try(Connection conn = db_connection.getConnection()){
@@ -24,6 +24,7 @@ public class SessioneOnlineDAOImpl implements SessioneOnlineDAOInt{
 			        psSessione.setTime(2, Time.valueOf(sessioneOn.getOraInizio()));
 			        psSessione.setDate(3, java.sql.Date.valueOf(sessioneOn.getDataSessione()));
 			        psSessione.setInt(4, sessioneOn.getCorsoSessione().getId());
+			        psSessione.setString(5, "online");
 			        
 			        ResultSet rs = psSessione.executeQuery();
 			        if(rs.next()) {
@@ -99,42 +100,6 @@ public class SessioneOnlineDAOImpl implements SessioneOnlineDAOInt{
 			}
 		}
 		
-		// READ (SELECT) ALL SESSIONI ONLINE
-		@Override
-		public List<SessioneOnlineDTO> getAllSessioniOn() throws SQLException{
-			String sql = "SELECT * FROM sessione s"
-						+ "JOIN sessioneonline son"
-						+ "ON s.idsessione = son.fksessione"
-						+ "ORDER BY s.datasessione ASC";
-			
-			List<SessioneOnlineDTO> elencoSessioniOnline = new ArrayList<>();
-			
-			try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
-				ResultSet rs = ps.executeQuery();
-				
-				while(rs.next()) {
-					SessioneOnlineDTO sessioneOn = new SessioneOnlineDTO();
-					sessioneOn.setIdSessione(rs.getInt("idsessione"));
-					sessioneOn.setArgomento(rs.getString("argomento"));
-					sessioneOn.setOraInizio(rs.getTime("orarioinizio").toLocalTime());
-
-		            java.sql.Date sqlDate = rs.getDate("datasessione");
-		            if (sqlDate != null) {
-		            	sessioneOn.setDataSessione(sqlDate.toLocalDate());
-		            }
-		            CorsoDAOImpl corsoSessioneDAO = new CorsoDAOImpl();
-		            CorsoDTO corsoSessione = corsoSessioneDAO.getCorsoById(rs.getInt("fkCorso"));
-		            sessioneOn.setCorsoSessione(corsoSessione);
-		            
-		            sessioneOn.setLinkConferenza(rs.getString("linkconferenza"));
-		           
-		            elencoSessioniOnline.add(sessioneOn);
-				}
-				return elencoSessioniOnline;
-			}
-			
-		}
-		
 		// READ (SELECT) ALL SESSIONI ONLINE BY ARGOMENTO AND DATA
 		@Override
 		public SessioneOnlineDTO getSessioneOnByArgumentAndDate(String newArgomento, LocalDate newDataSessione) throws SQLException{
@@ -161,6 +126,7 @@ public class SessioneOnlineDAOImpl implements SessioneOnlineDAOInt{
 		            CorsoDAOImpl corsoSessioneDAO = new CorsoDAOImpl();
 		            CorsoDTO corsoSessione = corsoSessioneDAO.getCorsoById(rs.getInt("fkCorso"));
 		            sessioneOn.setCorsoSessione(corsoSessione);
+		            sessioneOn.setTipoSessione(rs.getString("tiposessione"));
 		            
 		            sessioneOn.setLinkConferenza(rs.getString("linkconferenza"));
 		            return sessioneOn;
@@ -198,6 +164,7 @@ public class SessioneOnlineDAOImpl implements SessioneOnlineDAOInt{
 		            CorsoDAOImpl corsoSessioneDAO = new CorsoDAOImpl();
 		            CorsoDTO corsoSessione = corsoSessioneDAO.getCorsoById(rs.getInt("fkCorso"));
 		            sessioneOn.setCorsoSessione(corsoSessione);
+		            sessioneOn.setTipoSessione(rs.getString("tiposessione"));;
 		            
 		            sessioneOn.setLinkConferenza(rs.getString("linkconferenza"));
 		            return sessioneOn;
@@ -237,6 +204,7 @@ public class SessioneOnlineDAOImpl implements SessioneOnlineDAOInt{
 		            CorsoDAOImpl corsoSessioneDAO = new CorsoDAOImpl();
 		            CorsoDTO corsoSessione = corsoSessioneDAO.getCorsoById(rs.getInt("fkCorso"));
 		            sessioneOn.setCorsoSessione(corsoSessione);
+		            sessioneOn.setTipoSessione(rs.getString("tiposessione"));
 		            
 		            sessioneOn.setLinkConferenza(rs.getString("linkconferenza"));
 		            
@@ -245,6 +213,48 @@ public class SessioneOnlineDAOImpl implements SessioneOnlineDAOInt{
 				return elencoSessioniOnlineCorso;
 			}
 		}
+		
+		// SELECT (READ) ALL SESSIONI ONLINE BY IDCHEF
+	    public List<SessioneOnlineDTO> getSessioniOnByChefId(int idChef) throws SQLException {
+	        String sql = "SELECT s.idsessione, s.argomento, s.orainizio, s.datasessione, s.fkcorso, s.tipoSessione, "
+	                   + "son.linkconferenza "
+	                   + "FROM sessione s "
+	                   + "JOIN sessioneonline son "
+	                   + "ON s.idsessione = son.fksessione "
+	                   + "JOIN corso c "
+	                   + "ON s.fkcorso = c.idcorso "
+	                   + "WHERE c.fkchef = ? "
+	                   + "ORDER BY s.datasessione ASC, s.orainizio ASC";
+
+	        List<SessioneOnlineDTO> elencoSessioniOnCorsiChef = new ArrayList<>();
+	        CorsoDAOImpl corsoSessioneDAO = new CorsoDAOImpl();
+
+	        try (Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+	            ps.setInt(1, idChef);
+	            ResultSet rs = ps.executeQuery();
+
+	            while (rs.next()) {
+	                SessioneOnlineDTO sessioneOn = new SessioneOnlineDTO();
+	                sessioneOn.setIdSessione(rs.getInt("idsessione"));
+	                sessioneOn.setArgomento(rs.getString("argomento"));
+	                sessioneOn.setOraInizio(rs.getTime("orainizio").toLocalTime());
+
+	                java.sql.Date sqlDate = rs.getDate("datasessione");
+	                if (sqlDate != null) {
+	                    sessioneOn.setDataSessione(sqlDate.toLocalDate());
+	                }
+
+	                CorsoDTO corsoSessione = corsoSessioneDAO.getCorsoById(rs.getInt("fkCorso"));
+	                sessioneOn.setCorsoSessione(corsoSessione);
+	                sessioneOn.setTipoSessione(rs.getString("tipoSessione"));
+	                sessioneOn.setLinkConferenza(rs.getString("linkconferenza"));
+	                elencoSessioniOnCorsiChef.add(sessioneOn);
+	            }
+	            return elencoSessioniOnCorsiChef;
+	        }
+	    }
+		
 		
 		// DELETE SESSIONE ONLINE
 		@Override

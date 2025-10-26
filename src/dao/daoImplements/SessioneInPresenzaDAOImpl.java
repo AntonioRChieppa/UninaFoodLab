@@ -14,7 +14,7 @@ public class SessioneInPresenzaDAOImpl implements SessioneInPresenzaDAOInt{
 	// INSERT newSessioneInPresenza - GESTIONE DEGLI INSERIMENTI IN UN'UNICA TRANSAZIONE
 	@Override
 	public void insertSessioneInPresenza(SessioneInPresenzaDTO sessioneIP) throws SQLException{
-		String insertSessioneSql = "INSERT INTO sessione (argomento, orainizio, datasessione, fkcorso) VALUES (?, ?, ?, ?) RETURNING idsessione";
+		String insertSessioneSql = "INSERT INTO sessione (argomento, orainizio, datasessione, fkcorso, tiposessione) VALUES (?, ?, ?, ?, ?) RETURNING idsessione";
 		String insertSessioneInPresenzaSql = "INSERT INTO sessioneinpresenza (idsessioneinpresenza, sede, edificio, aula, fksessione) VALUES (?, ?, ?, ?, ?)";
 		
 		try(Connection conn = db_connection.getConnection()){
@@ -24,6 +24,7 @@ public class SessioneInPresenzaDAOImpl implements SessioneInPresenzaDAOInt{
 		        psSessione.setTime(2, Time.valueOf(sessioneIP.getOraInizio()));
 		        psSessione.setDate(3, java.sql.Date.valueOf(sessioneIP.getDataSessione()));
 		        psSessione.setInt(4, sessioneIP.getCorsoSessione().getId());
+		        psSessione.setString(5, "In presenza");
 		        
 		        ResultSet rs = psSessione.executeQuery();
 		        if(rs.next()) {
@@ -106,50 +107,15 @@ public class SessioneInPresenzaDAOImpl implements SessioneInPresenzaDAOInt{
 		}
 	}
 	
-	// READ (SELECT) ALL SESSIONI IN PRESENZA
-	@Override
-	public List<SessioneInPresenzaDTO> getAllSessioniIP() throws SQLException{
-		String sql = "SELECT * FROM sessione s "
-				+ "JOIN sessioneinpresenza sip "
-				+ "ON s.idsessione = sip.fksessione"
-				+ "ORDER BY s.datasessione ASC";
-		
-		List<SessioneInPresenzaDTO> elencoSessioniInPresenza = new ArrayList<>();
-		
-		try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
-			ResultSet rs = ps.executeQuery();
-			
-			while(rs.next()) {
-				SessioneInPresenzaDTO sessioneIP = new SessioneInPresenzaDTO();
-				sessioneIP.setIdSessione(rs.getInt("idsessione"));
-				sessioneIP.setArgomento(rs.getString("argomento"));
-	            sessioneIP.setOraInizio(rs.getTime("orarioinizio").toLocalTime());
-
-	            java.sql.Date sqlDate = rs.getDate("datasessione");
-	            if (sqlDate != null) {
-	                sessioneIP.setDataSessione(sqlDate.toLocalDate());
-	            }
-	            CorsoDAOImpl corsoSessioneDAO = new CorsoDAOImpl();
-	            CorsoDTO corsoSessione = corsoSessioneDAO.getCorsoById(rs.getInt("fkCorso"));
-	            sessioneIP.setCorsoSessione(corsoSessione);
-	            
-	            sessioneIP.setSede(rs.getString("sede"));
-	            sessioneIP.setEdificio(rs.getString("edificio"));
-	            sessioneIP.setAula(rs.getString("aula"));
-	            
-	            elencoSessioniInPresenza.add(sessioneIP);
-			}
-			return elencoSessioniInPresenza;
-		}
-	}
-	
 	// READ (SELECT) ALL SESSIONI IN PRESENZA BY ARGOMENTO AND DATA
 	@Override
 	public SessioneInPresenzaDTO getSessioneIpByArgumentAndDate(String newArgomento, LocalDate newDataSessione) throws SQLException{
-		String sql = "SELECT * FROM sessione s"
-				+ "JOIN sessioneinpresenza sip"
-				+ "ON s.idsessione = sip.fksessione"
-				+ "WHERE argomento = ? AND datasessione = ?";
+		String sql = "SELECT s.idsessione, s.argomento, s.orainizio, s.datasessione, s.fkcorso, s.tipoSessione, " // Aggiunto s.tipoSessione
+	               + "sip.sede, sip.edificio, sip.aula "
+	               + "FROM sessione s "
+	               + "JOIN sessioneinpresenza sip"
+	               + "ON s.idsessione = sip.fksessione"
+	               + "WHERE argomento = ? AND datasessione = ?";
 		
 		try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
 			ps.setString(1, newArgomento);
@@ -169,6 +135,7 @@ public class SessioneInPresenzaDAOImpl implements SessioneInPresenzaDAOInt{
 	            CorsoDAOImpl corsoSessioneDAO = new CorsoDAOImpl();
 	            CorsoDTO corsoSessione = corsoSessioneDAO.getCorsoById(rs.getInt("fkCorso"));
 	            sessioneIP.setCorsoSessione(corsoSessione);
+	            sessioneIP.setTipoSessione(rs.getString("tipoSessione"));
 	            
 	            sessioneIP.setSede(rs.getString("sede"));
 	            sessioneIP.setEdificio(rs.getString("edificio"));
@@ -185,7 +152,9 @@ public class SessioneInPresenzaDAOImpl implements SessioneInPresenzaDAOInt{
 	// READ (SELECT) SESSIONE IN PRESENZA BY ID
 	@Override
 	public SessioneInPresenzaDTO getSessioneIpById(int idSessioneInPresenza) throws SQLException{
-		String sql = "SELECT * FROM sessione s "
+		String sql = "SELECT s.idsessione, s.argomento, s.orainizio, s.datasessione, s.fkcorso, s.tipoSessione, " // Aggiunto s.tipoSessione
+	               + "sip.sede, sip.edificio, sip.aula "
+	               + "FROM sessione s "
 	               + "JOIN sessioneinpresenza sip "
 	               + "ON s.idsessione = sip.fksessione "
 	               + "WHERE sip.idsessioneinpresenza = ?";
@@ -208,6 +177,7 @@ public class SessioneInPresenzaDAOImpl implements SessioneInPresenzaDAOInt{
 	            CorsoDAOImpl corsoSessioneDAO = new CorsoDAOImpl();
 	            CorsoDTO corsoSessione = corsoSessioneDAO.getCorsoById(rs.getInt("fkCorso"));
 	            sessioneIP.setCorsoSessione(corsoSessione);
+	            sessioneIP.setTipoSessione(rs.getString("tipoSessione"));
 	            
 	            sessioneIP.setSede(rs.getString("sede"));
 	            sessioneIP.setEdificio(rs.getString("edificio"));
@@ -223,11 +193,13 @@ public class SessioneInPresenzaDAOImpl implements SessioneInPresenzaDAOInt{
 	// READ (SELECT) ALL SESSIONI IN PRESENZA BY CORSO
 	@Override
 	public List<SessioneInPresenzaDTO> getSessioniIpByCorso(int idCorso) throws SQLException{
-		String sql = "SELECT * FROM sessione s "
-				+ "JOIN sessioneinpresenza sip "
-				+ "ON s.idsessione = sip.fksessione"
-				+ "WHERE s.fkcorso = ?"
-				+ "ORDER BY s.datasessione ASC";
+		String sql = "SELECT s.idsessione, s.argomento, s.orainizio, s.datasessione, s.fkcorso, s.tipoSessione, " // Aggiunto s.tipoSessione
+	               + "sip.sede, sip.edificio, sip.aula "
+	               + "FROM sessione s "
+	               + "JOIN sessioneinpresenza sip "
+	               + "ON s.idsessione = sip.fksessione"
+	               + "WHERE s.fkcorso = ?"
+	               + "ORDER BY s.datasessione ASC";
 		
 		List<SessioneInPresenzaDTO> elencoSessioniInPresenzaCorso = new ArrayList<>();
 		
@@ -249,6 +221,7 @@ public class SessioneInPresenzaDAOImpl implements SessioneInPresenzaDAOInt{
 	            CorsoDAOImpl corsoSessioneDAO = new CorsoDAOImpl();
 	            CorsoDTO corsoSessione = corsoSessioneDAO.getCorsoById(rs.getInt("fkCorso"));
 	            sessioneIP.setCorsoSessione(corsoSessione);
+	            sessioneIP.setTipoSessione(rs.getString("tipoSessione"));
 	            
 	            sessioneIP.setSede(rs.getString("sede"));
 	            sessioneIP.setEdificio(rs.getString("edificio"));
@@ -258,6 +231,48 @@ public class SessioneInPresenzaDAOImpl implements SessioneInPresenzaDAOInt{
 			}
 			return elencoSessioniInPresenzaCorso;
 		}
+	}
+	
+	// SELECT (READ) ALL SESSIONI IN PRESENZA BY IDCHEF
+	public List<SessioneInPresenzaDTO> getSessioniIpByChefId(int idChef) throws SQLException{
+		String sql = "SELECT s.idsessione, s.argomento, s.orainizio, s.datasessione, s.fkcorso, s.tipoSessione, " // Aggiunto s.tipoSessione
+	               + "sip.sede, sip.edificio, sip.aula "
+	               + "FROM sessione s "
+	               + "JOIN sessioneinpresenza sip "
+	               + "ON s.idsessione = sip.fksessione "
+	               + "JOIN corso c "
+	               + "ON s.fkcorso = c.idcorso "
+	               + "WHERE c.fkchef = ? "
+	               + "ORDER BY s.datasessione ASC, s.orainizio ASC";
+
+	    try (Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+	    	List<SessioneInPresenzaDTO> elencoSessioniIpCorsiChef = new ArrayList<>();
+	        ps.setInt(1, idChef);
+	        ResultSet rs = ps.executeQuery();
+	        
+	        while(rs.next()) {
+         	SessioneInPresenzaDTO sessioneIP = new SessioneInPresenzaDTO();
+         	sessioneIP.setIdSessione(rs.getInt("idsessione"));
+				sessioneIP.setArgomento(rs.getString("argomento"));
+	            sessioneIP.setOraInizio(rs.getTime("orainizio").toLocalTime());
+
+	            java.sql.Date sqlDate = rs.getDate("datasessione");
+	            if (sqlDate != null) {
+	                sessioneIP.setDataSessione(sqlDate.toLocalDate());
+	            }
+	            CorsoDAOImpl corsoSessioneDAO = new CorsoDAOImpl();
+	            CorsoDTO corsoSessione = corsoSessioneDAO.getCorsoById(rs.getInt("fkCorso"));
+	            sessioneIP.setCorsoSessione(corsoSessione);
+	            sessioneIP.setTipoSessione(rs.getString("tipoSessione"));
+	            
+	            sessioneIP.setSede(rs.getString("sede"));
+	            sessioneIP.setEdificio(rs.getString("edificio"));
+	            sessioneIP.setAula(rs.getString("aula"));
+	            
+	            elencoSessioniIpCorsiChef.add(sessioneIP);
+         }
+         return elencoSessioniIpCorsiChef;
+	    }
 	}
 	
 	// DELETE SESSIONE IN PRESENZA

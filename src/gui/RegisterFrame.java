@@ -210,8 +210,11 @@ public class RegisterFrame extends JFrame {
 		}
 	}
 	
-	// FUNZIONI AUSILIARIE
-	public void executeRegistration() {
+	//================================================================
+    // FUNZIONI AUSILIARIE 
+    //================================================================
+	
+	private void executeRegistration() {
 		String nome = nomeField.getText();
 		String cognome = cognomeField.getText();
 		String email = emailField.getText();
@@ -242,7 +245,7 @@ public class RegisterFrame extends JFrame {
 		}
 	}
 	
-	public void goBackToLogin() {
+	private void goBackToLogin() {
 		dispose();
 		new LoginFrame().setVisible(true);
 	}

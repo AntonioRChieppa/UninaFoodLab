@@ -12,13 +12,13 @@ public interface SessioneOnlineDAOInt {
 	
 	public void updateSessioneOnline(SessioneOnlineDTO upSessioneOn) throws SQLException;
 	
-	public List<SessioneOnlineDTO> getAllSessioniOn() throws SQLException;
-	
 	public SessioneOnlineDTO getSessioneOnByArgumentAndDate(String newArgomento, LocalDate newDataSessione) throws SQLException;
 	
 	public SessioneOnlineDTO getSessioneOnById(int idSessioneOnline) throws SQLException;
 	
 	public List<SessioneOnlineDTO> getSessioniOnByCorso(int idCorso) throws SQLException;
+	
+	public List<SessioneOnlineDTO> getSessioniOnByChefId(int idChef) throws SQLException;
 	
 	public void deleteSessioneOnline(SessioneOnlineDTO sessioneOn) throws SQLException;
 	

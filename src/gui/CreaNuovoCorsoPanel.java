@@ -56,7 +56,6 @@ public class CreaNuovoCorsoPanel extends JPanel {
     private JTextField numeroSessioniField;
     private JButton inviaButton;
     
-    @SuppressWarnings("unused")
     private Controller controller;
 
     public CreaNuovoCorsoPanel() {
@@ -213,10 +212,10 @@ public class CreaNuovoCorsoPanel extends JPanel {
     }
     
     //====================================================
-    // FUNZIONI AUSILIARIE - HANDLER BUTTON
+    // FUNZIONI AUSILIARIE - HANDLER 
     //====================================================
     
-    public void insertNewCourse() {
+    private void insertNewCourse() {
     	String nomeCorso = nomeField.getText();
     	String categoria = categoriaField.getText();
     	Date dataInizioUtil = dataInizioChooser.getDate();
