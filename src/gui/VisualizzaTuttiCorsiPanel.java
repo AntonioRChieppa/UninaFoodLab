@@ -225,8 +225,6 @@ public class VisualizzaTuttiCorsiPanel extends JPanel {
             }
             updateTable(corsiFiltrati);
 
-        } catch(NotFoundException ex) {
-        	JOptionPane.showMessageDialog(this, ex.getMessage(), "Errore DB", JOptionPane.ERROR_MESSAGE);
         } catch (OperationException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Errore DB", JOptionPane.ERROR_MESSAGE);
         }

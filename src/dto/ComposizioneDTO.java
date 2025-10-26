@@ -13,7 +13,7 @@ public class ComposizioneDTO {
 		}
 		
 	
-		//COSTRUUTTORE SPECIFICO
+		//COSTRUTTORE SPECIFICO
 		public ComposizioneDTO(IngredienteDTO ingredienteRicetta, RicettaDTO ricettaIngrediente) {
 			this.ingredienteRicetta = ingredienteRicetta;
 			this.ricettaIngrediente = ricettaIngrediente;

@@ -39,13 +39,12 @@ import java.time.format.DateTimeFormatter;
 
 import controller.Controller;
 import dto.SessioneDTO;
+import dto.RicettaDTO;
 import dto.SessioneInPresenzaDTO;
 import dto.SessioneOnlineDTO;
-import dto.CorsoDTO;
 import exception.OperationException;
 import exception.NotFoundException;
 import exception.UnauthorizedOperationException;
-import session.SessionChef;
 
 public class GestioneSessioniPanel extends JPanel {
 
@@ -94,11 +93,7 @@ public class GestioneSessioniPanel extends JPanel {
          try {
              elencoSessioniAttuale = controller.visualizzaTutteSessioniPerChef();
              updateTable(elencoSessioniAttuale);
-         } catch(NotFoundException ex) {
-             JOptionPane.showMessageDialog(this, ex.getMessage(), "Informazione", JOptionPane.INFORMATION_MESSAGE);
-             elencoSessioniAttuale.clear();
-             updateTable(elencoSessioniAttuale);
-         } catch (OperationException ex) {
+         }  catch (OperationException ex) {
              JOptionPane.showMessageDialog(this, ex.getMessage(), "Errore DB", JOptionPane.ERROR_MESSAGE);
              elencoSessioniAttuale.clear();
              updateTable(elencoSessioniAttuale);
@@ -160,72 +155,83 @@ public class GestioneSessioniPanel extends JPanel {
     }
 
 
-    private JScrollPane buildTableScrollPane() {
-        String[] columnNames = {"Argomento", "Ora Inizio", "Data Sessione", "Corso", "Tipo Sessione"};
+     private JScrollPane buildTableScrollPane() {
+    	    String[] columnNames = {"Argomento", "Ora Inizio", "Data Sessione", "Corso", "Tipo Sessione"};
 
-        tableModel = new DefaultTableModel(null, columnNames) {
-             @Override
-             public boolean isCellEditable(int row, int column) {
-                 return false;
-             }
-         };
+    	    tableModel = new DefaultTableModel(null, columnNames) {
+    	         @Override
+    	         public boolean isCellEditable(int row, int column) {
+    	             return false;
+    	         }
+    	     };
 
-        sessioniTable = new JTable(tableModel);
-        sessioniTable.setFillsViewportHeight(true);
-        sessioniTable.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        sessioniTable.setRowHeight(30);
-        sessioniTable.setGridColor(BORDER_GRAY);
-        sessioniTable.setBackground(Color.WHITE);
-        sessioniTable.setShowVerticalLines(false);
-        sessioniTable.setIntercellSpacing(new Dimension(0, 0));
-        sessioniTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    	    sessioniTable = new JTable(tableModel);
+    	    sessioniTable.setFillsViewportHeight(true);
+    	    sessioniTable.setFont(new Font("SansSerif", Font.PLAIN, 13));
+    	    sessioniTable.setRowHeight(30);
+    	    sessioniTable.setGridColor(BORDER_GRAY);
+    	    sessioniTable.setBackground(Color.WHITE);
+    	    sessioniTable.setShowVerticalLines(false);
+    	    sessioniTable.setIntercellSpacing(new Dimension(0, 0));
+    	    sessioniTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        sessioniTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                if (!isSelected) {
-                    label.setBackground(row % 2 == 0 ? Color.WHITE : STRIPE_COLOR);
-                }
-                label.setBorder(new EmptyBorder(7, 8, 7, 8));
-                return label;
-            }
-        });
+    	    sessioniTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+    	        @Override
+    	        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    	            JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+    	            if (!isSelected) {
+    	                label.setBackground(row % 2 == 0 ? Color.WHITE : STRIPE_COLOR);
+    	            }
+    	            label.setBorder(new EmptyBorder(7, 8, 7, 8));
+    	            return label;
+    	        }
+    	    });
 
-        sessioniTable.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 13));
-        sessioniTable.getTableHeader().setBackground(TEXT_DARK);
-        sessioniTable.getTableHeader().setForeground(Color.WHITE);
-        sessioniTable.getTableHeader().setReorderingAllowed(false);
-        sessioniTable.getTableHeader().setPreferredSize(new Dimension(sessioniTable.getTableHeader().getWidth(), 35));
+    	    sessioniTable.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 13));
+    	    sessioniTable.getTableHeader().setBackground(TEXT_DARK);
+    	    sessioniTable.getTableHeader().setForeground(Color.WHITE);
+    	    sessioniTable.getTableHeader().setReorderingAllowed(false);
+    	    sessioniTable.getTableHeader().setPreferredSize(new Dimension(sessioniTable.getTableHeader().getWidth(), 35));
 
-        sessioniTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                 if (!e.getValueIsAdjusting()) {
-                    boolean isRowSelected = sessioniTable.getSelectedRow() != -1;
-                    aggiungiRicettaButton.setEnabled(isRowSelected);
-                    modificaButton.setEnabled(isRowSelected);
-                    eliminaButton.setEnabled(isRowSelected);
-                }
-            }
-        });
+    	    sessioniTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+    	        @Override
+    	        public void valueChanged(ListSelectionEvent e) {
+    	             if (!e.getValueIsAdjusting()) {
+    	                int selectedRow = sessioniTable.getSelectedRow();
+    	                boolean isRowSelected = selectedRow != -1;
 
-        sessioniTable.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    showSessionDetails();
-                }
-            }
-        });
+    	                modificaButton.setEnabled(isRowSelected);
+    	                eliminaButton.setEnabled(isRowSelected);
 
-        tableScrollPane = new JScrollPane(sessioniTable);
-        tableScrollPane.setPreferredSize(new Dimension(0, TABLE_HEIGHT));
-        tableScrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, TABLE_HEIGHT));
-        tableScrollPane.setBorder(BorderFactory.createLineBorder(BORDER_GRAY));
+    	                boolean enableAddRicetta = false;
+    	                if (isRowSelected) {
+    	                    SessioneDTO selectedSessione = elencoSessioniAttuale.get(selectedRow);
+    	                    if ("presenza".equalsIgnoreCase(selectedSessione.getTipoSessione())) {
+    	                         enableAddRicetta = true;
+    	                    }
+    	                }
+    	                aggiungiRicettaButton.setEnabled(enableAddRicetta);
+    	                // ------------------------------------
+    	            }
+    	        }
+    	    });
 
-        return tableScrollPane;
-    }
+    	    sessioniTable.addMouseListener(new MouseAdapter() {
+    	        @Override
+    	        public void mouseClicked(MouseEvent e) {
+    	            if (e.getClickCount() == 2) {
+    	                showSessionDetails();
+    	            }
+    	        }
+    	    });
+
+    	    tableScrollPane = new JScrollPane(sessioniTable);
+    	    tableScrollPane.setPreferredSize(new Dimension(0, TABLE_HEIGHT));
+    	    tableScrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, TABLE_HEIGHT));
+    	    tableScrollPane.setBorder(BorderFactory.createLineBorder(BORDER_GRAY));
+
+    	    return tableScrollPane;
+    	}
 
     private JPanel buildActionButtons() {
         JPanel mainButtonPanel = new JPanel(new BorderLayout(10, 0));
@@ -332,102 +338,132 @@ public class GestioneSessioniPanel extends JPanel {
     }
 
     private void showSessionDetails() {
-         int selectedRow = sessioniTable.getSelectedRow();
-        if (selectedRow == -1) return;
+        int selectedRow = sessioniTable.getSelectedRow();
+       if (selectedRow == -1) return;
 
-        SessioneDTO sessioneSelezionata = elencoSessioniAttuale.get(selectedRow);
+       SessioneDTO sessioneSelezionata = elencoSessioniAttuale.get(selectedRow);
 
-        JDialog detailsDialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Dettagli Sessione", true);
-        detailsDialog.setLayout(new BorderLayout(10, 10));
-        detailsDialog.setSize(450, 400); // Aumentato un po' la dimensione per più spazio
-        detailsDialog.setLocationRelativeTo(this);
-        detailsDialog.setResizable(false);
-        detailsDialog.setBackground(LIGHT_GRAY_BACKGROUND); // Sfondo leggermente grigio
+       JDialog detailsDialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Dettagli Sessione", true);
+       detailsDialog.setLayout(new BorderLayout(10, 10));
+       // Aumentata altezza per ricette
+       detailsDialog.setSize(450, 400);
+       detailsDialog.setLocationRelativeTo(this);
+       detailsDialog.setResizable(false);
+       detailsDialog.setBackground(LIGHT_GRAY_BACKGROUND);
 
-        JPanel detailsPanel = new JPanel();
-        detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
-        detailsPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
-        detailsPanel.setBackground(Color.WHITE); // Sfondo bianco per il pannello dei dettagli interni
+       JPanel detailsPanel = new JPanel();
+       detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
+       detailsPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
+       detailsPanel.setBackground(Color.WHITE);
 
-        // Ogni componente aggiunto al detailsPanel deve essere allineato a sinistra
-        detailsPanel.add(createDetailLabel("Argomento:", sessioneSelezionata.getArgomento()));
-        detailsPanel.add(Box.createVerticalStrut(8));
-        detailsPanel.add(createDetailLabel("Data:", localDateToString(sessioneSelezionata.getDataSessione())));
-        detailsPanel.add(Box.createVerticalStrut(8));
-        detailsPanel.add(createDetailLabel("Ora:", localTimeToString(sessioneSelezionata.getOraInizio())));
-        detailsPanel.add(Box.createVerticalStrut(8));
-        detailsPanel.add(createDetailLabel("Corso:", (sessioneSelezionata.getCorsoSessione() != null) ? sessioneSelezionata.getCorsoSessione().getNomeCorso() : "N/D"));
-        detailsPanel.add(Box.createVerticalStrut(12));
+       detailsPanel.add(createDetailLabel("Argomento:", sessioneSelezionata.getArgomento()));
+       detailsPanel.add(Box.createVerticalStrut(8));
+       detailsPanel.add(createDetailLabel("Data:", localDateToString(sessioneSelezionata.getDataSessione())));
+       detailsPanel.add(Box.createVerticalStrut(8));
+       detailsPanel.add(createDetailLabel("Ora:", localTimeToString(sessioneSelezionata.getOraInizio())));
+       detailsPanel.add(Box.createVerticalStrut(8));
+       detailsPanel.add(createDetailLabel("Corso:", (sessioneSelezionata.getCorsoSessione() != null) ? sessioneSelezionata.getCorsoSessione().getNomeCorso() : "N/D"));
+       detailsPanel.add(Box.createVerticalStrut(12));
 
 
-        if ("presenza".equalsIgnoreCase(sessioneSelezionata.getTipoSessione())) {
-             detailsPanel.add(createDetailLabel("Tipo:", "In Presenza"));
-             detailsPanel.add(Box.createVerticalStrut(8));
-             try {
-                SessioneInPresenzaDTO sessioneIP = controller.getSessioneInPresenzaById(sessioneSelezionata.getIdSessione());
-                if (sessioneIP != null) {
-                    detailsPanel.add(createDetailLabel("Sede:", sessioneIP.getSede()));
-                    detailsPanel.add(Box.createVerticalStrut(8));
-                    detailsPanel.add(createDetailLabel("Edificio:", sessioneIP.getEdificio()));
-                    detailsPanel.add(Box.createVerticalStrut(8));
-                    detailsPanel.add(createDetailLabel("Aula:", sessioneIP.getAula()));
-                } else {
-                     detailsPanel.add(createErrorLabel("Dettagli presenza non trovati."));
-                }
-             } catch (OperationException e) {
-                 detailsPanel.add(createErrorLabel("Errore nel recupero dettagli: " + e.getMessage()));
-             }
-        } else if ("online".equalsIgnoreCase(sessioneSelezionata.getTipoSessione())) {
-            detailsPanel.add(createDetailLabel("Tipo:", "Online"));
+       if ("presenza".equalsIgnoreCase(sessioneSelezionata.getTipoSessione())) {
+            detailsPanel.add(createDetailLabel("Tipo:", "In Presenza"));
             detailsPanel.add(Box.createVerticalStrut(8));
-             try {
-                SessioneOnlineDTO sessioneOn = controller.getSessioneOnlineById(sessioneSelezionata.getIdSessione());
-                if (sessioneOn != null) {
-                     // createDetailLabel per il link, e poi una JTextArea per il valore
-                     detailsPanel.add(createDetailLabel("Link:", null)); // Label "Link:" senza valore
-                     JTextArea linkArea = new JTextArea(sessioneOn.getLinkConferenza());
-                     linkArea.setEditable(false);
-                     linkArea.setLineWrap(true);
-                     linkArea.setWrapStyleWord(true);
-                     linkArea.setFont(new Font("SansSerif", Font.PLAIN, 13));
-                     linkArea.setBackground(detailsPanel.getBackground());
-                     linkArea.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0)); // Padding minimo
-                     linkArea.setForeground(TEXT_DARK);
-                     linkArea.setAlignmentX(Component.LEFT_ALIGNMENT); // Allinea a sinistra
-                     linkArea.setMaximumSize(new Dimension(detailsDialog.getWidth() - 50, linkArea.getPreferredSize().height)); // Limita larghezza
-                     detailsPanel.add(linkArea);
+            try {
+               SessioneInPresenzaDTO sessioneIP = controller.getSessioneInPresenzaById(sessioneSelezionata.getIdSessione());
+               if (sessioneIP != null) {
+                   detailsPanel.add(createDetailLabel("Sede:", sessioneIP.getSede()));
+                   detailsPanel.add(Box.createVerticalStrut(8));
+                   detailsPanel.add(createDetailLabel("Edificio:", sessioneIP.getEdificio()));
+                   detailsPanel.add(Box.createVerticalStrut(8));
+                   detailsPanel.add(createDetailLabel("Aula:", sessioneIP.getAula()));
 
-                } else {
-                    detailsPanel.add(createErrorLabel("Dettagli online non trovati."));
-                }
-             } catch (OperationException e) {
-                  detailsPanel.add(createErrorLabel("Errore nel recupero dettagli: " + e.getMessage()));
-             }
-        } else {
-             detailsPanel.add(createDetailLabel("Tipo:", "Non specificato"));
-        }
+                   // --- NUOVA SEZIONE RICETTE ---
+                   detailsPanel.add(Box.createVerticalStrut(12)); // Spazio prima delle ricette
+                   JLabel ricetteTitle = createDetailLabel("Ricette Previste:", null); // Solo titolo
+                   detailsPanel.add(ricetteTitle);
+                   detailsPanel.add(Box.createVerticalStrut(5)); // Spazio sotto il titolo
 
-        // Pannello per il bottone Chiudi
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        buttonPanel.setBackground(LIGHT_GRAY_BACKGROUND); // Sfondo leggermente grigio
-        buttonPanel.setBorder(new EmptyBorder(0, 0, 10, 0)); // Spazio inferiore
+                   try {
+                       List<RicettaDTO> ricette = controller.visualizzaRicetteSessione(sessioneIP.getIdSessione());
+                       if (ricette != null && !ricette.isEmpty()) {
+                           for (RicettaDTO ricetta : ricette) {
+                               JLabel ricettaLabel = new JLabel("• " + ricetta.getNomeRicetta());
+                               ricettaLabel.setFont(new Font("SansSerif", Font.PLAIN, 13));
+                               ricettaLabel.setForeground(TEXT_DARK);
+                               ricettaLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+                               detailsPanel.add(ricettaLabel);
+                               detailsPanel.add(Box.createVerticalStrut(3)); // Spazio tra le ricette
+                           }
+                       } else {
+                           detailsPanel.add(createErrorLabel("Nessuna ricetta associata."));
+                       }
+                   } catch(NotFoundException ex) {
+                	   detailsPanel.add(createErrorLabel(ex.getMessage()));
+                   }
+                   catch (OperationException ex) { // Cattura eccezioni specifiche per ricette
+                        detailsPanel.add(createErrorLabel(ex.getMessage()));
+                   } 
+                   // --- FINE SEZIONE RICETTE ---
 
-        JButton closeButton = new JButton("Chiudi");
-        closeButton.setFont(new Font("SansSerif", Font.BOLD, 14));
-        closeButton.setBackground(PRIMARY_BLUE); // Usa colore primario
-        closeButton.setForeground(Color.WHITE);
-        closeButton.setFocusPainted(false); // Rimuove il bordo focus
-        closeButton.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(PRIMARY_BLUE.darker(), 1), // Bordo leggermente più scuro
-            new EmptyBorder(8, 20, 8, 20) // Padding interno
-        ));
-        closeButton.addActionListener(e -> detailsDialog.dispose());
-        buttonPanel.add(closeButton);
+               } else {
+                    detailsPanel.add(createErrorLabel("Dettagli presenza non trovati."));
+               }
+            } catch (OperationException e) {
+                detailsPanel.add(createErrorLabel("Errore nel recupero dettagli sessione: " + e.getMessage()));
+            }
+       } else if ("online".equalsIgnoreCase(sessioneSelezionata.getTipoSessione())) {
+           detailsPanel.add(createDetailLabel("Tipo:", "Online"));
+           detailsPanel.add(Box.createVerticalStrut(8));
+            try {
+               SessioneOnlineDTO sessioneOn = controller.getSessioneOnlineById(sessioneSelezionata.getIdSessione());
+               if (sessioneOn != null) {
+                    detailsPanel.add(createDetailLabel("Link:", null));
+                    JTextArea linkArea = new JTextArea(sessioneOn.getLinkConferenza());
+                    linkArea.setEditable(false);
+                    linkArea.setLineWrap(true);
+                    linkArea.setWrapStyleWord(true);
+                    linkArea.setFont(new Font("SansSerif", Font.PLAIN, 13));
+                    linkArea.setBackground(detailsPanel.getBackground());
+                    linkArea.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
+                    linkArea.setForeground(TEXT_DARK);
+                    linkArea.setAlignmentX(Component.LEFT_ALIGNMENT);
+                    linkArea.setMaximumSize(new Dimension(detailsDialog.getWidth() - 50, linkArea.getPreferredSize().height));
+                    detailsPanel.add(linkArea);
 
-        detailsDialog.add(new JScrollPane(detailsPanel), BorderLayout.CENTER); // Aggiunto JScrollPane per i dettagli
-        detailsDialog.add(buttonPanel, BorderLayout.SOUTH);
-        detailsDialog.setVisible(true);
-    }
+               } else {
+                   detailsPanel.add(createErrorLabel("Dettagli online non trovati."));
+               }
+            } catch (OperationException e) {
+                 detailsPanel.add(createErrorLabel("Errore nel recupero dettagli sessione: " + e.getMessage()));
+            }
+       } else {
+            detailsPanel.add(createDetailLabel("Tipo:", "Non specificato"));
+       }
+
+       // Aggiunge uno Strut flessibile per spingere il contenuto in alto se c'è spazio vuoto
+       detailsPanel.add(Box.createVerticalGlue());
+
+       JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+       buttonPanel.setBackground(LIGHT_GRAY_BACKGROUND);
+       buttonPanel.setBorder(new EmptyBorder(0, 0, 10, 0));
+
+       JButton closeButton = new JButton("Chiudi");
+       closeButton.setFont(new Font("SansSerif", Font.BOLD, 14));
+       closeButton.setBackground(PRIMARY_BLUE);
+       closeButton.setForeground(Color.WHITE);
+       closeButton.setFocusPainted(false);
+       closeButton.setBorder(BorderFactory.createCompoundBorder(
+           BorderFactory.createLineBorder(PRIMARY_BLUE.darker(), 1),
+           new EmptyBorder(8, 20, 8, 20)
+       ));
+       closeButton.addActionListener(e -> detailsDialog.dispose());
+       buttonPanel.add(closeButton);
+
+       detailsDialog.add(new JScrollPane(detailsPanel), BorderLayout.CENTER);
+       detailsDialog.add(buttonPanel, BorderLayout.SOUTH);
+       detailsDialog.setVisible(true);
+   }
 
     private JLabel createDetailLabel(String labelText, String valueText) {
         JLabel label = new JLabel();
@@ -457,12 +493,31 @@ public class GestioneSessioniPanel extends JPanel {
 
     
     private void executeAggiungiRicetta() {
-        int selectedRow = sessioniTable.getSelectedRow();
+    	int selectedRow = sessioniTable.getSelectedRow();
         if (selectedRow == -1) return;
+
         SessioneDTO sessioneSelezionata = elencoSessioniAttuale.get(selectedRow);
 
-        JOptionPane.showMessageDialog(this, "Apertura pannello aggiunta ricette per sessione: "
-            + sessioneSelezionata.getArgomento() + "\n(Logica da implementare)");
+        if ("presenza".equalsIgnoreCase(sessioneSelezionata.getTipoSessione())) {
+            try {
+                SessioneInPresenzaDTO sessioneIP = controller.getSessioneInPresenzaById(sessioneSelezionata.getIdSessione());
+
+                if (sessioneIP == null) {
+                    JOptionPane.showMessageDialog(this, "Impossibile recuperare i dettagli della sessione selezionata.", "Errore", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                JFrame owner = (JFrame) SwingUtilities.getWindowAncestor(this);
+                AggiungiRicettaDialog dialog = new AggiungiRicettaDialog(owner, sessioneIP, controller);
+                dialog.setVisible(true);
+
+            } catch (OperationException e) {
+                 JOptionPane.showMessageDialog(this, "Errore nel recupero dei dettagli della sessione: " + e.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+            }
+
+        } else {
+            JOptionPane.showMessageDialog(this, "Le ricette possono essere aggiunte solo alle sessioni 'In Presenza'.", "Azione non permessa", JOptionPane.WARNING_MESSAGE);
+        }
     }
 
     private void executeModifica() {

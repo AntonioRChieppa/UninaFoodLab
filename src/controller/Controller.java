@@ -20,6 +20,7 @@ public class Controller {
 		private SessioneInPresenzaDAOInt sessioneIpDAO;
 		private SessioneOnlineDAOInt sessioneOnDAO;
 		private IngredienteDAOInt ingredienteDAO;
+		private SessioneRicettaDAOInt sessioneRicettaDAO;
 		private ComposizioneDAOInt composizioneDAO;
 		
 		public Controller() {
@@ -29,6 +30,7 @@ public class Controller {
 			this.sessioneIpDAO = new SessioneInPresenzaDAOImpl();
 			this.sessioneOnDAO = new SessioneOnlineDAOImpl();
 			this.ingredienteDAO = new IngredienteDAOImpl();
+			this.sessioneRicettaDAO = new SessioneRicettaDAOImpl();
 			this.composizioneDAO = new ComposizioneDAOImpl();
 		}
 		
@@ -213,7 +215,7 @@ public class Controller {
 		}
 		
 		// METODO PER VISUALIZZARE TUTTI I CORSI DI UNA DETERMINATA CATEGORIA
-		public List<CorsoDTO> visualizzaCorsiPerCategoria(String categoria) throws NotFoundException, OperationException{
+		public List<CorsoDTO> visualizzaCorsiPerCategoria(String categoria) throws OperationException{
 			try {
 				return corsoDAO.getCorsiByCategory(categoria);
 			} catch(SQLException ex) {
@@ -256,7 +258,7 @@ public class Controller {
 		//-------------------------------------------------------------------------------------------------------------
 		
 		//---------- METODO PER VISUALIZZARE TUTTE LE SESSIONI ----------
-		public List<SessioneDTO> visualizzaTutteSessioniPerChef() throws NotFoundException, OperationException{
+		public List<SessioneDTO> visualizzaTutteSessioniPerChef() throws OperationException{
 			try {
 				List<SessioneDTO> elencoTutteSessioni = new ArrayList<>();
 				
@@ -684,17 +686,13 @@ public class Controller {
 			}
 		}
 		
-		//METODO PER VISUALIZZARE LE RICETTE PER NOME
-		public RicettaDTO cercaRicettaPerNome (String newNomeRicetta) throws NotFoundException, OperationException{
-			try{
-				RicettaDTO ricetta = ricettaDAO.getRicettaByName(newNomeRicetta);
-				
-				if(ricetta==null) {
-					throw new NotFoundException("La ricetta" + newNomeRicetta+ "non è presente. Registrala!");
-				}
-				return ricetta;
-			}catch (SQLException ex) {
-				throw new OperationException("Errore durante la ricerca della ricetta");
+		//METODO PER VISUALIZZARE TUTTE LE RICETTE TRATTATE DA UNO CHEF IN UNA SUA SESSIONE
+		public List<RicettaDTO> visualizzaTutteRicettePerChef() throws OperationException{
+			try {
+				int idChefLoggato = SessionChef.getChefId();
+				return ricettaDAO.getAllRicetteByIdChef(idChefLoggato);
+			} catch(SQLException ex) {
+				throw new OperationException("Errore nel recupero delle ricette dello chef");
 			}
 		}
 		
@@ -713,6 +711,102 @@ public class Controller {
 		}
 		
 		//------------FINE METODI RICETTA-------------
+		
+		//----------------------------------------------------------------------------------------------------------------------------
+		
+		//-----------INIZIO METODI SESSIONE_RICETTA (ASSOCIAZIONE)-----------
+		
+		//METODO PER ASSOCIARE UNA RICETTA AD UNA SESSIONE
+		public void associaRicettaASessione(int idSessioneInPresenza, int idRicetta) throws NotFoundException, OperationException{
+			try {
+				SessioneInPresenzaDTO sessioneIp = sessioneIpDAO.getSessioneIpById(idSessioneInPresenza);
+				RicettaDTO ricetta = ricettaDAO.getRicettaById(idRicetta);
+				
+				if(sessioneIp == null) {
+					throw new NotFoundException("Sessione in presenza non trovata!");
+				}
+				
+				if(ricetta == null) {
+					throw new NotFoundException("Ricetta non trovata!");
+				}
+				
+				SessioneRicettaDTO associazioneSessioneRicetta = new SessioneRicettaDTO();
+				
+				associazioneSessioneRicetta.setSessioneRicetta(sessioneIp);
+				associazioneSessioneRicetta.setRicettaSessione(ricetta);
+				
+				sessioneRicettaDAO.insertNewAssociazione(associazioneSessioneRicetta);
+			} catch(SQLException ex) {
+				
+				if ("23505".equals(ex.getSQLState())) { // codice vincolo UNIQUE in postgres
+		             throw new OperationException("Questa ricetta è già associata a questa sessione.");
+		        } else {
+		            throw new OperationException("Errore nell'associazione della ricetta alla sessione: " + ex.getMessage());
+		        }
+			}
+		}
+		
+		//METODO PER VISUALIZZARE TUTTE LE RICETTE DI UNA SESSIONE
+		public List<RicettaDTO> visualizzaRicetteSessione(int idSessioneInPresenza) throws NotFoundException, OperationException{
+			try {
+				SessioneInPresenzaDTO sessioneIp = sessioneIpDAO.getSessioneIpById(idSessioneInPresenza);
+				if(sessioneIp == null) {
+					throw new NotFoundException("Impossibile trovare la sessione selezionata");
+				}
+				return sessioneRicettaDAO.getAllRicetteByIdSessione(idSessioneInPresenza);
+			} catch(SQLException ex) {
+				throw new OperationException("Errore nella visualizzazione delle ricette della sessione");
+			}
+		}
+		
+		//METODO PER AGGIORNARE LE RICETTE ASSOCIATE AD UNA SESSIONE
+		public void aggiornaRicettePerSessione(int idSessione, List<Integer> idRicetteAssociate) throws OperationException {
+		    try {
+		        sessioneRicettaDAO.deleteAssociazioniByIdSessione(idSessione);
+
+		        if (idRicetteAssociate != null && !idRicetteAssociate.isEmpty()) {
+		            SessioneInPresenzaDTO sessione = sessioneIpDAO.getSessioneIpById(idSessione);
+		             if (sessione == null) {
+		                 throw new OperationException("Sessione in presenza con ID " + idSessione + " non trovata per l'associazione ricette.");
+		             }
+
+		            for (int idRicetta : idRicetteAssociate) {
+		                RicettaDTO ricetta = ricettaDAO.getRicettaById(idRicetta);
+		                if (ricetta == null) {
+		                    throw new OperationException("Ricetta con ID " + idRicetta + " non trovata durante l'associazione.");
+		                }
+
+		                SessioneRicettaDTO associazioneDTO = new SessioneRicettaDTO();
+		                associazioneDTO.setSessioneRicetta(sessione);
+		                associazioneDTO.setRicettaSessione(ricetta);
+
+		                sessioneRicettaDAO.insertNewAssociazione(associazioneDTO);
+		            }
+		        }
+		    } catch (SQLException e) {
+		        if ("23505".equals(e.getSQLState())) {
+		             throw new OperationException("Errore: tentativo di associare la stessa ricetta più volte");
+		        }
+		        throw new OperationException("Errore durante l'aggiornamento delle ricette per la sessione");
+		    }
+		}
+		
+		//METODO PER ELIMINARE UN'ASSOCIAZIONE TRA RICETTA E SESSIONE
+		public void eliminaAssociazioniRicettaSessione(int idSessione) throws OperationException, NotFoundException {
+		    try {
+		        SessioneInPresenzaDTO sessioneIp = sessioneIpDAO.getSessioneIpById(idSessione);
+		        if (sessioneIp == null) {
+		            throw new NotFoundException("Sessione in presenza con ID " + idSessione + " non trovata.");
+		        }
+
+		        sessioneRicettaDAO.deleteAssociazioniByIdSessione(idSessione);
+
+		    } catch (SQLException e) {
+		        throw new OperationException("Errore durante l'eliminazione delle associazioni ricetta-sessione: " + e.getMessage());
+		    }
+		}
+		
+		//----------FINE METODI SESSIONE_RICETTA (ASSOCIAZIONE)----------
 		
 		//----------------------------------------------------------------------------------------------------------------------------
 		
@@ -804,7 +898,17 @@ public class Controller {
 				
 				List<ComposizioneDTO> elencoIngredientiRicetta = composizioneDAO.getAllIngredientiRicetta(newIdRicetta);
 				
-				if(elencoIngredientiRicetta == null) {
+				boolean giaPresente = false;
+				if(elencoIngredientiRicetta!=null) {
+					for(ComposizioneDTO comp : elencoIngredientiRicetta) {
+						if (comp.getIngredienteRicetta() != null && comp.getIngredienteRicetta().getId() == newIdIngrediente) {
+			                giaPresente = true;
+			                break; // Trovato, inutile continuare il ciclo
+			            }
+					}
+				}
+				
+				if(giaPresente) {
 					throw new AlreadyExistsException("L'ingrediente selezionato è già associato alla ricetta scelta");
 				}
 				

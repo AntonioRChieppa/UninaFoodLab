@@ -11,23 +11,19 @@ public class RicettaDTO {
 	private Integer tempoPreparazione;
 	private Integer porzioni;
 	private String difficolta;
-	private SessioneDTO sessioneRicetta;
-	
-	
-	
+
 	//COSTRUTTORE DI DEFAULT
 	public RicettaDTO () {
 	
 	}
 
 	//COSTRUTTORE SPECIFICO
-	public RicettaDTO(int id, String nomeRicetta, Integer tempoPreparazione, Integer porzioni, String difficolta, SessioneDTO sessioneRicetta) {
+	public RicettaDTO(int id, String nomeRicetta, Integer tempoPreparazione, Integer porzioni, String difficolta) {
 		this.id = id;
 		this.nomeRicetta = nomeRicetta;
 		this.tempoPreparazione = tempoPreparazione;
 		this.porzioni = porzioni;
 		this.difficolta = difficolta;
-		this.sessioneRicetta = sessioneRicetta;
 	}
 	
 	//GETTER E SETTER
@@ -72,11 +68,4 @@ public class RicettaDTO {
 		this.difficolta = difficolta;
 	}
 	
-	public SessioneDTO getSessioneRicetta(){
-	 	return sessioneRicetta;
-	}
-	
-	public void setSessioneRicetta(SessioneDTO sessioneRicetta){
-		this.sessioneRicetta = sessioneRicetta;
-	}
 }
