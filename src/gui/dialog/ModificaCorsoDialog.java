@@ -1,4 +1,4 @@
-package gui;
+package gui.dialog;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -9,31 +9,33 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.util.Date;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.ZoneId;
+import java.util.Date;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-
 import com.toedter.calendar.JDateChooser;
 
 import controller.Controller;
-import session.SessionChef;
-import exception.AlreadyExistsException;
+import dto.CorsoDTO;
+import exception.NotFoundException;
 import exception.OperationException;
+import exception.UnauthorizedOperationException;
 
-public class CreaNuovoCorsoPanel extends JPanel {
+public class ModificaCorsoDialog extends JDialog {
 
     private static final long serialVersionUID = 1L;
     
@@ -41,12 +43,6 @@ public class CreaNuovoCorsoPanel extends JPanel {
     private static final Color TEXT_DARK = new Color(51, 63, 81);
     private static final Color BORDER_GRAY = new Color(220, 225, 235);
     
-    private static final int HORIZONTAL_PADDING = 20;
-    
-    private JLabel pageTitle;
-    private JPanel titleContainer;
-    
-    private JPanel contentPanel;
     private JPanel formCard;
     private JPanel formPanel;
     private JTextField nomeField;
@@ -54,37 +50,36 @@ public class CreaNuovoCorsoPanel extends JPanel {
     private JDateChooser dataInizioChooser;
     private JComboBox<String> frequenzaComboBox;
     private JTextField numeroSessioniField;
-    private JButton inviaButton;
+    private JButton salvaButton;
+    private JButton annullaButton;
     
     private Controller controller;
+    private CorsoDTO corso; 
+    
+    private boolean saved = false;
 
-    public CreaNuovoCorsoPanel() {
-        controller = new Controller();
+    public ModificaCorsoDialog(JFrame owner, CorsoDTO corso, Controller controller) {
+        super(owner, "Modifica Corso", true); 
         
-        setLayout(new BorderLayout(0, 20));
-        setOpaque(false);
-        setBorder(new EmptyBorder(20, HORIZONTAL_PADDING, HORIZONTAL_PADDING, HORIZONTAL_PADDING));
+        this.corso = corso;
+        this.controller = controller;
         
-        add(buildTitlePanel(), BorderLayout.NORTH);
+        setLayout(new BorderLayout());
+        setResizable(false);
+        
         add(buildContentPanel(), BorderLayout.CENTER);
-    }
-
-    private JPanel buildTitlePanel() {
-        titleContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0)); 
-        titleContainer.setOpaque(false);
         
-        pageTitle = new JLabel("Crea Nuovo Corso");
-        pageTitle.setFont(new Font("SansSerif", Font.BOLD, 24));
-        pageTitle.setForeground(TEXT_DARK);
+        prefillForm();
         
-        titleContainer.add(pageTitle);
-
-        return titleContainer;
+        pack();
+        setLocationRelativeTo(owner);
     }
     
     private JPanel buildContentPanel() {
-        contentPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-        contentPanel.setOpaque(false);
+        JPanel contentPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        contentPanel.setOpaque(true);
+        contentPanel.setBackground(new Color(248, 249, 252));
+        contentPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         formCard = new JPanel();
         formCard.setOpaque(true);
@@ -102,7 +97,7 @@ public class CreaNuovoCorsoPanel extends JPanel {
         buttonPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         formCard.add(formPanel);
-        formCard.add(Box.createVerticalStrut(15));
+        formCard.add(Box.createVerticalStrut(20));
         formCard.add(buttonPanel);
         
         formCard.setMaximumSize(new Dimension(formCard.getPreferredSize().width, formCard.getPreferredSize().height));
@@ -131,10 +126,12 @@ public class CreaNuovoCorsoPanel extends JPanel {
         nomeField = new JTextField();
         nomeField.setPreferredSize(fieldSize);
         nomeField.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        nomeField.setEditable(false); 
+        nomeField.setBackground(Color.LIGHT_GRAY); 
         formPanel.add(nomeField, gbc);
 
         gbc.gridy = 2;
-        gbc.insets = new Insets(5, 5, 0, 5);
+        gbc.insets = new Insets(10, 5, 0, 5);
         formPanel.add(createFormLabel("Categoria:"), gbc);
 
         gbc.gridy = 3;
@@ -145,7 +142,7 @@ public class CreaNuovoCorsoPanel extends JPanel {
         formPanel.add(categoriaField, gbc);
 
         gbc.gridy = 4;
-        gbc.insets = new Insets(5, 5, 0, 5);
+        gbc.insets = new Insets(10, 5, 0, 5);
         formPanel.add(createFormLabel("Data Inizio:"), gbc);
 
         gbc.gridy = 5;
@@ -156,7 +153,7 @@ public class CreaNuovoCorsoPanel extends JPanel {
         formPanel.add(dataInizioChooser, gbc);
 
         gbc.gridy = 6;
-        gbc.insets = new Insets(5, 5, 0, 5);
+        gbc.insets = new Insets(10, 5, 0, 5);
         formPanel.add(createFormLabel("Frequenza:"), gbc);
 
         gbc.gridy = 7;
@@ -169,7 +166,7 @@ public class CreaNuovoCorsoPanel extends JPanel {
         formPanel.add(frequenzaComboBox, gbc);
 
         gbc.gridy = 8;
-        gbc.insets = new Insets(5, 5, 0, 5);
+        gbc.insets = new Insets(10, 5, 0, 5);
         formPanel.add(createFormLabel("Numero Sessioni:"), gbc);
 
         gbc.gridy = 9;
@@ -182,6 +179,17 @@ public class CreaNuovoCorsoPanel extends JPanel {
         return formPanel;
     }
     
+    private void prefillForm() {
+        nomeField.setText(corso.getNomeCorso());
+        categoriaField.setText(corso.getCategoria());
+        
+        Date date = Date.from(corso.getDataInizio().atStartOfDay(ZoneId.systemDefault()).toInstant());
+        dataInizioChooser.setDate(date);
+        
+        frequenzaComboBox.setSelectedItem(corso.getFrequenzaSessioni());
+        numeroSessioniField.setText(String.valueOf(corso.getNumeroSessioni()));
+    }
+    
     private JLabel createFormLabel(String text) {
         JLabel label = new JLabel(text);
         label.setFont(new Font("SansSerif", Font.BOLD, 14));
@@ -190,65 +198,67 @@ public class CreaNuovoCorsoPanel extends JPanel {
     }
     
     private JPanel buildButtonPanel() {
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
         buttonPanel.setOpaque(false);
         
-        inviaButton = new JButton("Crea Corso");
-        inviaButton.setFont(new Font("SansSerif", Font.BOLD, 14));
-        inviaButton.setBackground(PRIMARY_BLUE);
-        inviaButton.setForeground(Color.WHITE);
-        inviaButton.setOpaque(true);
-        inviaButton.setBorder(new EmptyBorder(8, 15, 8, 15));
-        inviaButton.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        
-        inviaButton.addActionListener(new ActionListener() {
+        salvaButton = new JButton("Salva Modifiche");
+        salvaButton.setFont(new Font("SansSerif", Font.BOLD, 14));
+        salvaButton.setBackground(PRIMARY_BLUE);
+        salvaButton.setForeground(Color.WHITE);
+        salvaButton.setOpaque(true);
+        salvaButton.setBorder(new EmptyBorder(8, 15, 8, 15));
+        salvaButton.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        salvaButton.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
-        		insertNewCourse();
+        		salvaModifiche();
         	}
         });
         
-        buttonPanel.add(inviaButton);
+        annullaButton = new JButton("Annulla");
+        annullaButton.setFont(new Font("SansSerif", Font.BOLD, 14));
+        annullaButton.setBackground(Color.GRAY);
+        annullaButton.setForeground(Color.WHITE);
+        annullaButton.setOpaque(true);
+        annullaButton.setBorder(new EmptyBorder(8, 15, 8, 15));
+        annullaButton.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        annullaButton.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		dispose();
+        	}
+        });
+
+        buttonPanel.add(salvaButton);
+        buttonPanel.add(annullaButton);
         return buttonPanel;
     }
     
-    //====================================================
-    // FUNZIONI AUSILIARIE - HANDLER 
-    //====================================================
+    //==========================================================
+    // FUNZIONI AUSILIARIE
+    //==========================================================
     
-    private void insertNewCourse() {
-    	String nomeCorso = nomeField.getText();
-    	String categoria = categoriaField.getText();
-    	Date dataInizioUtil = dataInizioChooser.getDate();
-    	String frequenza = (String) frequenzaComboBox.getSelectedItem();
-    	String numSessioni = numeroSessioniField.getText();
-    	try {
-    		controller.inserimentoCorso(nomeCorso, categoria, dataInizioUtil, numSessioni, frequenza, SessionChef.getChefId());
-    		JOptionPane.showMessageDialog(this, "Corso inserito con successo!", "Success", JOptionPane.INFORMATION_MESSAGE);
-    		HomeFrame home = (HomeFrame) SwingUtilities.getWindowAncestor(this);
-            if (home != null) {
-                home.showMainPanel(new GestioneCorsiPanel());
-            }
-    	}
-    	catch(AlreadyExistsException ex) {
-    		JOptionPane.showMessageDialog(this, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
-    	} catch(OperationException ex) {
-    		JOptionPane.showMessageDialog(this, ex.getMessage(), "Operation Error", JOptionPane.ERROR_MESSAGE);
-    		
-    		try {
-    			if(Integer.parseInt(numSessioni) <= 0) {
-        			numeroSessioniField.setText("");
-        		}
-    		}catch(NumberFormatException nfe) {
-    			numeroSessioniField.setText("");
-    		}
-    		
-    		if(!controller.isOnlyLettersAndSpaces(nomeCorso)) {
-    			nomeField.setText("");
-    		}
-    		if(!controller.isOnlyLettersAndSpaces(categoria)) {
-    			categoriaField.setText("");
-    		}
-    	}
+    public void salvaModifiche() {
+        try {
+            String nomeCorso = nomeField.getText();
+            String categoria = categoriaField.getText();
+            Date dataInizioUtil = dataInizioChooser.getDate();
+            String frequenza = (String) frequenzaComboBox.getSelectedItem();
+            String numSessioniStr = numeroSessioniField.getText();
+
+            controller.aggiornaCorso(nomeCorso, categoria, dataInizioUtil, numSessioniStr, frequenza);
+            
+            this.saved = true;
+            dispose(); 
+
+        } catch(UnauthorizedOperationException ex) {
+        	JOptionPane.showMessageDialog(this, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+        } catch(NotFoundException ex) {
+        	JOptionPane.showMessageDialog(this, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+        } catch(OperationException ex) {
+        	JOptionPane.showMessageDialog(this, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+        } 
     }
     
+    public boolean isSaved() {
+        return this.saved;
+    }
 }

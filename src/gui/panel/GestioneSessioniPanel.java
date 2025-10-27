@@ -1,4 +1,4 @@
-package gui;
+package gui.panel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -45,6 +45,8 @@ import dto.SessioneOnlineDTO;
 import exception.OperationException;
 import exception.NotFoundException;
 import exception.UnauthorizedOperationException;
+import gui.dialog.AggiungiRicettaDialog;
+import gui.dialog.ModificaSessioneDialog;
 
 public class GestioneSessioniPanel extends JPanel {
 

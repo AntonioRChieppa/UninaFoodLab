@@ -27,11 +27,22 @@ import java.awt.event.ActionListener;
 
 import session.SessionChef;
 import controller.Controller;
+import gui.panel.CreaNuovaSessionePanel;
+import gui.panel.CreaNuovoCorsoPanel;
+import gui.panel.GestioneCorsiPanel;
+import gui.panel.GestioneSessioniPanel;
+import gui.panel.ProfilePanel;
+import gui.panel.VisualizzaReportPanel;
+//import gui.panel.VisualizzaRicetteChefPanel;
+import gui.panel.VisualizzaTuttiChefPanel;
+import gui.panel.VisualizzaTuttiCorsiPanel;
+
 
 public class HomeFrame extends JFrame {
 
 	private static final long serialVersionUID = 1L;
     private static final Color BUTTON_BASE_COLOR = new Color(30, 144, 255);
+    private static final Color TEXT_DARK = new Color(51, 63, 81); // Aggiunto per descrizione
 
 	private final JPanel contentPane;
 	private JPanel sideBarPanel;
@@ -51,10 +62,9 @@ public class HomeFrame extends JFrame {
     private JLabel cardSubtitle;
     private JLabel cardHint;
     private JPanel actionsPanel;
-	private JButton viewCoursesButton;
-	private JButton viewChefsButton;
-	private JButton viewRecipesButton;
-	private JButton viewMonthlyReportButton;
+	private JPanel viewCoursesButtonPanel; // Cambiato in JPanel
+	private JPanel viewChefsButtonPanel; // Cambiato in JPanel
+	private JPanel viewMonthlyReportButtonPanel; // Cambiato in JPanel
 
 	private final List<JPanel> sideBarContentPanels = new ArrayList<>();
 
@@ -134,7 +144,7 @@ public class HomeFrame extends JFrame {
 		addExpandableSection(menuContainer, "Sessioni", "Crea nuova sessione", "Gestisci le tue sessioni");
 		menuContainer.add(Box.createVerticalStrut(12));
 
-		addExpandableSection(menuContainer, "Ricette", "Inserisci nuova ricetta", "Gestisci le tue ricette");
+		addExpandableSection(menuContainer, "Ricette", "Visualizza ricette");
 		menuContainer.add(Box.createVerticalStrut(12));
 
 		profileButton = createNavButton("Profilo");
@@ -235,51 +245,47 @@ public class HomeFrame extends JFrame {
 
 	private void buildMainActions() {
 
-		viewCoursesButton = createActionButton("Visualizza tutti i corsi");
-        viewCoursesButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showMainPanel(new VisualizzaTuttiCorsiPanel());
-            }
-        });
+        viewCoursesButtonPanel = createActionPanelButton(
+            "Visualizza tutti i corsi",
+            "Sfoglia il catalogo completo dei corsi offerti.",
+            new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    showMainPanel(new VisualizzaTuttiCorsiPanel());
+                }
+            });
 
-		viewChefsButton = createActionButton("Visualizza tutti gli chef");
-		viewChefsButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				showMainPanel(new VisualizzaTuttiChefPanel());
-			}
-		});
+        viewChefsButtonPanel = createActionPanelButton(
+            "Visualizza tutti gli chef",
+            "Scopri i profili degli chef che collaborano con UninaFoodLab.",
+            new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    showMainPanel(new VisualizzaTuttiChefPanel());
+                }
+            });
 
-		viewRecipesButton = createActionButton("Visualizza tutte le ricette");
-		viewRecipesButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				showMainPanel(new VisualizzaTutteRicettePanel());
-			}
-		});
-
-		viewMonthlyReportButton = createActionButton("Visualizza report mensile");
-		viewMonthlyReportButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				showMainPanel(new VisualizzaReportPanel());
-			}
-		});
+        viewMonthlyReportButtonPanel = createActionPanelButton(
+            "Visualizza report mensile",
+            "Analizza le statistiche e le performance dei tuoi corsi.",
+            new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    showMainPanel(new VisualizzaReportPanel());
+                }
+            });
 	}
 
 	private void buildMainActionsDashboard(JPanel targetPanel) {
-		actionsPanel = new JPanel();
+		actionsPanel = new JPanel(new GridLayout(3, 1, 0, 16)); // 3 Righe, 1 Colonna, 16 vgap
 		actionsPanel.setOpaque(false);
-		actionsPanel.setLayout(new GridLayout(2, 2, 16, 16));
 		actionsPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-		actionsPanel.setMaximumSize(new Dimension(580, 192));
-		actionsPanel.setPreferredSize(new Dimension(580, 192));
+        actionsPanel.setMaximumSize(new Dimension(580, 300)); // Aumentata altezza
+		actionsPanel.setPreferredSize(new Dimension(580, 300));
 
-		actionsPanel.add(viewCoursesButton);
-		actionsPanel.add(viewChefsButton);
-		actionsPanel.add(viewRecipesButton);
-		actionsPanel.add(viewMonthlyReportButton);
+		actionsPanel.add(viewCoursesButtonPanel);
+		actionsPanel.add(viewChefsButtonPanel);
+		actionsPanel.add(viewMonthlyReportButtonPanel);
 
 		targetPanel.add(actionsPanel);
 	}
@@ -382,15 +388,7 @@ public class HomeFrame extends JFrame {
 					itemButton.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
 							collapseAllSections();
-							showMainPanel(new CreaNuovaRicettaPanel());
-						}
-					});
-				}
-				else if(i==1) {
-					itemButton.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							collapseAllSections();
-							showMainPanel(new GestioneRicettePanel());
+							//showMainPanel(new VisualizzaRicetteChefPanel());
 						}
 					});
 				}
@@ -469,61 +467,86 @@ public class HomeFrame extends JFrame {
 		return arrow + "  " + title;
 	}
 
-	private JButton createActionButton(String title) {
-		JButton button = new JButton(title);
-		button.setFocusPainted(false);
-
-		button.setHorizontalAlignment(SwingConstants.CENTER);
-		button.setVerticalAlignment(SwingConstants.TOP);
-
-		button.setFont(new Font("SansSerif", Font.BOLD, 20));
-		button.setForeground(Color.WHITE);
-		button.setBackground(BUTTON_BASE_COLOR);
-		button.setOpaque(true);
-
-		Color shadowColor = BUTTON_BASE_COLOR.darker();
+	// Sostituito createActionButton con createActionPanelButton
+    private JPanel createActionPanelButton(String title, String description, ActionListener actionListener) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(BUTTON_BASE_COLOR);
+        panel.setOpaque(true);
+        panel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        
+        Color shadowColor = BUTTON_BASE_COLOR.darker();
         Color underlineColor = new Color(255, 255, 255, 120);
 
+        JPanel textWrapper = new JPanel();
+        textWrapper.setOpaque(false);
+        textWrapper.setLayout(new BoxLayout(textWrapper, BoxLayout.Y_AXIS));
+        
         Border lineAndPadding = BorderFactory.createCompoundBorder(
-            new EmptyBorder(22, 20, 5, 20),
+            new EmptyBorder(16, 20, 16, 20), // Aumentato padding verticale
             BorderFactory.createMatteBorder(0, 0, 1, 0, underlineColor)
         );
+        textWrapper.setBorder(lineAndPadding);
 
-		button.setBorder(BorderFactory.createCompoundBorder(
-		    BorderFactory.createMatteBorder(1, 1, 3, 1, shadowColor),
-		    lineAndPadding
-		));
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 18)); // Leggermente più piccolo
+        titleLabel.setForeground(Color.WHITE);
+        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        textWrapper.add(titleLabel);
 
-		button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		installButtonHoverEffect(button, BUTTON_BASE_COLOR);
-		return button;
+        textWrapper.add(Box.createVerticalStrut(4));
+
+        JLabel descLabel = new JLabel(description);
+        descLabel.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        descLabel.setForeground(new Color(230, 242, 255)); // Bianco leggermente trasparente
+        descLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        textWrapper.add(descLabel);
+
+        panel.add(textWrapper, BorderLayout.CENTER);
+
+        // Applica bordo esterno per ombra
+		panel.setBorder(BorderFactory.createMatteBorder(1, 1, 3, 1, shadowColor));
+
+        // Installa effetto hover su tutto il pannello
+		installPanelHoverEffect(panel, BUTTON_BASE_COLOR);
+        
+        // Aggiunge un MouseListener per gestire il click sull'intero pannello
+        panel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Crea un ActionEvent fittizio per riutilizzare l'action listener
+                actionListener.actionPerformed(new ActionEvent(panel, ActionEvent.ACTION_PERFORMED, null));
+            }
+        });
+
+		return panel;
 	}
 
-	private void installButtonHoverEffect(JButton button, Color baseColor) {
+	// Modificato installButtonHoverEffect in installPanelHoverEffect
+	private void installPanelHoverEffect(JPanel panel, Color baseColor) {
 		Color hoverColor = baseColor.darker();
 		Color pressColor = hoverColor.darker();
-		button.addMouseListener(new MouseAdapter() {
+		panel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				button.setBackground(hoverColor);
+				panel.setBackground(hoverColor);
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e) {
-				button.setBackground(baseColor);
+				panel.setBackground(baseColor);
 			}
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-				button.setBackground(pressColor);
+				panel.setBackground(pressColor);
 			}
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				if (button.getBounds().contains(e.getPoint())) {
-					button.setBackground(hoverColor);
+				if (panel.getBounds().contains(e.getPoint())) {
+					panel.setBackground(hoverColor);
 				} else {
-					button.setBackground(baseColor);
+					panel.setBackground(baseColor);
 				}
 			}
 		});

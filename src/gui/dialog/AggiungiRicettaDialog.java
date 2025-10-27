@@ -1,4 +1,4 @@
-package gui;
+package gui.dialog;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -298,7 +298,6 @@ public class AggiungiRicettaDialog extends JDialog {
                 sourceModel.removeElement(item);
                 targetModel.addElement(item);
             }
-            // Riordina la lista di destinazione (opzionale)
             sortListModel(targetModel);
         }
     }
@@ -316,7 +315,7 @@ public class AggiungiRicettaDialog extends JDialog {
         sortListModel(targetModel); // Riordina
     }
 
-    // Metodo per ordinare un DefaultListModel per nome ricetta
+
     private void sortListModel(DefaultListModel<RicettaDTO> model) {
         List<RicettaDTO> tempList = new ArrayList<>();
         for (int i = 0; i < model.getSize(); i++) {

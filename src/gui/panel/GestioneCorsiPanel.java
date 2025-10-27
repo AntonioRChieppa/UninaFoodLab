@@ -1,4 +1,4 @@
-package gui;
+package gui.panel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -34,6 +34,7 @@ import dto.CorsoDTO;
 import exception.OperationException;
 import exception.NotFoundException;
 import exception.UnauthorizedOperationException;
+import gui.dialog.ModificaCorsoDialog;
 
 public class GestioneCorsiPanel extends JPanel {
 

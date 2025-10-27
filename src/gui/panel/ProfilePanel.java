@@ -1,5 +1,5 @@
-package gui;
-
+package gui.panel;
+import gui.HomeFrame;
 import javax.swing.JPanel;
 
 public class ProfilePanel extends JPanel {
