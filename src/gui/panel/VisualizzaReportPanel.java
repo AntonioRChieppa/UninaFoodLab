@@ -23,43 +23,37 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import controller.Controller;
-import dto.StatisticheRicetteDTO; // Assumo tu abbia questo DTO dalla conversazione precedente
+import dto.StatisticheRicetteDTO;
 import exception.OperationException;
-import session.SessionChef; // Assumo tu abbia questo per l'ID Chef
+import session.SessionChef;
 
 public class VisualizzaReportPanel extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
-    // --- Stile da VisualizzaTuttiChefPanel ---
     private static final Color TEXT_DARK = new Color(51, 63, 81);
     private static final Color BORDER_GRAY = new Color(220, 225, 235);
-    private static final Color BG_COLOR = new Color(245, 247, 252); // Sfondo chiaro
+    private static final Color BG_COLOR = new Color(245, 247, 252);
     private static final Color CARD_BACKGROUND = Color.WHITE;
     private static final Color PRIMARY_BLUE = new Color(30, 144, 255);
     private static final int PADDING = 20;
 
-    // --- Font ---
     private static final Font FONT_TITOLO_PAGINA = new Font("SansSerif", Font.BOLD, 24);
     private static final Font FONT_TITOLO_CARD = new Font("SansSerif", Font.BOLD, 19);
     private static final Font FONT_LABEL = new Font("SansSerif", Font.PLAIN, 15);
     private static final Font FONT_VALUE = new Font("SansSerif", Font.BOLD, 16);
 
-    // --- Controller ---
     private Controller controller;
 
-    // --- Componenti UI ---
     private JComboBox<String> meseComboBox;
     private JComboBox<Integer> annoComboBox;
     private JButton cercaButton;
 
-    // --- Componenti per i dati (sinistra) ---
     private JLabel corsiValueLabel;
     private JLabel onlineValueLabel;
     private JLabel praticaValueLabel;
     private AbstractBarChartPanel corsiChartPanel;
 
-    // --- Componenti per i dati (destra) ---
     private JLabel maxValueLabel;
     private JLabel minValueLabel;
     private JLabel avgValueLabel;
@@ -69,17 +63,14 @@ public class VisualizzaReportPanel extends JPanel {
         controller = new Controller();
 
         setLayout(new BorderLayout(0, 15));
-        setOpaque(false); 
-        setBackground(BG_COLOR); 
+        setOpaque(true);
+        setBackground(BG_COLOR);
         setBorder(new EmptyBorder(PADDING, PADDING, PADDING, PADDING));
 
-        // Intestazione con titolo e filtri
         add(buildHeaderPanel(), BorderLayout.NORTH);
         
-        // Oannello centrale a 2 colonne
         add(buildContentPanel(), BorderLayout.CENTER);
 
-        // Inizializza i valori a 0
         aggiornaPannelliDati(0, 0, 0, new StatisticheRicetteDTO(0, 0, 0.0));
     }
 
@@ -88,17 +79,18 @@ public class VisualizzaReportPanel extends JPanel {
         headerPanel.setOpaque(false);
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
 
-       
+        
         JPanel titleContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         titleContainer.setOpaque(false);
         JLabel pageTitle = new JLabel("Report Mensile");
-        pageTitle.setFont(new Font("SansSerif", Font.BOLD, 24));
+        pageTitle.setFont(FONT_TITOLO_PAGINA);
         pageTitle.setForeground(TEXT_DARK);
         titleContainer.add(pageTitle);
 
         
         JPanel filterContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         filterContainer.setOpaque(false);
+        filterContainer.setBorder(new EmptyBorder(5, 0, 0, 0));
 
         filterContainer.add(new JLabel("Mese:"));
         meseComboBox = new JComboBox<>(new String[]{
@@ -131,26 +123,25 @@ public class VisualizzaReportPanel extends JPanel {
         cercaButton.setForeground(Color.WHITE);
         cercaButton.setOpaque(true);
         cercaButton.setBorder(new EmptyBorder(6, 12, 6, 12));
-        cercaButton.addActionListener(e -> onCercaPremuto()); // Collega l'evento
+        cercaButton.addActionListener(e -> onCercaPremuto());
         filterContainer.add(cercaButton);
 
         headerPanel.add(titleContainer);
+        headerPanel.add(Box.createVerticalStrut(10));
         headerPanel.add(filterContainer);
         return headerPanel;
     }
 
-   
+    
     private JPanel buildContentPanel() {
         JPanel contentPanel = new JPanel(new GridLayout(1, 2, PADDING, PADDING));
         contentPanel.setOpaque(false);
 
-        // Colonna Sinistra
         JPanel leftColumn = new JPanel(new BorderLayout(0, PADDING));
         leftColumn.setOpaque(false);
         leftColumn.add(buildReportCorsiPanel(), BorderLayout.NORTH);
         leftColumn.add(buildCorsiBarChartPanel(), BorderLayout.CENTER);
 
-        // Colonna Destra
         JPanel rightColumn = new JPanel(new BorderLayout(0, PADDING));
         rightColumn.setOpaque(false);
         rightColumn.add(buildReportStatistichePanel(), BorderLayout.NORTH);
@@ -158,32 +149,54 @@ public class VisualizzaReportPanel extends JPanel {
 
         contentPanel.add(leftColumn);
         contentPanel.add(rightColumn);
+        
+        JPanel bottomMarginPanel = new JPanel();
+        bottomMarginPanel.setOpaque(false);
+        bottomMarginPanel.setPreferredSize(new Dimension(0, PADDING));
+        
+        JPanel wrapperPanel = new JPanel(new BorderLayout());
+        wrapperPanel.setOpaque(false);
+        wrapperPanel.add(contentPanel, BorderLayout.CENTER);
+        wrapperPanel.add(bottomMarginPanel, BorderLayout.SOUTH);
 
-        return contentPanel;
+        return wrapperPanel;
     }
 
-    // --- PANNELLI COLONNA SINISTRA ---
-
     private JPanel buildReportCorsiPanel() {
-        JPanel card = createBaseCardPanel("Report Corsi e Sessioni");
+        JPanel card = new JPanel();
+        card.setBackground(CARD_BACKGROUND);
+        card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(BORDER_GRAY),
+            new EmptyBorder(PADDING - 5, PADDING, PADDING, PADDING)));
+        // Usa BorderLayout
+        card.setLayout(new BorderLayout(0, 16));
 
         corsiValueLabel = new JLabel("0");
         onlineValueLabel = new JLabel("0");
         praticaValueLabel = new JLabel("0");
+        
+        // Aggiunge il titolo in NORTH (allineato a sinistra di default da BorderLayout)
+        card.add(createCardTitle("Report Corsi e Sessioni"), BorderLayout.NORTH);
 
-        card.add(createDataRow("Numero Totale Corsi:", corsiValueLabel));
-        card.add(Box.createVerticalStrut(8));
-        card.add(createDataRow("Totale Sessioni Online:", onlineValueLabel));
-        card.add(Box.createVerticalStrut(8));
-        card.add(createDataRow("Totale Sessioni Pratiche:", praticaValueLabel));
+        // Pannello per i dati, usa BoxLayout per le righe
+        JPanel dataPanel = new JPanel();
+        dataPanel.setOpaque(false);
+        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
+        dataPanel.add(createDataRow("Numero Totale Corsi:", corsiValueLabel));
+        dataPanel.add(Box.createVerticalStrut(8));
+        dataPanel.add(createDataRow("Totale Sessioni Online:", onlineValueLabel));
+        dataPanel.add(Box.createVerticalStrut(8));
+        dataPanel.add(createDataRow("Totale Sessioni Pratiche:", praticaValueLabel));
+        
+        card.add(dataPanel, BorderLayout.CENTER);
 
         return card;
     }
 
     private JPanel buildCorsiBarChartPanel() {
-        JPanel card = createBaseCardPanel("Riepilogo Grafico Sessioni");
+        // Questa card usa già BorderLayout e createCardTitle in NORTH
+        JPanel card = createBaseCardPanel(); // Usa il metodo vecchio
         card.setLayout(new BorderLayout());
-        card.remove(0); // Rimuove il titolo (BoxLayout) per rimetterlo (BorderLayout)
         card.add(createCardTitle("Riepilogo Grafico Sessioni"), BorderLayout.NORTH);
         
 
@@ -193,32 +206,45 @@ public class VisualizzaReportPanel extends JPanel {
         
         corsiChartPanel.setOpaque(false);
         card.add(corsiChartPanel, BorderLayout.CENTER);
-        card.setPreferredSize(new Dimension(0, 300)); // Dà altezza al grafico
+        card.setPreferredSize(new Dimension(0, 300));
         return card;
     }
 
-    // --- PANNELLI COLONNA DESTRA ---
-
     private JPanel buildReportStatistichePanel() {
-        JPanel card = createBaseCardPanel("Statistiche Ricette");
+        JPanel card = new JPanel();
+        card.setBackground(CARD_BACKGROUND);
+        card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(BORDER_GRAY),
+            new EmptyBorder(PADDING - 5, PADDING, PADDING, PADDING)));
+        // Usa BorderLayout
+        card.setLayout(new BorderLayout(0, 16));
 
         maxValueLabel = new JLabel("0");
         minValueLabel = new JLabel("0");
         avgValueLabel = new JLabel("0.0");
+        
+        // Aggiunge il titolo in NORTH
+        card.add(createCardTitle("Statistiche Ricette"), BorderLayout.NORTH);
 
-        card.add(createDataRow("Numero Massimo Ricette:", maxValueLabel));
-        card.add(Box.createVerticalStrut(8));
-        card.add(createDataRow("Numero Minimo Ricette:", minValueLabel));
-        card.add(Box.createVerticalStrut(8));
-        card.add(createDataRow("Media Ricette Realizzate:", avgValueLabel));
+        // Pannello per i dati
+        JPanel dataPanel = new JPanel();
+        dataPanel.setOpaque(false);
+        dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
+        dataPanel.add(createDataRow("Numero Massimo Ricette:", maxValueLabel));
+        dataPanel.add(Box.createVerticalStrut(8));
+        dataPanel.add(createDataRow("Numero Minimo Ricette:", minValueLabel));
+        dataPanel.add(Box.createVerticalStrut(8));
+        dataPanel.add(createDataRow("Media Ricette Realizzate:", avgValueLabel));
+        
+        card.add(dataPanel, BorderLayout.CENTER);
 
         return card;
     }
 
     private JPanel buildRicetteBarChartPanel() {
-        JPanel card = createBaseCardPanel("Riepilogo Grafico Ricette");
+        // Questa card usa già BorderLayout e createCardTitle in NORTH
+        JPanel card = createBaseCardPanel();
         card.setLayout(new BorderLayout());
-        card.remove(0);
         card.add(createCardTitle("Riepilogo Grafico Ricette"), BorderLayout.NORTH);
 
         String[] labels = {"Max", "Min", "Med"};
@@ -229,24 +255,19 @@ public class VisualizzaReportPanel extends JPanel {
         card.add(ricetteChartPanel, BorderLayout.CENTER);
         card.setPreferredSize(new Dimension(0, 300));
         return card;
-        
-         
     }
 
     private void onCercaPremuto() {
-        // 1. Raccogli input dall'UI
-        int meseSelezionato = meseComboBox.getSelectedIndex() + 1; // +1 perché 0-based
+        int meseSelezionato = meseComboBox.getSelectedIndex() + 1;
         int annoSelezionato = (Integer) annoComboBox.getSelectedItem();
 
         try {
             int corsi = controller.getNumeroCorsiTenutiNelMese(meseSelezionato, annoSelezionato);
             int online = controller.getNumeroSessioniOnlineTenuteNelMese(meseSelezionato, annoSelezionato);
             int pratica = controller.getNumeroSessioniInPresenzaTenuteNelMese(meseSelezionato, annoSelezionato);
-    
             
-            int idChefLoggato = SessionChef.getChefId(); 
-            StatisticheRicetteDTO stats = controller.getStatisticheRicettePerReport(idChefLoggato, meseSelezionato, annoSelezionato);
-    
+            StatisticheRicetteDTO stats = controller.getStatisticheRicettePerReport(meseSelezionato, annoSelezionato);
+            
             
             aggiornaPannelliDati(corsi, online, pratica, stats);
 
@@ -264,38 +285,31 @@ public class VisualizzaReportPanel extends JPanel {
     }
 
     private void aggiornaPannelliDati(int corsi, int online, int pratica, StatisticheRicetteDTO stats) {
-        // Aggiorna Pannello Sinistro (Testo)
         corsiValueLabel.setText(String.valueOf(corsi));
         onlineValueLabel.setText(String.valueOf(online));
         praticaValueLabel.setText(String.valueOf(pratica));
 
-        // Aggiorna Pannello Sinistro (Grafico)
         corsiChartPanel.updateData(corsi, online, pratica);
 
-        // Aggiorna Pannello Destro (Testo)
         maxValueLabel.setText(String.valueOf(stats.getMax()));
         minValueLabel.setText(String.valueOf(stats.getMin()));
         avgValueLabel.setText(String.format("%.2f", stats.getAvg()));
 
-        // Aggiorna Pannello Destro (Grafico)
         ricetteChartPanel.updateData(stats.getMax(), stats.getMin(), stats.getAvg());
 
-        // Forza il ridisegno di tutto
         this.revalidate();
         this.repaint();
     }
 
     
-    private JPanel createBaseCardPanel(String title) {
+    private JPanel createBaseCardPanel() {
         JPanel panel = new JPanel();
         panel.setBackground(CARD_BACKGROUND);
         panel.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(BORDER_GRAY),
-            new EmptyBorder(PADDING - 5, PADDING, PADDING, PADDING))); // 15, 20, 20, 20
+            new EmptyBorder(PADDING - 5, PADDING, PADDING, PADDING)));
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-        panel.add(createCardTitle(title));
-        panel.add(Box.createVerticalStrut(16));
+        
         return panel;
     }
 
@@ -304,7 +318,7 @@ public class VisualizzaReportPanel extends JPanel {
         titleLabel.setFont(FONT_TITOLO_CARD);
         titleLabel.setForeground(TEXT_DARK);
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        titleLabel.setBorder(new EmptyBorder(0, 0, 5, 0)); // Spazio sotto
+        titleLabel.setBorder(new EmptyBorder(0, 0, 5, 0));
         return titleLabel;
     }
 
@@ -348,7 +362,7 @@ public class VisualizzaReportPanel extends JPanel {
         public void updateData(double... newValues) {
             if (newValues.length == values.length) {
                 this.values = newValues;
-                repaint(); // Ridisegna il componente con i nuovi dati
+                repaint();
             }
         }
 
@@ -363,9 +377,9 @@ public class VisualizzaReportPanel extends JPanel {
                 if (value > maxValue) maxValue = value;
             }
 
-            if (maxValue == 0) maxValue = 1; // Evita divisione per zero
+            if (maxValue == 0) maxValue = 1;
 
-            int panelHeight = getHeight() - 40; // Spazio per etichette
+            int panelHeight = getHeight() - 40;
             int panelWidth = getWidth();
 
             int totalBarSpace = (BAR_WIDTH * values.length) + (BAR_GAP * (values.length - 1));
@@ -373,20 +387,17 @@ public class VisualizzaReportPanel extends JPanel {
 
             for (int i = 0; i < values.length; i++) {
                 int barHeight = (int) ((values[i] / maxValue) * panelHeight);
-                int y = panelHeight - barHeight + 20; // +20 per padding superiore
+                int y = panelHeight - barHeight + 20;
                 int x = startX + i * (BAR_WIDTH + BAR_GAP);
 
-                // Disegna la barra
                 g2.setColor(colors[i]);
                 g2.fillRect(x, y, BAR_WIDTH, barHeight);
 
-                // Disegna etichetta (valore) sopra la barra
                 g2.setColor(TEXT_DARK);
                 g2.setFont(FONT_VALUE);
                 
-                // Formatta il valore (int o double)
                 String valueStr;
-                if (values[i] % 1 == 0) { // Se è un intero
+                if (values[i] % 1 == 0) {
                     valueStr = String.valueOf((int)values[i]);
                 } else {
                     valueStr = String.format("%.2f", values[i]);
@@ -395,7 +406,6 @@ public class VisualizzaReportPanel extends JPanel {
                 int strWidth = g2.getFontMetrics().stringWidth(valueStr);
                 g2.drawString(valueStr, x + (BAR_WIDTH - strWidth) / 2, y - 5);
 
-                // Disegna etichetta (nome) sotto la barra
                 g2.setFont(FONT_LABEL);
                 strWidth = g2.getFontMetrics().stringWidth(labels[i]);
                 g2.drawString(labels[i], x + (BAR_WIDTH - strWidth) / 2, panelHeight + 35);

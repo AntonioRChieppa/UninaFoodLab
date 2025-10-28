@@ -110,6 +110,9 @@ public class ChefController {
 									
 			SessionChef.setChefId(chef.getId());
 			SessionChef.setNameChef(chef.getNome());
+			SessionChef.setChefSurname(chef.getCognome());
+			SessionChef.setChefMail(chef.getEmail());
+			SessionChef.setChefPassword(chef.getPassword());
 			return chef;
 		}
 		catch(SQLException ex) {

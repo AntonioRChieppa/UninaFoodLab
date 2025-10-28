@@ -492,13 +492,13 @@ public class Controller {
 		
 		
 		//METODO PER RICHIAMARE IL METODO getStatisticheRicetta
-		public StatisticheRicetteDTO getStatisticheRicettePerReport(int idChef,int mese, int anno) throws OperationException {
+		public StatisticheRicetteDTO getStatisticheRicettePerReport(int mese, int anno) throws OperationException {
 		    try {
 		        // Recupera l'ID chef dalla sessione
 		         int idChefLoggato = SessionChef.getChefId(); 
 		            
 		        // Chiama il metodo DAO (assumendo che sia in sessioneRicettaDAO)
-		        StatisticheRicetteDTO stats = sessioneRicettaDAO.getStatisticheRicette(idChef, mese, anno);
+		        StatisticheRicetteDTO stats = sessioneRicettaDAO.getStatisticheRicette(idChefLoggato, mese, anno);
 		            
 		        return stats; // Restituisce il DTO alla GUI
 
