@@ -23,4 +23,5 @@ public interface SessioneInPresenzaDAOInt {
 	
 	public void deleteSessioneInPresenza(SessioneInPresenzaDTO sessioneIP) throws SQLException;
 
+	public int countSessioniInPresenzaByChefInMese(int idChef, int mese, int anno) throws SQLException;
 }

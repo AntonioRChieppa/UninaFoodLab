@@ -22,5 +22,5 @@ public interface SessioneOnlineDAOInt {
 	
 	public void deleteSessioneOnline(SessioneOnlineDTO sessioneOn) throws SQLException;
 	
-
+	public int countSessioniOnlineByChefInMese(int idChef, int mese, int anno) throws SQLException;
 }

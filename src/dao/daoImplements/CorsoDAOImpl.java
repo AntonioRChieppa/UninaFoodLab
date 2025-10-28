@@ -1,6 +1,7 @@
 package dao.daoImplements;
 
 import dto.ChefDTO;
+import dto.DatiReportMensileDTO;
 import dto.CorsoDTO;
 import db_connection.db_connection;
 import dao.daoInterfaces.CorsoDAOInt;
@@ -245,4 +246,33 @@ public class CorsoDAOImpl implements CorsoDAOInt{
 				}
 		}
 		
+		//METODO DAO GET NUMERO CORSI CHEF BY MESE AND ANNO
+		@Override
+		public int countCorsiTenutiByChefInMese(int idChef, int mese, int anno) throws SQLException {
+		        // Query che conta gli ID unici dei corsi
+		        String sql = "SELECT COUNT(DISTINCT c.idcorso) AS total " // inseriamo DISTINCT perchè in questo conteggio corso può apparire più volte, avendo più sessioni lo stesso mese
+		                   + "FROM corso c "
+		                   + "JOIN sessione s ON c.idcorso = s.fkcorso "
+		                   + "WHERE c.fkchef = ? "
+		                   + "AND EXTRACT(MONTH FROM s.datasessione) = ? "
+		                   + "AND EXTRACT(YEAR FROM s.datasessione) = ?";
+
+		        try (Connection conn = db_connection.getConnection();
+		             PreparedStatement ps = conn.prepareStatement(sql)) {
+		            
+		            ps.setInt(1, idChef);
+		            ps.setInt(2, mese);   
+		            ps.setInt(3, anno);  
+
+		            try (ResultSet rs = ps.executeQuery()) {
+		                if (rs.next()) {
+		                    return rs.getInt("total");
+		                }
+		            }
+		        }
+		        // Se la query non restituisce nulla o fallisce, restituisce 0
+		        return 0;
+		}
+
 }
+	

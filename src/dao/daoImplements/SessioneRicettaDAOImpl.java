@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.ArrayList;
 
+import dto.StatisticheRicetteDTO;
 import dto.SessioneRicettaDTO;
 import dto.RicettaDTO;
 
@@ -65,6 +66,54 @@ public class SessioneRicettaDAOImpl implements SessioneRicettaDAOInt{
 		}
 	}
 	
-	
+	//METODO PER LE STATISTICHE DELLE RICETTE
+	@Override
+	public StatisticheRicetteDTO getStatisticheRicette(int idChef, int mese, int anno) throws SQLException {
+        String sql = "SELECT "
+                   + "    COALESCE(MIN(conteggio_ricette), 0) AS min_ricette, "
+                   + "    COALESCE(MAX(conteggio_ricette), 0) AS max_ricette, "
+                   + "    COALESCE(AVG(conteggio_ricette), 0.0) AS avg_ricette "
+                   + "FROM ( "
+                   + "    SELECT "
+                   + "        s.idsessione, "
+                   + "        COUNT(sr.fkricetta) AS conteggio_ricette "
+                   + "    FROM "
+                   + "        sessione s "
+                   + "    JOIN "
+                   + "        corso c ON s.fkcorso = c.idcorso "
+                   + "    JOIN "
+                   + "        sessioneinpresenza sip ON s.idsessione = sip.fksessione "
+                   + "    LEFT JOIN "
+                   + "        sessioneInp_ricetta sr ON s.idsessione = sr.fksessioneinpresenza "
+                   + "    WHERE "
+                   + "        c.fkchef = ? "
+                   + "        AND s.tipoSessione = 'presenza' " // Assicura sia in presenza
+                   + "        AND EXTRACT(MONTH FROM s.datasessione) = ? "
+                   + "        AND EXTRACT(YEAR FROM s.datasessione) = ? "
+                   + "    GROUP BY "
+                   + "        s.idsessione "
+                   + ") AS conteggi_sessioni";
+
+        try (Connection conn = db_connection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, idChef);
+            ps.setInt(2, mese);
+            ps.setInt(3, anno);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    StatisticheRicetteDTO stats = new StatisticheRicetteDTO();
+                    stats.setMin(rs.getInt("min_ricette"));
+                    stats.setMax(rs.getInt("max_ricette"));
+                    stats.setAvg(rs.getDouble("avg_ricette"));
+                    return stats;
+                }
+                else{
+                    return new StatisticheRicetteDTO(0, 0, 0.0); //se da problemi cambia in null
+                }
+            }
+        }
+}
 
 }
