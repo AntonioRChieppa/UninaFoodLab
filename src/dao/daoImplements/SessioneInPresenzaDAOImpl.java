@@ -1,5 +1,6 @@
 package dao.daoImplements;
 
+import dto.SessioneDTO;
 import dto.SessioneInPresenzaDTO;
 import dto.CorsoDTO;
 import db_connection.db_connection;
@@ -316,8 +317,35 @@ public class SessioneInPresenzaDAOImpl implements SessioneInPresenzaDAOInt{
 		        if (rs.next() && rs.getInt(1) == 0) {
 		            checkStmt.executeUpdate(resetSeqId);
 		        }
-
 		    }
 	}
+	
+	//METODO DAO GET NUMERO SESSIONI IN PRESENZA CHEF BY MESE AND ANNO
+	@Override
+	public int countSessioniInPresenzaByChefInMese(int idChef, int mese, int anno) throws SQLException {
+	        String sql = "SELECT COUNT(s.idsessione) AS total "
+	                   + "FROM sessione s "
+	                   + "JOIN corso c ON s.fkcorso = c.idcorso "
+	                   + "WHERE c.fkchef = ? "
+	                   + "AND s.tipoSessione = 'presenza' " // Filtra per tipo 'online'
+	                   + "AND EXTRACT(MONTH FROM s.datasessione) = ? "
+	                   + "AND EXTRACT(YEAR FROM s.datasessione) = ?";
+
+	        try (Connection conn = db_connection.getConnection();
+	             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+	            ps.setInt(1, idChef);
+	            ps.setInt(2, mese);  
+	            ps.setInt(3, anno);   
+
+	            try (ResultSet rs = ps.executeQuery()) {
+	                if (rs.next()) {
+	                    return rs.getInt("total"); // Restituisce il conteggio
+	                }
+	            }
+	        }
+	        return 0; // Restituisce 0 se non trova nulla
+	}
+	
 	
 }

@@ -24,4 +24,5 @@ public interface CorsoDAOInt {
 	
 	public void deleteCorso(CorsoDTO corso) throws SQLException;
 	
+	public int countCorsiTenutiByChefInMese(int idChef, int mese, int anno) throws SQLException;
 }

@@ -300,4 +300,32 @@ public class SessioneOnlineDAOImpl implements SessioneOnlineDAOInt{
 		}
 		
 		
+		//METODO DAO GET NUMERO SESSIONI ONLINE CHEF BY MESE AND ANNO
+		@Override
+		public int countSessioniOnlineByChefInMese(int idChef, int mese, int anno) throws SQLException {
+		        // Query che unisce sessione e corso
+		        String sql = "SELECT COUNT(s.idsessione) AS total "
+		                   + "FROM sessione s "
+		                   + "JOIN corso c ON s.fkcorso = c.idcorso "
+		                   + "WHERE c.fkchef = ? "
+		                   + "AND s.tipoSessione = 'online' " // Filtra per tipo 'online'
+		                   + "AND EXTRACT(MONTH FROM s.datasessione) = ? "
+		                   + "AND EXTRACT(YEAR FROM s.datasessione) = ?";
+
+		        try (Connection conn = db_connection.getConnection();
+		             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+		            ps.setInt(1, idChef);
+		            ps.setInt(2, mese);  
+		            ps.setInt(3, anno);   
+
+		            try (ResultSet rs = ps.executeQuery()) {
+		                if (rs.next()) {
+		                    return rs.getInt("total"); // Restituisce il conteggio
+		                }
+		            }
+		        }
+		        return 0; // Restituisce 0 se non trova nulla
+		}
+		
 }

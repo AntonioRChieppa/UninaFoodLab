@@ -253,6 +253,21 @@ public class Controller {
 			}
 		}
 		
+		//METODO PER RICHIAMARE IL METODO countCorsiTenutiByChefInMese
+		public int getNumeroCorsiTenutiNelMese(int mese, int anno) throws OperationException {
+		        try {
+
+		            int idChefLoggato = SessionChef.getChefId();
+		            // Chiama il nuovo metodo DAO che restituisce un int
+		            int count = corsoDAO.countCorsiTenutiByChefInMese(idChefLoggato, mese, anno);
+		            
+		            return count;
+
+		        } catch (SQLException e) {
+		            throw new OperationException("Errore nel conteggio dei corsi per il mese");
+		        }
+		}
+		
 		//---------- FINE METODI CORSO ----------
 		
 		//-------------------------------------------------------------------------------------------------------------
@@ -274,6 +289,7 @@ public class Controller {
 				throw new OperationException("Errore in fase di visualizzazione delle sessioni!");
 			}
 		}
+		
 		
 		//---------- INIZIO METODI SESSIONE IN PRESENZA ----------
 		
@@ -444,6 +460,39 @@ public class Controller {
 				throw new OperationException("Errore durante l'eliminazione della sessione in presenza");
 			}
 		}
+		
+		//METODO PER RICHIAMARE IL METODO countSessioniOnlineByChefInMese
+		public int getNumeroSessioniInPresenzaTenuteNelMese(int mese, int anno) throws OperationException {
+		        try {
+		            int idChefLoggato = SessionChef.getChefId(); // recupera l'id dello chef loggato
+		            
+		            // Chiama il nuovo metodo DAO
+		            int count = sessioneIpDAO.countSessioniInPresenzaByChefInMese(idChefLoggato, mese, anno);
+		            
+		            return count;
+
+		        } catch (SQLException e) {
+		            throw new OperationException("Errore nel conteggio delle sessioni online");
+		        }
+		}
+		
+		
+		//METODO PER RICHIAMARE IL METODO getStatisticheRicetta
+		public StatisticheRicetteDTO getStatisticheRicettePerReport(int idChef,int mese, int anno) throws OperationException {
+		    try {
+		        // Recupera l'ID chef dalla sessione
+		         int idChefLoggato = SessionChef.getChefId(); 
+		            
+		        // Chiama il metodo DAO (assumendo che sia in sessioneRicettaDAO)
+		        StatisticheRicetteDTO stats = sessioneRicettaDAO.getStatisticheRicette(idChef, mese, anno);
+		            
+		        return stats; // Restituisce il DTO alla GUI
+
+		    } catch (SQLException e) {
+		        throw new OperationException("Errore database nel calcolo statistiche ricette: " + e.getMessage());
+		    }
+		}
+		
 		//----------- FINE METODI SESSIONE IN PRESENZA ----------
 		
 		//----------------------------------------------------------------------------------------------------------------------------
@@ -609,6 +658,21 @@ public class Controller {
 			catch(SQLException ex) {
 				throw new OperationException("Errore durante l'eliminazione della sessione online");
 			}
+		}
+		
+		//METODO PER RICHIAMARE IL METODO countSessioniOnlineByChefInMese
+		public int getNumeroSessioniOnlineTenuteNelMese(int mese, int anno) throws OperationException {
+		        try {
+		            int idChefLoggato = SessionChef.getChefId(); // recupera l'id dello chef loggato
+		            
+		            // Chiama il nuovo metodo DAO
+		            int count = sessioneOnDAO.countSessioniOnlineByChefInMese(idChefLoggato, mese, anno);
+		            
+		            return count;
+
+		        } catch (SQLException e) {
+		            throw new OperationException("Errore nel conteggio delle sessioni online");
+		        }
 		}
 		
 		//----------- FINE METODI SESSIONE ONLINE ----------

@@ -179,4 +179,34 @@ public class RicettaDAOImpl implements RicettaDAOInt{
 			}
 		}			
 	}
+	/*
+	public Map<Integer, Integer> getStatisticheRicetteMensili(int anno, int mese) {
+        
+        List<Integer> statisticheGiornaliere = new ArrayList<>();
+        
+        String sql = "SELECT DAY(data_creazione) AS Giorno, COUNT(*) AS TotaleRicette " +
+                     "FROM Ricetta " +
+                     "WHERE YEAR(data_creazione) = ? AND MONTH(data_creazione) = ? " +
+                     "GROUP BY Giorno " +
+                     "ORDER BY Giorno ASC";
+
+        // Usa try-with-resources per chiudere automaticamente la connessione
+        // Assicurati di avere la tua classe per ottenere la connessione (es. ConnectionManager.getInstance().getConnection())
+        
+        try (Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, anno);
+            ps.setInt(2, mese);
+
+            ResultSet rs = ps.executeQuery();
+                
+                while (rs.next()) {
+                    int giorno = rs.getInt("Giorno");
+                    int totale = rs.getInt("TotaleRicette");
+                    
+                    
+                    statisticheGiornaliere.add();
+                }
+            }
+            */
 }
