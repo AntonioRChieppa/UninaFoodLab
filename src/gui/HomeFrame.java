@@ -26,14 +26,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import session.SessionChef;
-import controller.Controller;
 import gui.panel.CreaNuovaSessionePanel;
 import gui.panel.CreaNuovoCorsoPanel;
 import gui.panel.GestioneCorsiPanel;
 import gui.panel.GestioneSessioniPanel;
 import gui.panel.ProfilePanel;
 import gui.panel.VisualizzaReportPanel;
-//import gui.panel.VisualizzaRicetteChefPanel;
+import gui.panel.VisualizzaRicetteChefPanel;
 import gui.panel.VisualizzaTuttiChefPanel;
 import gui.panel.VisualizzaTuttiCorsiPanel;
 
@@ -42,7 +41,6 @@ public class HomeFrame extends JFrame {
 
 	private static final long serialVersionUID = 1L;
     private static final Color BUTTON_BASE_COLOR = new Color(30, 144, 255);
-    private static final Color TEXT_DARK = new Color(51, 63, 81); // Aggiunto per descrizione
 
 	private final JPanel contentPane;
 	private JPanel sideBarPanel;
@@ -62,9 +60,9 @@ public class HomeFrame extends JFrame {
     private JLabel cardSubtitle;
     private JLabel cardHint;
     private JPanel actionsPanel;
-	private JPanel viewCoursesButtonPanel; // Cambiato in JPanel
-	private JPanel viewChefsButtonPanel; // Cambiato in JPanel
-	private JPanel viewMonthlyReportButtonPanel; // Cambiato in JPanel
+	private JPanel viewCoursesButtonPanel; 
+	private JPanel viewChefsButtonPanel; 
+	private JPanel viewMonthlyReportButtonPanel;
 
 	private final List<JPanel> sideBarContentPanels = new ArrayList<>();
 
@@ -388,7 +386,7 @@ public class HomeFrame extends JFrame {
 					itemButton.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
 							collapseAllSections();
-							//showMainPanel(new VisualizzaRicetteChefPanel());
+							showMainPanel(new VisualizzaRicetteChefPanel());
 						}
 					});
 				}

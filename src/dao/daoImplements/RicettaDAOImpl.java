@@ -109,8 +109,8 @@ public class RicettaDAOImpl implements RicettaDAOInt{
     public List<RicettaDTO> getAllRicetteByIdChef(int idChef) throws SQLException {
         String sql = "SELECT DISTINCT r.idricetta, r.nomericetta, r.tempopreparazione, r.porzioni, r.difficolta "
                    + "FROM ricetta r "
-                   + "JOIN sessione_ricetta sr ON r.idricetta = sr.fk_ricetta "
-                   + "JOIN sessione s ON sr.fk_sessione = s.idsessione "
+                   + "JOIN sessioneinp_ricetta sr ON r.idricetta = sr.fkricetta "
+                   + "JOIN sessione s ON sr.fksessioneinpresenza = s.idsessione "
                    + "JOIN corso c ON s.fkcorso = c.idcorso "
                    + "WHERE c.fkchef = ?";
 
@@ -146,9 +146,9 @@ public class RicettaDAOImpl implements RicettaDAOInt{
 		
 		while(rs.next()) {
 			RicettaDTO ricetta = new RicettaDTO();
-			ricetta.setId(rs.getInt ("idRicetta"));
-			ricetta.setNomeRicetta(rs.getString ("nomeRicetta"));
-			ricetta.setTempoPreparazione(rs.getInt("tempoPreparazione"));
+			ricetta.setId(rs.getInt ("idricetta"));
+			ricetta.setNomeRicetta(rs.getString ("nomericetta"));
+			ricetta.setTempoPreparazione(rs.getInt("tempopreparazione"));
 			ricetta.setPorzioni(rs.getInt("porzioni"));
 			ricetta.setDifficolta(rs.getString("difficolta"));
 			
@@ -168,10 +168,11 @@ public class RicettaDAOImpl implements RicettaDAOInt{
 			
 			if(rs.next()) {
 				RicettaDTO ricetta = new RicettaDTO();
+				ricetta.setId(rs.getInt("idricetta"));
 				ricetta.setNomeRicetta(rs.getString("nomeRicetta"));
 				ricetta.setTempoPreparazione(rs.getInt("tempoPreparazione"));
 				ricetta.setPorzioni(rs.getInt("porzioni"));
-				ricetta.setDifficolta(rs.getString("difficoltà"));
+				ricetta.setDifficolta(rs.getString("difficolta"));
 				return ricetta;
 			}
 			else {

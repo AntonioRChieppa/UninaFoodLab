@@ -6,6 +6,8 @@ import dto.*;
 import exception.*;
 import java.sql.SQLException;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
+
 import session.SessionChef;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -300,11 +302,17 @@ public class Controller {
 					throw new OperationException("I campi argomento e sede possono contenere solo caratteri!");
 				}
 				
+				CorsoDTO corsoSessione = corsoDAO.getCorsoById(newFkCorso);
+				
+				if(newDataSessione.isBefore(corsoSessione.getDataInizio())) {
+					String dataInizioCorso = corsoSessione.getDataInizio().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+					throw new OperationException("Data sessione non valida: il corso inizia il " + dataInizioCorso);
+				}
+				
 				SessioneInPresenzaDTO sessioneIp = new SessioneInPresenzaDTO();
 				sessioneIp.setArgomento(normalizzaNomeInserito(newArgomento));
 				sessioneIp.setOraInizio(newOraInizio);
 				sessioneIp.setDataSessione(newDataSessione);
-				CorsoDTO corsoSessione = corsoDAO.getCorsoById(newFkCorso);
 				sessioneIp.setCorsoSessione(corsoSessione);
 				sessioneIp.setTipoSessione("presenza");
 				sessioneIp.setSede(normalizzaNomeInserito(newSede));
@@ -344,13 +352,19 @@ public class Controller {
 				LocalDate newDataSessione = Instant.ofEpochMilli(newDataSessioneUtil.getTime())
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate();
+				
+				CorsoDTO updateCorsoSessione = corsoDAO.getCorsoById(newFkCorso);
+				
+				if(newDataSessione.isBefore(updateCorsoSessione.getDataInizio())) {
+					String dataInizioCorso = updateCorsoSessione.getDataInizio().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+					throw new OperationException("Data sessione non valida: il corso inizia il " + dataInizioCorso);
+				}
 			
 				SessioneInPresenzaDTO updateSessioneIp = new SessioneInPresenzaDTO();
 				updateSessioneIp.setIdSessione(sessioneIp.getIdSessione());
 				updateSessioneIp.setArgomento(normalizzaNomeInserito(newArgomento));
 				updateSessioneIp.setOraInizio(newOraInizio);
 				updateSessioneIp.setDataSessione(newDataSessione);
-				CorsoDTO updateCorsoSessione = corsoDAO.getCorsoById(newFkCorso);
 				updateSessioneIp.setCorsoSessione(updateCorsoSessione);
 				updateSessioneIp.setSede(normalizzaNomeInserito(newSede));
 				updateSessioneIp.setEdificio(normalizzaNomeInserito(newEdificio));
@@ -474,12 +488,18 @@ public class Controller {
 				if(!isOnlyLettersAndSpaces(newArgomento)) {
 					throw new OperationException("Argomento può contenere solo caratteri!");
 				}
+				
+				CorsoDTO corsoSessione = corsoDAO.getCorsoById(newFkCorso);
+				
+				if(newDataSessione.isBefore(corsoSessione.getDataInizio())) {
+					String dataInizioCorso = corsoSessione.getDataInizio().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+					throw new OperationException("Data sessione non valida: il corso inizia il " + dataInizioCorso);
+				}
 						
 				SessioneOnlineDTO sessioneOn = new SessioneOnlineDTO();
 				sessioneOn.setArgomento(normalizzaNomeInserito(newArgomento));
 				sessioneOn.setOraInizio(newOraInizio);
 				sessioneOn.setDataSessione(newDataSessione);
-				CorsoDTO corsoSessione = corsoDAO.getCorsoById(newFkCorso);
 				sessioneOn.setCorsoSessione(corsoSessione);
 				sessioneOn.setTipoSessione("online");
 				sessioneOn.setLinkConferenza(newLinkConferenza);
@@ -521,13 +541,19 @@ public class Controller {
 				if(sessioneOn.getCorsoSessione().getChefCorso()==null || idChefLoggato!=sessioneOn.getCorsoSessione().getChefCorso().getId()) {
 					throw new UnauthorizedOperationException("Impossibile modificare sessioni di corsi di altri chef!");
 				}
+				
+				CorsoDTO updateCorsoSessione = corsoDAO.getCorsoById(newFkCorso);
+				
+				if(newDataSessione.isBefore(updateCorsoSessione.getDataInizio())) {
+					String dataInizioCorso = updateCorsoSessione.getDataInizio().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+					throw new OperationException("Data sessione non valida: il corso inizia il " + dataInizioCorso);
+				}
 						
 				SessioneOnlineDTO updateSessioneOn = new SessioneOnlineDTO();
 				updateSessioneOn.setIdSessione(sessioneOn.getIdSessione());
 				updateSessioneOn.setArgomento(normalizzaNomeInserito(newArgomento));
 				updateSessioneOn.setOraInizio(newOraInizio);
 				updateSessioneOn.setDataSessione(newDataSessione);
-				CorsoDTO updateCorsoSessione = corsoDAO.getCorsoById(newFkCorso);
 				updateSessioneOn.setCorsoSessione(updateCorsoSessione);
 				updateSessioneOn.setLinkConferenza(newLinkConferenza);
 							
@@ -681,7 +707,7 @@ public class Controller {
 		public List<RicettaDTO> visualizzaTutteRicette() throws OperationException{
 			try {
 				return ricettaDAO.getAllRecipes();
-			}catch (SQLException e) {
+			}catch (SQLException ex) {
 				throw new OperationException("Errore durante il recupero delle ricette");
 			}
 		}
@@ -754,7 +780,7 @@ public class Controller {
 					throw new NotFoundException("Impossibile trovare la sessione selezionata");
 				}
 				return sessioneRicettaDAO.getAllRicetteByIdSessione(idSessioneInPresenza);
-			} catch(SQLException ex) {
+			} catch(SQLException e) {
 				throw new OperationException("Errore nella visualizzazione delle ricette della sessione");
 			}
 		}
@@ -880,66 +906,21 @@ public class Controller {
 		
 		//----------------------------------------------------------------------------------------------------------------------------
 		
-		//INIZIO METODI COMPOSIZIONE
 		
-		//METODO PER ASSOCIARE UN INGREDIENTE AD UNA RICETTA
-		public List<ComposizioneDTO> associaIngredienteARicetta(int newIdIngrediente, int newIdRicetta) throws NotFoundException, AlreadyExistsException, OperationException{
+		//METODO PER VISUALIZZARE TUTTI GLI INGREDIENTI DI UNA RICETTA
+		public List<IngredienteDTO> visualizzaIngredientiPerRicetta(int idRicetta) throws NotFoundException, OperationException{
 			try {
-				IngredienteDTO ingrediente = ingredienteDAO.getIngredienteById(newIdIngrediente);
-				RicettaDTO ricetta = ricettaDAO.getRicettaById(newIdRicetta);
-				
-				if(ingrediente == null) {
-					throw new NotFoundException("Ingrediente non trovato. Registralo!");
+				List<IngredienteDTO> listaIngredientiRicetta = composizioneDAO.getAllIngredientiRicetta(idRicetta);
+						
+				if(listaIngredientiRicetta == null) {
+					throw new NotFoundException("Non sono presenti ingredienti nella ricetta selezionata");
 				}
-				
-				if(ricetta == null) {
-					throw new NotFoundException("Ricetta non trovata. Registrala!");
+				else {
+					return listaIngredientiRicetta;
 				}
-				
-				List<ComposizioneDTO> elencoIngredientiRicetta = composizioneDAO.getAllIngredientiRicetta(newIdRicetta);
-				
-				boolean giaPresente = false;
-				if(elencoIngredientiRicetta!=null) {
-					for(ComposizioneDTO comp : elencoIngredientiRicetta) {
-						if (comp.getIngredienteRicetta() != null && comp.getIngredienteRicetta().getId() == newIdIngrediente) {
-			                giaPresente = true;
-			                break; // Trovato, inutile continuare il ciclo
-			            }
-					}
-				}
-				
-				if(giaPresente) {
-					throw new AlreadyExistsException("L'ingrediente selezionato è già associato alla ricetta scelta");
-				}
-				
-				ComposizioneDTO composizione = new ComposizioneDTO();
-				
-				composizione.setIngredienteRicetta(ingrediente);
-				composizione.setRicettaIngrediente(ricetta);
-				
-				composizioneDAO.insertComposizione(composizione);
-				return elencoIngredientiRicetta;
-			
 			}catch(SQLException ex) {
-				throw new OperationException("Errore durante l'associazione dell'ingrediente alla ricetta");
+					throw new OperationException("Errore durante la visualizzazione degli ingredienti della ricetta");	
 			}
 		}
-		
-		
-		/*METODO PER VISUALIZZARE TUTTI GLI INGREDIENTI DI UNA RICETTA
-				public List<String> visualizzaTuttiIngredientiRicetta(int newId) throws NotFoundException, OperationException{
-					try {
-						List<String> listaIngredientiRicetta = composizioneDAO.getAllIngredientiRicetta(newId);
-						
-						if(listaIngredientiRicetta == null) {
-							throw new NotFoundException("Non sono presenti ingredienti nella ricetta selezionata");
-						}
-						else {
-							return listaIngredientiRicetta;
-						}
-					}catch(SQLException ex) {
-							throw new OperationException("Errore durante la visualizzazione degli ingredienti della ricetta");	
-					}
-				}
-				*/
+				
 }

@@ -13,8 +13,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,14 +31,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder; // Se usi TitledBorder
+import javax.swing.border.TitledBorder; 
 import java.util.Comparator;
 
 import controller.Controller;
 import dto.RicettaDTO;
-import dto.SessioneInPresenzaDTO; // O SessioneDTO se contiene i dati necessari
+import dto.SessioneInPresenzaDTO;
 import exception.NotFoundException;
 import exception.OperationException;
 
@@ -54,7 +51,7 @@ public class AggiungiRicettaDialog extends JDialog {
     private static final Color BORDER_GRAY = new Color(220, 225, 235);
     private static final Color LIGHT_GRAY_BACKGROUND = new Color(248, 249, 252);
 
-    // Componenti UI
+    // elementi grafici
     private JList<RicettaDTO> availableList;
     private JList<RicettaDTO> associatedList;
     private DefaultListModel<RicettaDTO> availableListModel;
@@ -67,7 +64,7 @@ public class AggiungiRicettaDialog extends JDialog {
     private JButton annullaButton;
 
     private Controller controller;
-    private SessioneInPresenzaDTO sessione; // O SessioneDTO
+    private SessioneInPresenzaDTO sessione; 
 
     private boolean saved = false;
 
@@ -81,7 +78,6 @@ public class AggiungiRicettaDialog extends JDialog {
         setBackground(LIGHT_GRAY_BACKGROUND);
         if (getContentPane() instanceof JPanel) {
             ((JPanel) getContentPane()).setBorder(new EmptyBorder(15, 15, 15, 15));
-             // Optional: Make contentPane transparent if using a custom background color for the dialog
             ((JPanel) getContentPane()).setOpaque(false);
         }
 
@@ -91,8 +87,8 @@ public class AggiungiRicettaDialog extends JDialog {
 
         loadInitialData();
 
-        pack(); // Adatta la dimensione
-        setMinimumSize(new Dimension(600, 400)); // Dimensione minima
+        pack(); 
+        setMinimumSize(new Dimension(600, 400)); 
         setLocationRelativeTo(owner);
     }
 
@@ -110,12 +106,12 @@ public class AggiungiRicettaDialog extends JDialog {
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         headerPanel.add(titleLabel);
-        headerPanel.add(Box.createVerticalStrut(5)); // Spazio sotto il titolo
+        headerPanel.add(Box.createVerticalStrut(5)); 
 
         return headerPanel;
     }
 
-
+    // Logica di creazione della Dual List Box
     private JPanel buildListsPanel() {
         JPanel listsPanel = new JPanel(new GridBagLayout());
         listsPanel.setOpaque(false);
@@ -131,21 +127,21 @@ public class AggiungiRicettaDialog extends JDialog {
 
         // Lista Disponibili (sinistra)
         gbc.gridx = 0; gbc.gridy = 0;
-        gbc.weightx = 1.0; gbc.weighty = 1.0; // Occupa spazio
+        gbc.weightx = 1.0; gbc.weighty = 1.0; 
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(0, 0, 0, 5);
         listsPanel.add(new JScrollPane(availableList), gbc);
 
         // Bottoni (centro)
         gbc.gridx = 1; gbc.gridy = 0;
-        gbc.weightx = 0; gbc.weighty = 0; // Non occupa spazio extra
-        gbc.fill = GridBagConstraints.VERTICAL; // Si espande verticalmente
+        gbc.weightx = 0; gbc.weighty = 0; 
+        gbc.fill = GridBagConstraints.VERTICAL; 
         gbc.insets = new Insets(0, 5, 0, 5);
         listsPanel.add(buttonColumn, gbc);
 
         // Lista Associate (destra)
         gbc.gridx = 2; gbc.gridy = 0;
-        gbc.weightx = 1.0; gbc.weighty = 1.0; // Occupa spazio
+        gbc.weightx = 1.0; gbc.weighty = 1.0; 
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(0, 5, 0, 0);
         listsPanel.add(new JScrollPane(associatedList), gbc);
@@ -162,10 +158,9 @@ public class AggiungiRicettaDialog extends JDialog {
                 BorderFactory.createLineBorder(BORDER_GRAY), title,
                 TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION,
                 new Font("SansSerif", Font.BOLD, 12), TEXT_DARK),
-            new EmptyBorder(5, 5, 5, 5) // Padding interno
+            new EmptyBorder(5, 5, 5, 5)
         ));
 
-        // Renderer per mostrare solo il nome
         list.setCellRenderer(new DefaultListCellRenderer() {
             private static final long serialVersionUID = 1L;
             @Override
@@ -185,33 +180,49 @@ public class AggiungiRicettaDialog extends JDialog {
         panel.setOpaque(false);
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        Dimension buttonSize = new Dimension(50, 28); // Bottoni piccoli
+        Dimension buttonSize = new Dimension(50, 28); 
 
         addAllButton = new JButton(">>");
         addAllButton.setPreferredSize(buttonSize);
         addAllButton.setMaximumSize(buttonSize);
         addAllButton.setToolTipText("Aggiungi tutte");
-        addAllButton.addActionListener(e -> transferAll(availableListModel, associatedListModel));
+        addAllButton.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		transferAll(availableListModel, associatedListModel);
+        	}
+        });
 
         addButton = new JButton(">");
         addButton.setPreferredSize(buttonSize);
         addButton.setMaximumSize(buttonSize);
         addButton.setToolTipText("Aggiungi selezionate");
-        addButton.addActionListener(e -> transferSelected(availableList, availableListModel, associatedListModel));
+        addButton.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		transferSelected(availableList, availableListModel, associatedListModel);
+        	}
+        });
 
         removeButton = new JButton("<");
         removeButton.setPreferredSize(buttonSize);
         removeButton.setMaximumSize(buttonSize);
         removeButton.setToolTipText("Rimuovi selezionate");
-        removeButton.addActionListener(e -> transferSelected(associatedList, associatedListModel, availableListModel));
-
+        removeButton.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		transferSelected(associatedList, associatedListModel, availableListModel);
+        	}
+        });
+        	
         removeAllButton = new JButton("<<");
         removeAllButton.setPreferredSize(buttonSize);
         removeAllButton.setMaximumSize(buttonSize);
         removeAllButton.setToolTipText("Rimuovi tutte");
-        removeAllButton.addActionListener(e -> transferAll(associatedListModel, availableListModel));
+        removeAllButton.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		transferAll(associatedListModel, availableListModel);
+        	}
+        });
 
-        panel.add(Box.createVerticalGlue()); // Spinge i bottoni al centro verticalmente
+        panel.add(Box.createVerticalGlue()); 
         panel.add(addAllButton);
         panel.add(Box.createVerticalStrut(5));
         panel.add(addButton);
@@ -219,7 +230,7 @@ public class AggiungiRicettaDialog extends JDialog {
         panel.add(removeButton);
         panel.add(Box.createVerticalStrut(5));
         panel.add(removeAllButton);
-        panel.add(Box.createVerticalGlue()); // Spinge i bottoni al centro verticalmente
+        panel.add(Box.createVerticalGlue()); 
 
         return panel;
     }
@@ -234,7 +245,7 @@ public class AggiungiRicettaDialog extends JDialog {
         salvaButton.setForeground(Color.WHITE);
         salvaButton.setOpaque(true);
         salvaButton.setBorder(new EmptyBorder(8, 15, 8, 15));
-        salvaButton.addActionListener(e -> handleSalva());
+        salvaButton.addActionListener(e -> executeSalva());
 
         annullaButton = new JButton("Annulla");
         annullaButton.setFont(new Font("SansSerif", Font.BOLD, 14));
@@ -254,7 +265,6 @@ public class AggiungiRicettaDialog extends JDialog {
             List<RicettaDTO> tutteRicette = controller.visualizzaTutteRicette();
             List<RicettaDTO> ricetteAssociate = controller.visualizzaRicetteSessione(sessione.getIdSessione());
 
-            // Usa Set per efficienza nel controllo
             Set<Integer> idAssociate = ricetteAssociate.stream()
                                                       .map(RicettaDTO::getId)
                                                       .collect(Collectors.toSet());
@@ -281,16 +291,20 @@ public class AggiungiRicettaDialog extends JDialog {
                        availableListModel.addElement(ricetta);
                   }
              } catch (OperationException ex) {
-                   JOptionPane.showMessageDialog(this, "Errore nel caricamento delle ricette disponibili: " + ex.getMessage(), "Errore DB", JOptionPane.ERROR_MESSAGE);
+                   JOptionPane.showMessageDialog(this,ex.getMessage(), "Errore DB", JOptionPane.ERROR_MESSAGE);
              }
         } catch (OperationException e) {
-            JOptionPane.showMessageDialog(this, "Errore nel caricamento delle ricette: " + e.getMessage(), "Errore DB", JOptionPane.ERROR_MESSAGE);
-            // Lascia le liste vuote
+            
             availableListModel.clear();
             associatedListModel.clear();
         }
     }
+    
+    //=======================================================
+    // FUNZIONI AUSILIARIE
+    //======================================================
 
+    // trasferisce nell' associatedListModel solo le ricette selezionate
     private void transferSelected(JList<RicettaDTO> sourceList, DefaultListModel<RicettaDTO> sourceModel, DefaultListModel<RicettaDTO> targetModel) {
         List<RicettaDTO> selected = sourceList.getSelectedValuesList();
         if (selected != null && !selected.isEmpty()) {
@@ -302,6 +316,7 @@ public class AggiungiRicettaDialog extends JDialog {
         }
     }
 
+    // trasferisce nell' associatedListModel tutte le ricette 
     private void transferAll(DefaultListModel<RicettaDTO> sourceModel, DefaultListModel<RicettaDTO> targetModel) {
         if (sourceModel.isEmpty()) return;
         List<RicettaDTO> itemsToMove = new ArrayList<>();
@@ -328,12 +343,7 @@ public class AggiungiRicettaDialog extends JDialog {
         }
     }
     
-    //=======================================================
-    // FUNZIONI AUSILIARIE
-    //======================================================
-
-
-    private void handleSalva() {
+    private void executeSalva() {
         try {
             // Raccogli gli ID dalla lista delle associate
             List<Integer> idRicetteAssociate = new ArrayList<>();
@@ -348,9 +358,9 @@ public class AggiungiRicettaDialog extends JDialog {
             dispose();
 
         } catch (OperationException ex) {
-             JOptionPane.showMessageDialog(this, "Errore durante il salvataggio delle associazioni: " + ex.getMessage(), "Errore DB", JOptionPane.ERROR_MESSAGE);
+             JOptionPane.showMessageDialog(this, ex.getMessage(), "Errore DB", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
-             JOptionPane.showMessageDialog(this, "Errore imprevisto durante il salvataggio.", "Errore Generico", JOptionPane.ERROR_MESSAGE);
+             JOptionPane.showMessageDialog(this, ex.getMessage(), "Errore Generico", JOptionPane.ERROR_MESSAGE);
         }
     }
 
