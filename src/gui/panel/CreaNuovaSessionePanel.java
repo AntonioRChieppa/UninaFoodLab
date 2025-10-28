@@ -397,7 +397,18 @@ public class CreaNuovaSessionePanel extends JPanel {
         } catch(AlreadyExistsException ex) {
         	JOptionPane.showMessageDialog(this, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
         } catch(OperationException ex) {
-        	JOptionPane.showMessageDialog(this, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);;
+        	JOptionPane.showMessageDialog(this, ex.getMessage(), "Errore", JOptionPane.ERROR_MESSAGE);
+        	if(!controller.isOnlyLettersAndSpaces(argomento)) {
+        		argomentoField.setText("");
+        	}
+        	
+        	if(!controller.isOnlyLettersAndSpaces(sedeField.getText())) {
+        		sedeField.setText("");
+        	}
+        	
+        	if(!controller.isValidHttpUrl(linkConferenzaField.getText())) {
+        		linkConferenzaField.setText("");
+        	}
         }
     }
 }

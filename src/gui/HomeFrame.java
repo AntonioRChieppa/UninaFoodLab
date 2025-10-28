@@ -5,7 +5,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
@@ -24,6 +23,8 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.ImageIcon;
+import java.net.URL;
 
 import session.SessionChef;
 import gui.panel.CreaNuovaSessionePanel;
@@ -66,12 +67,16 @@ public class HomeFrame extends JFrame {
 
 	private final List<JPanel> sideBarContentPanels = new ArrayList<>();
 
-	@SuppressWarnings("unused")
 	private final LoginFrame previous;
 
 	public HomeFrame(LoginFrame previous) {
 		super("UninaFoodLab");
 		this.previous = previous;
+		
+		URL iconURL = getClass().getResource("/icon/UF_icon.png");
+		if (iconURL != null) {
+		    setIconImage(new ImageIcon(iconURL).getImage());
+		}
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);

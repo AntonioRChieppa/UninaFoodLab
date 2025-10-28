@@ -22,6 +22,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.ImageIcon;
+import java.net.URL;
 
 public class LoginFrame extends JFrame {
 
@@ -68,6 +70,11 @@ public class LoginFrame extends JFrame {
 
     public LoginFrame() {
         super("UninaFoodLab");
+        
+        URL iconURL = getClass().getResource("/icon/UF_icon.png");
+		if (iconURL != null) {
+		    setIconImage(new ImageIcon(iconURL).getImage());
+		}
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);

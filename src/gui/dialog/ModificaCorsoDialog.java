@@ -11,6 +11,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URL;
 import java.time.ZoneId;
 import java.util.Date;
 
@@ -27,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.ImageIcon;
 import com.toedter.calendar.JDateChooser;
 
 import controller.Controller;
@@ -63,6 +65,11 @@ public class ModificaCorsoDialog extends JDialog {
         
         this.corso = corso;
         this.controller = controller;
+        
+        URL iconURL = getClass().getResource("/icon/UF_icon.png");
+		if (iconURL != null) {
+		    setIconImage(new ImageIcon(iconURL).getImage());
+		}
         
         setLayout(new BorderLayout());
         setResizable(false);

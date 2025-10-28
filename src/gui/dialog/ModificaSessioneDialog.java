@@ -12,8 +12,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.time.Instant;
-import java.time.LocalDate;
+import java.net.URL;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -35,6 +34,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.ImageIcon;
 
 import com.toedter.calendar.JDateChooser;
 
@@ -43,11 +43,9 @@ import dto.CorsoDTO;
 import dto.SessioneDTO;
 import dto.SessioneInPresenzaDTO;
 import dto.SessioneOnlineDTO;
-import exception.AlreadyExistsException;
 import exception.NotFoundException;
 import exception.OperationException;
 import exception.UnauthorizedOperationException;
-import session.SessionChef;
 
 public class ModificaSessioneDialog extends JDialog {
 
@@ -89,6 +87,11 @@ public class ModificaSessioneDialog extends JDialog {
         super(owner, "Modifica Sessione", true);
         this.sessioneOriginale = sessioneDaModificare;
         this.controller = controller;
+        
+        URL iconURL = getClass().getResource("/icon/UF_icon.png");
+		if (iconURL != null) {
+		    setIconImage(new ImageIcon(iconURL).getImage());
+		}
 
         setLayout(new BorderLayout());
         setResizable(false);

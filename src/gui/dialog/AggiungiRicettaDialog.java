@@ -11,6 +11,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder; 
+import javax.swing.ImageIcon;
 import java.util.Comparator;
 
 import controller.Controller;
@@ -72,6 +74,11 @@ public class AggiungiRicettaDialog extends JDialog {
         super(owner, "Associa Ricette alla Sessione", true);
         this.sessione = sessione;
         this.controller = controller;
+        
+        URL iconURL = getClass().getResource("/icon/UF_icon.png");
+		if (iconURL != null) {
+		    setIconImage(new ImageIcon(iconURL).getImage());
+		}
 
         setLayout(new BorderLayout(10, 10));
         setResizable(false);
