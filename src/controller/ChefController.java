@@ -246,6 +246,5 @@ public class ChefController {
 	// METODO DI LOGOUT DELLO CHEF CORRENTE
 	public void logoutChef() {
 		SessionChef.setChefId(0);
-		System.out.println("Logout effettuato con successo!");
 	}
 }
