@@ -36,7 +36,6 @@ import dto.RicettaDTO;
 import dto.IngredienteDTO;
 import exception.OperationException;
 import exception.NotFoundException;
-import session.SessionChef;
 
 public class VisualizzaRicetteChefPanel extends JPanel {
 
