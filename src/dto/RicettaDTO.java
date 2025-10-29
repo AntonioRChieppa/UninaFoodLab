@@ -1,8 +1,5 @@
 package dto;
 
-import java.util.List;
-import java.util.ArrayList;
-
 public class RicettaDTO {
 
 	//ATTRIBUTI

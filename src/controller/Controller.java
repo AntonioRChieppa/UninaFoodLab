@@ -425,6 +425,29 @@ public class Controller {
 			
 		}
 		
+		// METODO PER ELIMINARE UNA SESSIONE IN PRESENZA DI UN CORSO
+				public void eliminaSessioneIp(int idSessioneInPresenza) throws NotFoundException, UnauthorizedOperationException, OperationException{
+					try {
+						SessioneInPresenzaDTO sessioneIp = sessioneIpDAO.getSessioneIpById(idSessioneInPresenza);
+						
+						if(sessioneIp==null) {
+							throw new NotFoundException("Impossibile trovare la sessione in presenza richiesta!");
+						}
+						
+						int idChefLoggato = SessionChef.getChefId();
+						if(idChefLoggato==sessioneIp.getCorsoSessione().getChefCorso().getId()) {
+							sessioneIpDAO.deleteSessioneInPresenza(sessioneIp);
+						}
+						else {
+							throw new UnauthorizedOperationException("Impossibile eliminare una sessione in presenza di un corso di un altro chef!");
+						}
+
+					}
+					catch(SQLException ex) {
+						throw new OperationException("Errore durante l'eliminazione della sessione in presenza");
+					}
+				}
+		
 		// METODO PER VISUALIZZARE TUTTE LE SESSIONI IN PRESENZA DI UN CORSO
 		public List<SessioneInPresenzaDTO> visualizzaSessioniIPerCorso(int newIdCorso) throws NotFoundException, OperationException{
 			try {
@@ -452,28 +475,6 @@ public class Controller {
 	        }
 	    }
 		
-		// METODO PER ELIMINARE UNA SESSIONE IN PRESENZA DI UN CORSO
-		public void eliminaSessioneIp(int idSessioneInPresenza) throws NotFoundException, UnauthorizedOperationException, OperationException{
-			try {
-				SessioneInPresenzaDTO sessioneIp = sessioneIpDAO.getSessioneIpById(idSessioneInPresenza);
-				
-				if(sessioneIp==null) {
-					throw new NotFoundException("Impossibile trovare la sessione in presenza richiesta!");
-				}
-				
-				int idChefLoggato = SessionChef.getChefId();
-				if(idChefLoggato==sessioneIp.getCorsoSessione().getChefCorso().getId()) {
-					sessioneIpDAO.deleteSessioneInPresenza(sessioneIp);
-				}
-				else {
-					throw new UnauthorizedOperationException("Impossibile eliminare una sessione in presenza di un corso di un altro chef!");
-				}
-
-			}
-			catch(SQLException ex) {
-				throw new OperationException("Errore durante l'eliminazione della sessione in presenza");
-			}
-		}
 		
 		//METODO PER RICHIAMARE IL METODO countSessioniOnlineByChefInMese
 		public int getNumeroSessioniInPresenzaTenuteNelMese(int mese, int anno) throws OperationException {
@@ -635,6 +636,29 @@ public class Controller {
 			}
 					
 		}
+		
+		// METODO PER ELIMINARE UNA SESSIONE ONLINE DI UN CORSO
+				public void eliminaSessioneOn(int idSessioneOnline) throws NotFoundException, UnauthorizedOperationException, OperationException{
+					try {
+						SessioneOnlineDTO sessioneOn = sessioneOnDAO.getSessioneOnById(idSessioneOnline);
+							
+						if(sessioneOn==null) {
+							throw new NotFoundException("Impossibile trovare la sessione online richiesta!");
+						}
+								
+						int idChefLoggato = SessionChef.getChefId();
+						if(idChefLoggato==sessioneOn.getCorsoSessione().getChefCorso().getId()) {
+							sessioneOnDAO.deleteSessioneOnline(sessioneOn);
+						}
+						else {
+							throw new UnauthorizedOperationException("Impossibile eliminare una sessione online di un corso di un altro chef!");
+						}
+
+					}
+					catch(SQLException ex) {
+						throw new OperationException("Errore durante l'eliminazione della sessione online");
+					}
+				}
 				
 		// METODO PER VISUALIZZARE TUTTE LE SESSIONI ONLINE DI UN CORSO
 		public List<SessioneOnlineDTO> visualizzaSessioniOnPerCorso(int newIdCorso) throws NotFoundException, OperationException{
@@ -662,29 +686,6 @@ public class Controller {
 	            throw new OperationException("Errore database nel recupero dettagli sessione online: " + e.getMessage());
 	        }
 	    }
-				
-		// METODO PER ELIMINARE UNA SESSIONE ONLINE DI UN CORSO
-		public void eliminaSessioneOn(int idSessioneOnline) throws NotFoundException, UnauthorizedOperationException, OperationException{
-			try {
-				SessioneOnlineDTO sessioneOn = sessioneOnDAO.getSessioneOnById(idSessioneOnline);
-					
-				if(sessioneOn==null) {
-					throw new NotFoundException("Impossibile trovare la sessione online richiesta!");
-				}
-						
-				int idChefLoggato = SessionChef.getChefId();
-				if(idChefLoggato==sessioneOn.getCorsoSessione().getChefCorso().getId()) {
-					sessioneOnDAO.deleteSessioneOnline(sessioneOn);
-				}
-				else {
-					throw new UnauthorizedOperationException("Impossibile eliminare una sessione online di un corso di un altro chef!");
-				}
-
-			}
-			catch(SQLException ex) {
-				throw new OperationException("Errore durante l'eliminazione della sessione online");
-			}
-		}
 		
 		//METODO PER RICHIAMARE IL METODO countSessioniOnlineByChefInMese
 		public int getNumeroSessioniOnlineTenuteNelMese(int mese, int anno) throws OperationException {

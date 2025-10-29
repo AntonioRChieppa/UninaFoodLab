@@ -118,6 +118,27 @@ public class SessioneOnlineDAOImpl implements SessioneOnlineDAOInt{
 			}
 		}
 	}
+	
+	// DELETE SESSIONE ONLINE
+			@Override
+			public void deleteSessioneOnline(SessioneOnlineDTO sessioneOn) throws SQLException{
+				    String deleteSessioneSql = "DELETE FROM sessione WHERE idSessione = ?"; // eliminiamo solo da sessione, data la presenza del DELETE CASCADE
+				    String countSql = "SELECT COUNT(*) FROM sessione";
+				    String resetSeqId = "ALTER SEQUENCE sessione_idsessione_seq RESTART WITH 1"; // reset id se vuota
+
+				    try (Connection conn = db_connection.getConnection();
+				         PreparedStatement deleteSessioneStmt = conn.prepareStatement(deleteSessioneSql);
+				         Statement checkStmt = conn.createStatement()) {
+
+				        deleteSessioneStmt.setInt(1, sessioneOn.getIdSessione());
+				        deleteSessioneStmt.executeUpdate();
+
+				        ResultSet rs = checkStmt.executeQuery(countSql);
+				        if (rs.next() && rs.getInt(1) == 0) {
+				            checkStmt.executeUpdate(resetSeqId);
+				        }
+				    }
+			}
 		
 		// READ (SELECT) ALL SESSIONI ONLINE BY ARGOMENTO AND DATA
 		@Override
@@ -275,29 +296,6 @@ public class SessioneOnlineDAOImpl implements SessioneOnlineDAOInt{
 	            return elencoSessioniOnCorsiChef;
 	        }
 	    }
-		
-		
-		// DELETE SESSIONE ONLINE
-		@Override
-		public void deleteSessioneOnline(SessioneOnlineDTO sessioneOn) throws SQLException{
-			    String deleteSessioneSql = "DELETE FROM sessione WHERE idSessione = ?"; // eliminiamo solo da sessione, data la presenza del DELETE CASCADE
-			    String countSql = "SELECT COUNT(*) FROM sessione";
-			    String resetSeqId = "ALTER SEQUENCE sessione_idsessione_seq RESTART WITH 1"; // reset id se vuota
-
-			    try (Connection conn = db_connection.getConnection();
-			         PreparedStatement deleteSessioneStmt = conn.prepareStatement(deleteSessioneSql);
-			         Statement checkStmt = conn.createStatement()) {
-
-			        deleteSessioneStmt.setInt(1, sessioneOn.getIdSessione());
-			        deleteSessioneStmt.executeUpdate();
-
-			        ResultSet rs = checkStmt.executeQuery(countSql);
-			        if (rs.next() && rs.getInt(1) == 0) {
-			            checkStmt.executeUpdate(resetSeqId);
-			        }
-
-			    }
-		}
 		
 		
 		//METODO DAO GET NUMERO SESSIONI ONLINE CHEF BY MESE AND ANNO

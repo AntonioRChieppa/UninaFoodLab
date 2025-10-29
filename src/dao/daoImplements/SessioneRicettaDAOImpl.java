@@ -28,6 +28,17 @@ public class SessioneRicettaDAOImpl implements SessioneRicettaDAOInt{
 		}
 	}
 	
+	// DELETE associazioni by idSessione
+		@Override
+		public void deleteAssociazioniByIdSessione(int idSessioneInPresenza) throws SQLException{
+			String deleteSql = "DELETE FROM sessioneinp_ricetta WHERE fksessioneinpresenza = ?";
+			
+			try(Connection conn = db_connection.getConnection(); PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)){
+				deleteStmt.setInt(1, idSessioneInPresenza);
+				deleteStmt.executeUpdate();
+			}
+		}
+	
 	// READ (SELECT) all ricette by idSessione
 	@Override
     public List<RicettaDTO> getAllRicetteByIdSessione(int idSessioneInPresenza) throws SQLException{
@@ -54,17 +65,6 @@ public class SessioneRicettaDAOImpl implements SessioneRicettaDAOInt{
         }
         return elencoRicetteSessione;
     }
-	
-	// DELETE associazioni by idSessione
-	@Override
-	public void deleteAssociazioniByIdSessione(int idSessioneInPresenza) throws SQLException{
-		String deleteSql = "DELETE FROM sessioneinp_ricetta WHERE fksessioneinpresenza = ?";
-		
-		try(Connection conn = db_connection.getConnection(); PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)){
-			deleteStmt.setInt(1, idSessioneInPresenza);
-			deleteStmt.executeUpdate();
-		}
-	}
 	
 	//METODO PER LE STATISTICHE DELLE RICETTE
 	@Override

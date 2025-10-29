@@ -1,7 +1,6 @@
 package dao.daoImplements;
 
 import dto.RicettaDTO;
-import dto.IngredienteDTO;
 import db_connection.db_connection;
 import dao.daoInterfaces.RicettaDAOInt;
 
