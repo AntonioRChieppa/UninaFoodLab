@@ -223,7 +223,7 @@ public class CreaNuovoCorsoPanel extends JPanel {
     	String frequenza = (String) frequenzaComboBox.getSelectedItem();
     	String numSessioni = numeroSessioniField.getText();
     	try {
-    		controller.inserimentoCorso(nomeCorso, categoria, dataInizioUtil, numSessioni, frequenza, SessionChef.getChefId());
+    		controller.inserimentoCorso(nomeCorso, categoria, dataInizioUtil, numSessioni, frequenza);
     		JOptionPane.showMessageDialog(this, "Corso inserito con successo!", "Success", JOptionPane.INFORMATION_MESSAGE);
     		HomeFrame home = (HomeFrame) SwingUtilities.getWindowAncestor(this);
             if (home != null) {

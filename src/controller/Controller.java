@@ -66,7 +66,7 @@ public class Controller {
 		//---------- INIZIO METODI CORSO ----------
 		
 		// METODO PER INSERIRE UN NUOVO CORSO
-		public void inserimentoCorso(String newNomeCorso, String newCategoria, java.util.Date newDataInizioUtil, String newNumeroSessioni, String newFrequenzaSessioni, int newFkChef) throws OperationException, AlreadyExistsException {
+		public void inserimentoCorso(String newNomeCorso, String newCategoria, java.util.Date newDataInizioUtil, String newNumeroSessioni, String newFrequenzaSessioni) throws OperationException, AlreadyExistsException {
 			try {
 				CorsoDTO corsoEsistente = corsoDAO.getCorsoByName(newNomeCorso);
 				

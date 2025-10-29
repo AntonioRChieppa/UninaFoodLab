@@ -303,13 +303,6 @@ public class HomeFrame extends JFrame {
         dashboardContentPanel.revalidate();
         dashboardContentPanel.repaint();
     }
-
-	public void setGreetingText(String text) {
-		if (greetingLabel != null) {
-			greetingLabel.setText(text);
-		}
-	}
-
 	private JButton createNavButton(String text) {
 		JButton button = new JButton(text);
 		button.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -470,7 +463,6 @@ public class HomeFrame extends JFrame {
 		return arrow + "  " + title;
 	}
 
-	// Sostituito createActionButton con createActionPanelButton
     private JPanel createActionPanelButton(String title, String description, ActionListener actionListener) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(BUTTON_BASE_COLOR);
@@ -485,13 +477,13 @@ public class HomeFrame extends JFrame {
         textWrapper.setLayout(new BoxLayout(textWrapper, BoxLayout.Y_AXIS));
         
         Border lineAndPadding = BorderFactory.createCompoundBorder(
-            new EmptyBorder(16, 20, 16, 20), // Aumentato padding verticale
+            new EmptyBorder(16, 20, 16, 20), 
             BorderFactory.createMatteBorder(0, 0, 1, 0, underlineColor)
         );
         textWrapper.setBorder(lineAndPadding);
 
         JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 18)); // Leggermente più piccolo
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 18)); 
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         textWrapper.add(titleLabel);
@@ -500,23 +492,20 @@ public class HomeFrame extends JFrame {
 
         JLabel descLabel = new JLabel(description);
         descLabel.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        descLabel.setForeground(new Color(230, 242, 255)); // Bianco leggermente trasparente
+        descLabel.setForeground(new Color(230, 242, 255)); 
         descLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         textWrapper.add(descLabel);
 
         panel.add(textWrapper, BorderLayout.CENTER);
 
-        // Applica bordo esterno per ombra
+        
 		panel.setBorder(BorderFactory.createMatteBorder(1, 1, 3, 1, shadowColor));
 
-        // Installa effetto hover su tutto il pannello
 		installPanelHoverEffect(panel, BUTTON_BASE_COLOR);
         
-        // Aggiunge un MouseListener per gestire il click sull'intero pannello
         panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                // Crea un ActionEvent fittizio per riutilizzare l'action listener
                 actionListener.actionPerformed(new ActionEvent(panel, ActionEvent.ACTION_PERFORMED, null));
             }
         });
@@ -524,7 +513,6 @@ public class HomeFrame extends JFrame {
 		return panel;
 	}
 
-	// Modificato installButtonHoverEffect in installPanelHoverEffect
 	private void installPanelHoverEffect(JPanel panel, Color baseColor) {
 		Color hoverColor = baseColor.darker();
 		Color pressColor = hoverColor.darker();

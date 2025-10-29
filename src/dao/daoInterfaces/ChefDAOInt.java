@@ -8,10 +8,6 @@ public interface ChefDAOInt {
 
 		public void insertChef(ChefDTO chef) throws SQLException;
 		
-		public void updateChef(ChefDTO chef) throws SQLException;
-		
-		public void updateChefPassword(ChefDTO chef) throws SQLException;
-		
 		public void deleteChef(ChefDTO chef) throws SQLException;
 		
 		public ChefDTO getChefById(int id) throws SQLException;
@@ -22,5 +18,4 @@ public interface ChefDAOInt {
 		
 		public List<ChefDTO> getAllChefs() throws SQLException;
 		
-		public List<ChefDTO> getChefByNameAndSurname(String nome, String cognome) throws SQLException;
 }

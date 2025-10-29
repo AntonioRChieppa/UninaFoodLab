@@ -58,6 +58,27 @@ public class CorsoDAOImpl implements CorsoDAOInt{
 			}
 		}
 		
+		//DELETE Corso
+		@Override
+		public void deleteCorso(CorsoDTO corso) throws SQLException{
+			String deleteSql = "DELETE FROM corso WHERE idcorso = ?"; 
+			String countSql = "SELECT COUNT(*) FROM corso"; 
+			String resetSeqId = "ALTER SEQUENCE corso_idcorso_seq RESTART WITH 1"; // RESTART DEGLI ID IN CASO DI RECORD MANCANTI
+					
+			try(Connection conn = db_connection.getConnection(); PreparedStatement deleteStmt = conn.prepareStatement(deleteSql);
+					Statement checkStmt = conn.createStatement()){
+							
+					deleteStmt.setInt(1, corso.getId());
+			        deleteStmt.executeUpdate();
+					        
+				    ResultSet rs = checkStmt.executeQuery(countSql);
+			        if(rs.next() && rs.getInt(1)==0) {
+					     checkStmt.executeUpdate(resetSeqId);
+			        }
+					        
+			}
+		}		
+		
 		// READ (SELECT) Corso by Id
 		@Override
 		public CorsoDTO getCorsoById(int idCorso) throws SQLException{
@@ -222,27 +243,6 @@ public class CorsoDAOImpl implements CorsoDAOInt{
 				}
 				return elencoCategorie;
 			}
-		}
-		
-		//DELETE Corso
-		@Override
-		public void deleteCorso(CorsoDTO corso) throws SQLException{
-			String deleteSql = "DELETE FROM corso WHERE idcorso = ?"; 
-			String countSql = "SELECT COUNT(*) FROM corso"; 
-			String resetSeqId = "ALTER SEQUENCE corso_idcorso_seq RESTART WITH 1"; // RESTART DEGLI ID IN CASO DI RECORD MANCANTI
-			
-			try(Connection conn = db_connection.getConnection(); PreparedStatement deleteStmt = conn.prepareStatement(deleteSql);
-					Statement checkStmt = conn.createStatement()){
-					
-					deleteStmt.setInt(1, corso.getId());
-			        deleteStmt.executeUpdate();
-			        
-			        ResultSet rs = checkStmt.executeQuery(countSql);
-			        if(rs.next() && rs.getInt(1)==0) {
-			        	checkStmt.executeUpdate(resetSeqId);
-			        }
-			        
-				}
 		}
 		
 		//METODO DAO GET NUMERO CORSI CHEF BY MESE AND ANNO

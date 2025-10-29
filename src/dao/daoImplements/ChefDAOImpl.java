@@ -23,38 +23,6 @@ public class ChefDAOImpl implements ChefDAOInt{
 		}
 	}
 	
-	// UPDATE newChef <-- viene passato l'oggetto "updatedChef" che avrà tutti i campi null tranne quelli da modificare recuperati dalla GUI
-	@Override
-	public void updateChef(ChefDTO chef) throws SQLException {
-		String sql = "UPDATE chef SET "
-	               + "nomechef = COALESCE(?, nomechef), "
-	               + "cognomechef = COALESCE(?, cognomechef), "
-	               + "email = COALESCE(?, email) "
-	               + "WHERE idchef = ?";
-		
-		try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
-			ps.setString(1, chef.getNome());
-			ps.setString(2, chef.getCognome());
-			ps.setString(3, chef.getEmail());
-			ps.setInt(4, chef.getId());
-	        ps.executeUpdate();
-	        
-		}
-	}
-	
-	// UPDATE newChef password
-	@Override
-	public void updateChefPassword(ChefDTO chef) throws SQLException{
-		String sql = "UPDATE chef SET password = ? WHERE idchef = ?";
-		
-		try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
-			ps.setString(1, chef.getPassword());
-			ps.setInt(2, chef.getId());
-	        ps.executeUpdate();
-	        
-		}
-	}
-	
 	// DELETE newChef
 	@Override
 	public void deleteChef(ChefDTO chef) throws SQLException{
@@ -170,36 +138,6 @@ public class ChefDAOImpl implements ChefDAOInt{
 		}
 		return chefList;
 		
-	}
-	
-	//READ (SELECT) Chef by name and surname
-	@Override
-	public List<ChefDTO> getChefByNameAndSurname(String nome, String cognome) throws SQLException{
-		String sql = "SELECT * FROM chef WHERE nomechef = ? AND cognomechef = ?";
-		List<ChefDTO> chefListEqualName = new ArrayList<>();
-		
-		try(Connection conn = db_connection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)){
-			ps.setString(1, nome);
-			ps.setString(2, cognome);
-			ResultSet rs = ps.executeQuery();
-			
-			if(rs.next() == false) {
-				return null;
-			}
-			else {
-				while(rs.next()) {
-					ChefDTO chef = new ChefDTO();
-					chef.setId(rs.getInt("idchef"));
-					chef.setNome(rs.getString("nomechef"));
-					chef.setCognome(rs.getString("cognomechef"));
-					chef.setEmail(rs.getString("email"));
-		            chef.setPassword(rs.getString("password"));
-	
-		            chefListEqualName.add(chef);
-		        }
-		        return chefListEqualName;
-			}
-		}
 	}
 	
 }

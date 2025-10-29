@@ -10,6 +10,8 @@ public interface CorsoDAOInt {
 	
 	public void updateCorso(CorsoDTO newCorso) throws SQLException;
 	
+	public void deleteCorso(CorsoDTO corso) throws SQLException;
+	
 	public CorsoDTO getCorsoById(int idCorso) throws SQLException;
 	
 	public CorsoDTO getCorsoByName(String nomeCorso) throws SQLException;
@@ -21,8 +23,6 @@ public interface CorsoDAOInt {
 	public List<CorsoDTO> getCorsiByCategory(String categoria) throws SQLException;
 	
 	public List<String> getAllCategories() throws SQLException;
-	
-	public void deleteCorso(CorsoDTO corso) throws SQLException;
 	
 	public int countCorsiTenutiByChefInMese(int idChef, int mese, int anno) throws SQLException;
 }

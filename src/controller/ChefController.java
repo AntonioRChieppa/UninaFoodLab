@@ -119,69 +119,7 @@ public class ChefController {
 			throw new OperationException("Errore durante il login");
 		}
 	}
-			
-	// METODO PER AGGIORNARE I DATI DI UNO CHEF
-	public void aggiornaChef(String newNome, String newCognome, String newEmail) throws NotFoundException, OperationException{
-		try {
-			int idChefLoggato = SessionChef.getChefId();
-			ChefDTO chef = chefDAO.getChefById(idChefLoggato);
-					
-			if(chef==null) {
-				throw new NotFoundException("Impossibile trovare lo chef con id: " + idChefLoggato);
-			}
-			
-			if(!isValidEmail(newEmail)) {
-				throw new OperationException("Nuova email inserita non valida! Riprovare!");
-			}
-					
-			ChefDTO updateChef = new ChefDTO();
-			updateChef.setId(idChefLoggato);
-			updateChef.setNome(newNome);
-			updateChef.setCognome(newCognome);
-			updateChef.setEmail(newEmail);
-					
-			// SE IL NUOVO NOME è NON NULL E UGUALE A QUELLO GIà PRESENTE, NON AGGIORNIAMO
-			if(updateChef.getNome()!=null && updateChef.getNome().equals(chef.getNome())) {
-				updateChef.setNome(null);
-			}		
-			if (updateChef.getCognome() != null && updateChef.getCognome().equals(chef.getCognome())) {
-				updateChef.setCognome(null);
-			}
-			if (updateChef.getEmail() != null && updateChef.getEmail().equals(chef.getEmail())) {
-			    updateChef.setEmail(null);
-			}
-					
-			chefDAO.updateChef(updateChef);
-		}
-		catch(SQLException ex) {
-			throw new OperationException("Errore durante l'aggiornamento dello chef");
-		}
 				
-	}
-			
-	// METODO PER AGGIORNARE PASSWORD CHEF
-	public void aggiornaChefPassword(String newPassword) throws NotFoundException, OperationException{
-		try {
-			int idChefLoggato = SessionChef.getChefId();
-			ChefDTO chef = chefDAO.getChefById(idChefLoggato);
-			
-			if(chef==null) {
-				throw new NotFoundException("Impossibile trovare lo chef con id: " + idChefLoggato);
-			}
-							
-			if(newPassword!=null && newPassword.equals(chef.getPassword())==false) {
-				if(!checkPasswordRequirements(newPassword)) {
-					throw new OperationException("La password deve contenere almeno un carattere speciale, una lettera maiuscola e lunghezza > 6");
-				}
-				chef.setPassword(newPassword);
-				chefDAO.updateChefPassword(chef);
-			}
-		}
-		catch(SQLException ex) {
-			throw new OperationException("Errore nell'inserimento della nuova password!");
-		}	
-	}
-			
 	// METODO PER VISUALIZZARE LO CHEF CORRENTE
 	public ChefDTO visualizzaChef() throws NotFoundException, OperationException {
 		try {
@@ -209,22 +147,6 @@ public class ChefController {
 	    }
 	}
 			
-	// METODO PER RICERCARE LO/GLI CHEF PER NOME E COGNOME
-	public List<ChefDTO> cercaChefPerNome(String newNome, String newCognome) throws OperationException, NotFoundException{
-		try {
-			List<ChefDTO> listaChefStessoNome = chefDAO.getChefByNameAndSurname(newNome, newCognome);
-									
-			if(listaChefStessoNome == null) {
-				throw new NotFoundException("Impossibile trovare chef con nome: "+newNome+" e cognome: "+newCognome);
-			}
-									
-			return listaChefStessoNome;
-		}
-		catch(SQLException e) {
-			throw new OperationException("Errore durante la visualizzazione dello chef");
-		}
-	}
-
 	// METODO PER ELIMINARE LO CHEF CORRENTE
 	public void eliminaChef() throws NotFoundException, OperationException {
 	    try {
